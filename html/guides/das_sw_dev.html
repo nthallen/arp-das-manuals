@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>ARP Data Acquisition Systems Software Development Guide</TITLE>
+</HEAD>
+<BODY>
+<H1>ARP Data Acquisition Systems Software Development Guide</H1>
+<H2>Contents</H2>
+<UL>
+<LI><A HREF="#P1.0">1.0</A>: Summary
+<LI><A HREF="#P2.0">2.0</A>: Writing Instrument Startup Scripts
+<LI><A HREF="#P3.0">3.0</A>: What Programs will you Need to Generate?
+<LI><A HREF="#P4.0">4.0</A>: TMC Source Files
+<LI><A HREF="#P5.0">5.0</A>: Future Topics
+</UL>
+</PRE>
+
+<H2><A NAME="P1.0">1.0</A>: Summary</H2>
+
+This manual includes discussion of arcane issues which I hope are 
+of interest only to fulltime programmers. If subjects listed here 
+become of interest to experimenters, they should probably be 
+reworked for general disemination.<P>
+
+<H2><A NAME="P2.0">2.0</A>: Writing Instrument Startup Scripts</H2>
+
+Instrument startup scripts (e.g. interact, runfile) are one of the
+last areas of arcane knowledge to be automated. I will jot down
+some of the issues involved in writing these scripts. Generally
+a startup script includes some of the following:<P>
+
+<PRE>        memo
+        cmdctrl
+        dccc
+        scdc
+        timerbd
+        &lt;collection&gt;
+        soldrv
+        nav
+        lgr
+        bfr
+        indexer
+        &lt;command server&gt;
+        &lt;display programs&gt;
+        &lt;algorithms&gt;
+        &lt;command client (keyboard interface)&gt;
+</PRE>
+
+Each of these programs requires a number of command-line options.
+The order of operations is significant,
+since certain programs expect other programs to be already present
+when they are initialized. If program A talks to a program B,
+program B must be run first, and there must be an intervening
+<TT>namewait</TT>
+call to verify that program B has completed its initialization.
+The following rules will attempt to define the interrelations.<P>
+
+Every program talks to <TT>memo,</TT> hence it should come first.<P>
+
+<TT>dccc, scdc, soldrv</TT> and <TT>nav</TT> register with
+<TT>cmdctrl,</TT> hence it should come before they do.
+Collection and <TT>indexer</TT> will register with
+<TT>cmdctrl</TT> if it is present, so they should come
+later also.<P>
+
+Collection will use <TT>timerbd</TT> if it is present,
+so collection should come after <TT>timerbd.</TT><P>
+
+<TT>soldrv, nav, lgr, bfr, indexer,</TT>
+the command server, display programs and algorithms all talk to
+collection during initialization, so they must start later.<P>
+
+If a <TT>.slp</TT> format is used, the command server will need
+to talk to <TT>soldrv</TT> during initialization also, so the
+command server must start later.<P>
+
+Display programs and algorithms are generally placed on the
+<TT>bfr</TT> rather than directly on the ring to avoid
+interference with collection, hence <TT>bfr</TT>
+should be present and preceed these programs.<P>
+
+Algorithms which start telemetry should be as close to the end
+of the script as possible to allow any other programs to finish
+their initialization before the system gets into full swing.<P>
+
+Programs which display data (and any TMC-generated program can,
+even collection!) may require special handling, particularly if
+more than one screen is involved.<P>
+
+If the command client is present, it is usually the first of
+these programs to run in the foreground. When it terminates,
+it is assumed the entire script should terminate.<P>
+
+<H2><A NAME="P3.0">3.0</A>: What Programs will you Need to Generate?</H2>
+
+In general, you will need to provide programs for Data Acquisition 
+(collection and display), Data Analysis (extraction) and 
+instrument control (command client/server, algorithms). You have 
+considerable latitude as to how these are combined or divided. 
+I will use as an example an experiment known as the Extra Proton 
+detector, for which the acronym "abc" will be used. Throughout
+this document, wherever the letters
+<TT>abc</TT>
+are used in a filename, you would substitute the acronym for your
+own experiment. The following is a likely list of executable files
+required to run abc:<P>
+
+<DL COMPACT>
+  <DT>abccol
+  <DD>Collection
+  <DT>abcdisp
+  <DD>Full-screen Display
+  <DT>abcext
+  <DD>Spreadsheet Extraction
+  <DT>abcsrvr
+  <DD>Command Server
+  <DT>abcclt
+  <DD>Command Client
+  <DT>abcalgo
+  <DD>Command Algorithm
+  <DT>abc.dccc
+  <DD>DCCC pin definition file
+  <DT>abc.sft
+  <DD>Compiled Solenoid Cycle definition
+</DL>
+
+Of course your experiment may require more than one display, 
+extraction, algorithm or solenoid definition, but these are the 
+basic pieces we use to run experiments.<P>
+
+<H2><A NAME="P4.0">4.0</A>: TMC Source Files</H2>
+
+Your best bet when defining a new instrument (and the approach I always
+use) is to refer to the definition of another instrument. The "usual
+sources" required by TMC consist of the following:<P>
+
+<DL>
+<DT>types.tmc
+<DD>Defines data types and conversions.
+<DT>abc.tmc
+<DD>Defines type and rate for each telemetry datum.
+<DT>abcgrp.tmc
+<DD>Group definitions if required
+<DT>abccol.tmc
+<DD>Definitions specific to collection
+<DT>abc.fld
+<DD>.Ref scrdes
+<DD>screen definition
+<DT>abc.edf
+<DD>Spreadsheet extraction definition
+<DT>abc.tma
+<DD>.Ref tmcalgo
+<DD>algorithm
+<DT>abc.cyc
+<DD>Solenoid cycle calculation definition
+</DL>
+
+Not all of these files will be required by every experiment. Furthermore,
+some experiments use other source files, particularly if sources
+are generated automatically by agenda.
+
+<H2><A NAME="P5.0">5.0</A>: Future Topics</H2>
+<PRE>        Collection Considerations
+        CMDGEN Sources
+        DCCC Sources
+        SOLDRV Sources
+        APPGEN
+        Maintainance Issues
+</PRE>
+
+(c)1995 <A HREF="mailto:allen@huarp.harvard.edu">Norton T. Allen</A>
+</BODY>
+</HTML>

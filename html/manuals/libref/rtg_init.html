@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>rtg_init</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>rtg_init</h1>
+<h2>Synopsis</h2>
+<pre>
+    
+      #include "rtgapi.h"
+    
+      rtg_t * rtg_init(char *name);
+    
+</pre>
+<h2>Description</h2>
+<p>  Establishes a connection between the client application and the
+  RTG realtime graphics server. The name specified is the channel
+  name. rtg_init() must be called once for each distinct data
+  channel.
+</p>
+<p>  The RTG server is located by means of its registered name,
+  "huarp/rtg". rtg_init() will look for this name on the current
+  node or on the node specified by the environment variable
+  RTGNODE.
+</p>
+<h2>Returns</h2>
+<p>  A pointer to a structure identifying the channel. This identifier
+  is passed to either the <a href="rtg_report.html">rtg_report</a>() or <a href="rtg_sequence.html">rtg_sequence</a>()  function when data is ready. Even if the server is not located,
+  an identifier will be returned. If a server subsequently comes
+  up, the connection will be reattempted.
+</p>
+<h2>See Also</h2>
+<p>  <a href="rtg_report.html">rtg_report</a>(), <a href="rtg_sequence.html">rtg_sequence</a>(),  <a HREF="http://www.arp.harvard.edu/das/manuals/rtg.html">
+  RTG</A>,
+  <a HREF="http://www.arp.harvard.edu/das/manuals/tmg.html">
+  TMG: A TMC Preprocessor for interfacing to RTG</A>.
+</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/rtgapi.c">/usr/local/src/nortlib/rtgapi.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

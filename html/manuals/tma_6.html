@@ -1,0 +1,441 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>tmcalgo V2R1: Chapter 6</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img name="daqlogo" src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map" border="0">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10, 11, 91, 35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91, 6, 246, 43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30, 47, 273, 79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h2>TMCALGO V2R1: Algorithm Compiler</h2>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td><a href="tma_2.html">Chap. 2</a></td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td>Chap. 6</td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<table><tr><td>
+<h3><a name="P6.0">6.0</a>: Reference</h3>
+<div class="contents">
+<ul>
+<li><a href="#P6.1">6.1</a>: Program</li>
+<li><a href="#P6.2">6.2</a>: State</li>
+<li><a href="#P6.3">6.3</a>: Partition</li>
+<li><a href="#P6.4">6.4</a>: Untimed Commands</li>
+<li><a href="#P6.5">6.5</a>: Timed Commands</li>
+<li><a href="#P6.6">6.6</a>: Runtime Command Files</li>
+</ul>
+</div>
+</td></tr></table>
+
+<h3><a name="P6.1">6.1</a>: Program</h3>
+
+<p>A TMCALGO <a href="tma_app.html#program">program</a> may contain
+<a href="#P6.2">State definitions</a>,
+<a href="#P6.3">Partition</a> statements,
+<a href="tma_app.html#QUOTED-C-CODE">quoted C code</a>,
+so-called <a href="#P6.4">&quot;Untimed Commands&quot;</a>,
+or <a href="tma_app.html#COMMENT">comments</a>.</p>
+
+<h3><a name="P6.2">6.2</a>: State</h3>
+<p>A State Definition takes the form</P>
+<pre>
+      STATE <a href="tma_app.html#NAME">&lt;NAME&gt;</a> [ <a href="#P6.6">file-spec</a> ] [ NoLog ] {
+        <a href="#P6.4">untimed-commands</a> 
+        <a href="#P6.5">timed-commands</a>
+      }
+</pre>
+
+<p>The <a href="tma_app.html#NAME">&lt;NAME&gt;</a> must be unique.</p>
+
+<p>The optional <a href="#P6.6">file-spec</a> indicates that if
+possible, the commands for this state should be read for the
+specified file, which can be modified in realtime.</p>
+
+<p>The optional keyword &quot;NoLog&quot; suppresses the log messages
+printed whenever the state is entered. This is useful for tight
+loops where logging would obscure useful information. [For the
+exceedingly curious: logging is suppressed by increasing the
+debug-level of the log message. Hence even NoLog state
+transitions can be logged by adding '-ll' to the command line
+options of the algorithm.]</p>
+
+<h3><a name="P6.3">6.3</a>: Partition</h3>
+
+<p>A TMCALGO program may be broken up into two or more &quot;partitions&quot;
+by the use of the Partition statement. Each partition should include
+one or more <a href="#P6.2">States</a>. Each new partition
+defines an independent state machine which operates in parallel
+with all the other partitions in the algorithm. Exactly one state
+from each partition is valid at any time.</p>
+
+<h3><a name="P6.4">6.4</a>: Untimed Commands</h3>
+
+<p><a href="tma_app.html#untimed-command">Untimed Commands</a> are probably
+misnamed; They are untimed only in the sense that they do not
+have an explicit TMCALGO time specification before them, but
+that alone is not enough to place a command in this category.
+This category is limited to two varieties of TMC commands which,
+by the nature of TMC, will have their &quot;timing&quot; determined by data
+flow considerations.</p>
+
+<p>The two TMC varieties are:</p>
+<ul>
+<li><a href="tma_app.html#TMC-STATEMENT">&lt;TMC-STATEMENT&gt;</a></li>
+<li>DEPENDING ON <a href="tma_app.html#PARENSTAT">&lt;PARENSTAT&gt;</a> <a href="tma_app.html#TMC-STATEMENT">&lt;TMC-STATEMENT&gt;</a></li>
+</ul>
+
+<p>When appearing at the top of a <a href="#P6.2">state</a>
+definition, untimed commands will be executed at their
+TMC-determined rate whenever the state is valid, not just at the
+beginning. This is often used to implement state-specific
+watchdog functions:</p>
+
+<pre>
+        State Laser_On {
+          { if (Laser_Temp &gt; 60) Validate Laser_Off; }
+          ...
+        }
+</pre>
+
+<p>When appearing at the end of a state, these commands
+will be executed at their TMC-determined rate when the end of the
+state is reached and until another state in the partition is
+validated. This is often used to implement indefinite holds until
+some condition is met before advancing to the next state:</p>
+
+<pre>
+        State Initialize {
+          ...
+          depending on (OFF_THE_GROUND) { Validate Flight; }
+        }
+</pre>
+
+<p>When appearing in between <a href="#P6.5">timed commands</a>,
+these commands are executed <STRONG>at most one time</STRONG>.</p>
+
+<p>[ Since TMCALGO is not aware of the time dependencies of TMC,
+it cannot determine whether you have allowed enough time for the
+command to be executed. If the time you have allowed is less than
+the TMC-determined period for the command, it is possible that
+the command will not be executed at all. Be sure to leave enough
+time! ]</p>
+
+<p>This approach can be used to spot-check status:</P>
+
+<pre>
+        State Initialize {
+          ...
+          +3 &gt; Lamp On
+          +4 { if (!Lamp_Is_On)
+                 msg( 1, &quot;Lamp did not turn on!&quot; );
+             }
+          +1 &gt; ...
+          ...
+        }
+</pre>
+
+<p>In this example, I have allowed 1 second to evaluate the check
+of Lamp_Is_On. Since that is the only variable referenced, it's
+TMC rate determines the rate of the statement, so if it's period
+is greater than 1 second (or rate less than 1 Hz), the warning
+could be missed.</p>
+
+<h3><a name="P6.5">6.5</a>: Timed Commands</h3>
+
+<p>Timed commands include all the types of commands which can
+appear within a <a href="#P6.2">state</a> definition, including
+<a href="#P6.4">untimed commands</a>. These commands may be
+proceeded by an optional <a href="tma_app.html#timed-commands">time</a>
+specification.</p>
+
+<p>Times may be listed in seconds, minutes and seconds, or hours,
+minutes and seconds. The seconds and minutes need not be limited
+to values less than 60. Times listed with a '+' indicate the time
+delay between commands. Times listed without a '+' indicate that
+the following command should be executed at the specified time
+since the beginning of the state.</p>
+
+<p>The possible commands are:</P>
+
+<ul>
+<li>'&gt;' ['_'] <a href="#P6.5.1">&lt;TEXT-COMMAND&gt;</a></li>
+<li><a href="#P6.5.2">&lt;QUOTED-STRING&gt;</a> ';'</li>
+<li><a href="#P6.5.3">VALIDATE &lt;NAME&gt;</a> ';'</li>
+<li><a href="#P6.5.4">HOLD UNTIL [ VALID ] &lt;PARENSTAT&gt; timeout</a></li>
+<li><a href="#P6.5.5">HOLD [ AND VALIDATE &lt;NAME&gt; ]
+timeout</a></li>
+<li><a href="#P6.5.6">RESUME &lt;NAME&gt; ';'</a></li>
+<li><a href="#P6.4">untimed-command</a></li>
+</ul>
+
+<h3><a name="P6.5.1">6.5.1</a>: <a href="tma_app.html#TEXT-COMMAND">&lt;TEXT-COMMAND&gt;</a></h3>
+
+<p>A &lt;TEXT-COMMAND&gt; is an experiment command in the same
+syntax as is used from the interactive command program. The
+command text is preceeded by a right angle bracket ( '&gt;' ).
+In addition, an optional underscore character immediately
+preceeding the text (with no intervening whitespace) will
+suppress logging of this command. Together with the 'NoLog'
+keyword, this feature is useful to quiet logging of very
+repetetive operations.</p>
+
+<p>This syntax does not allow for any variable substitution.
+For that purpose, see the library routines <a
+href="libref/ci_sendcmd.html">ci_sendcmd()</a> and <a
+href="libref/ci_sendfcmd.html">ci_sendfcmd()</a>.</p>
+
+<h3><a name="P6.5.2">6.5.2</a>: <a href="tma_app.html#QUOTED-STRING">&lt;QUOTED-STRING&gt;</a> ';'</h3>
+
+<p>Quoted strings in a command position are used to help document
+what the algorithm is doing when it might otherwise be unclear.
+During operation, algorithms usually display the next experiment
+command that is scheduled to be executed. If the next command is
+not an experiment command, say a TMC command or HOLD UNTIL, the
+default is to display nothing. If a quoted string is added to the
+algorithm, the text can be displayed, perhaps prompting the user
+to take some action:</P>
+
+<pre>
+        &quot;Waiting for SW Status 7&quot;;
+        Hold until (SWStat == 7);
+</pre>
+
+<h3><a name="P6.5.3">6.5.3</a>: Validate <a href="tma_app.html#NAME">&lt;NAME&gt;</a> ';'</h3>
+
+<p>Validate is used to activate an algorithm state. If the named
+state is in the same partition as the current state, processing
+in the current state terminates and subsequent commands are taken
+from the newly validated state. The named state may also be in
+another partition, in which case processing in the current state
+continues as before.</p>
+
+<p>The validate command performs the same function as the TMC
+command of the same name. From an algorithm point of view</P>
+<pre>
+        Validate Foo;
+</pre>
+<p>Is equivalent to:</P>
+<pre>
+        { Validate Foo; }
+</pre>
+<p>but the former is slightly more efficient.</p>
+
+<h3><a name="P6.5.4">6.5.4</a>: HOLD UNTIL</h3>
+
+<p>HOLD UNTIL provides a shorthand syntax for introducing a
+variable delay into a state. With this syntax, a separate state
+must be introduced, which often makes the flow of the algorithm
+more difficult to follow. The syntax is:</p>
+
+<pre>
+        HOLD UNTIL [ VALID ] <a href="tma_app.html#PARENSTAT">&lt;PARENSTAT&gt;</a> <a href="tma_app.html#timeout">timeout</a>
+</pre>
+
+<p>A simple example might be:</P>
+
+<pre>
+        Hold until (SWStat == 5);
+</pre>
+
+<p>This will suspend execution of timed commands in the current
+state until the specified condition is met.
+<a href="#P6.4">Untimed commands</a> at the top of the state will
+continue to be executed. You may also wait for a state or states
+to be validated:</P>
+
+<pre>
+        Hold until valid (OFF_THE_GROUND, LASER_ON);
+</pre>
+
+<p>This will wait until both states OFF_THE_GROUND and LASER_ON
+are valid at the same time.</p>
+
+<p>In both these cases, the degenerate timeout clause ';' is used
+which indicates that the algorithm should wait forever for the
+condition to be met. The options for timeout include:</P>
+
+<pre>
+        ';'
+        OR <a href="tma_app.html#time">time</a> ';'
+        OR <a href="tma_app.html#time">time</a> ELSE <a href="#P6.5">timed-command</a>
+</pre>
+
+<p>If the time specified elapses and the condition is not met,
+timed command execution in the state is resumed and the ELSE
+clause, if present, is executed:</P>
+
+<pre>
+        &gt; Lamp On
+        Hold until ( convert( LM_RF ) &gt; 3.2 ) or 45
+        else { msg( 1, &quot;Lamp Failed to light&quot; ); }
+</pre>
+
+<h3><a name="P6.5.5">6.5.5</a>: HOLD [ AND VALIDATE ]</h3>
+
+<p>HOLD [ AND VALIDATE ] provides a generic hold capability
+similar to <a href="P6.5.4">HOLD UNTIL</a> without any
+explicit reference to TMC code that would require compilation.
+This makes it possible to use this syntax in
+<a href="P6.6">Runtime Command Files</a>.</p>
+
+<p>The simplest form of this statement is:</p>
+
+<pre>
+        HOLD;
+</pre>
+
+<p>This causes the current state and partition to hold
+indefinitely until a matching <a href="P6.5.6">RESUME</a>
+statement is executed from another partition. In practice,
+this means that each partition using this form of HOLD
+needs a shadow partition to provide waiting states which
+can issue the appropriate RESUME statements.</p>
+
+<img src="tma_hs4.gif" width=282 height=386 align="left" alt="Example Algorithm with Two Partitions" hspace=20 border=0>
+
+<p>The drawing at left is a graphical representation of the
+partitions and states in a simple algorithm. Partition 0 contains
+the main processing states while Partition 1 provides
+&quot;Watch&quot; functions. The &quot;SlurpIt&quot; state
+is a dynamically modifiable state, and is expected to include
+<code><b>HOLD</b></code> statements. The &quot;Watch_Flat&quot;
+state is statically programmed to wait for a specific condition
+and then issue the command <code><b>Resume SlurpIt;</b></code>.</p>
+
+<p>In order for this arrangement to work, SlurpIt will need to
+<code><b>Validate Watch_Flat</b></code> before issuing the
+<code><b>Hold</b></code>. This gives rise to a potential race
+condition; if Watch_Flat issues its <code><b>Resume</b></code>
+before SlurpIt issues its <code><b>Hold</b></code>, SlurpIt will
+be left waiting indefinitely. This is where the form
+<code><b>Hold and Validate</b></code> becomes useful. If the
+command is written:</p>
+
+<pre>
+        <code><b>Hold and Validate Watch_Flat;</b></code>
+</pre>
+
+<p>the calling state will be marked as holding before
+Watch_Flat is validated, effectively eliminating any race
+condition.</p>
+
+<p>As with the other <code><b>Hold</b></code> syntaxes, a
+<code><b>Hold [ and Validate ]</b></code> statement may include a
+<a href="tma_app.html#timeout">timeout</a> specification. Of course it is up
+to the programmer to determine whether the timeout is more
+appropriate in the holding state or the watching state.</p>
+
+<br clear="left">
+
+<h3><a name="P6.5.6">6.5.6</a>: RESUME &lt;NAME&gt; ';'</h3>
+
+<p>The <code><b>Resume</b></code> statement is used in
+conjunction with any of the <code><b>Hold</b></code>
+statements. <code><b>Resume</b></code>'s single argument
+is the name of the state that should be resumed. If the
+designated state is currently holding, the hold condition
+will be marked as succeeding, with processing continuing
+at the following statement. If the state is not holding,
+a diagnostic message is logged, but no other action is
+taken.</p>
+
+<h3><a name="P6.6">6.6</a>: Runtime Command Files</h3>
+
+<p>The optional <a href="tma_app.html#file-spec">file-spec</a> in a State
+definition specifies the name of a file from which commands will
+be read. The quoted filename may be followed by a parenthesized
+list of states you wish to make available for runtime validation
+from the specified file. By default, all the states defined in
+TMCALGO are available, so this feature is rarely needed.</p>
+
+<p>The commands listed within the state are default commands
+which are executed only if the specified file is not found or
+contains a syntax error. An exception to this is that <a
+href="#P6.4">untimed commands</a> appearing at the top of the
+state definition will be executed. This means that you may be
+able to provide a standard, compiled exit condition for the state
+without requiring a separate watchdog partition.</p>
+
+<p>The syntax of the runtime command files is a subset of
+the TMCAlgo syntax. The commands in the file are the contents
+of a single state, so none of the syntaxes involved with defining
+states or partitions are supported. Basically, the syntax is
+limited to <a href="#P6.5">timed commands</a> except that
+&quot;Hold Until&quot; and <a href="#P6.4">untimed commands</a>
+are not allowed. That leaves:</p>
+
+<ul>
+<li>'&gt;' ['_'] <a href="#P6.5.1">&lt;TEXT-COMMAND&gt;</a></li>
+<li><a href="#P6.5.2">&lt;QUOTED-STRING&gt;</a> ';'</li>
+<li><a href="#P6.5.3">VALIDATE &lt;NAME&gt;</a> ';'</li>
+<li><a href="#P6.5.5">HOLD [ AND VALIDATE &lt;NAME&gt; ]
+timeout</a></li>
+<li><a href="#P6.5.6">RESUME &lt;NAME&gt; ';'</a></li>
+<li><a href="tma_app.html#COMMENT">Comments</a></li>
+</ul>
+
+<p>You can validate any state in the algorithm, including
+states in other partitions. If you want to validate a state
+defined in another .tmc file, you will have to include the state
+name in the list of allowed states following the file-spec in the
+state definition.</p>
+
+<p>When the state is first validated, the program attempts to
+open and parse the specified file. If the file does not exist or
+there is a syntax error, any errors are reported to the log and
+the default commands are used. Otherwise the default commands are
+ignored and the commands in the file are executed. Whenever the
+state is re-validated, the status of the file is checked and if
+the file is unchanged, it does not need to be re-read. If the
+file has changed or has been removed, it is re-evaluated.</p>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td><a href="tma_2.html">Chap. 2</a></td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td>Chap. 6</td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a>.
+Written by
+<a href="mailto:allen@huarp.harvard.edu">Norton T. Allen</a>
+</p>
+
+
+<br>
+<hr noshade color="#000000">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+  <td>last updated: Thu Jan  2 10:52:02 2003</td>
+  <td align="right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</A></td>
+</tr>
+<tr>
+<td colspan="2"><font size="-2">
+Copyright 2002 by the President and Fellows of Harvard College
+</font></td>
+</tr>
+</table>
+</body>
+</html>

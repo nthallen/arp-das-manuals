@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>Col_send_init</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>Col_send_init</h1>
+<h2>Synopsis</h2>
+<pre>
+    
+    #include "collect.h"
+    send_id Col_send_init(const char *name, void *data, unsigned short size);
+    int Col_send(send_id sender);
+    int Col_send_reset(send_id sender);
+    
+</pre>
+<h2>Description</h2>
+<p>  These functions define the standard approach for sending data
+  to collection. This is necessary whenever an auxilliary program
+  is generating data which needs to be fed into the telemetry
+  frame.<P>
+</p>
+<p>  Col_send_init() initializes the connection, creating a data
+  structure to hold all the details. The name string must match the
+  name specified in the corresponding 'TM "Receive"' statement in
+  the collection program. Data points to where the data will be
+  stored, and size specifies the size of the data.<P>
+</p>
+<p>  Whenever the data is updated, Col_send() should be called to
+  forward the data to collection.<P>
+</p>
+<p>  On termination, Col_send_reset() may be called to provide an
+  orderly shutdown.
+</p>
+<h2>Returns</h2>
+<p>  Col_send_init() returns a pointer to a structure which holds
+  the state of the connection. This pointer must be passed to
+  Col_send() or Col_send_reset(). On error, Col_send_init() will
+  return NULL unless <a href="nl_response.html">nl_response</a> indicates a fatal response.<P></p>
+<p>  Col_send() returns 0 on success, non-zero otherwise.
+  Failure of the send is quiet, but causes an error return.<P>
+</p>
+<p>  Col_send_reset() returns 0 on success, non-zero otherwise. It
+  does not issue any diagnostic messages, since failure is
+  expected to be fairly common (Collection may quit before we get
+  around to our termination.)
+</p>
+<h2>See Also</h2>
+<p>  <a href="subject.html#sub3">Data Collection</a> functions.</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/colsend.c">/usr/local/src/nortlib/colsend.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

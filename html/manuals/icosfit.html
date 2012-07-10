@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ICOSfit Manual</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="Harvard University Anderson Group Website">
+<meta name="keywords" content="ARP huarp data acquisition qnx atmosphere chemistry Anderson Harvard">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+<style type="text/css">
+  table.contents td { vertical-align: top }
+</style>
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h2>ICOSfit Manual</h2>
+
+<h3>Contents:</h3>
+<table class="contents"><tr>
+<td>
+<ul class="tight">
+<li><a href="#Synopsis">Synopsis</a></li>
+<li><a href="#Introduction">Introduction</a></li>
+<li><a href="#Options">Options</a></li>
+</ul></td><td style="vertical-align: top"><ul class="tight">
+<li><a href="#Syntax">Syntax</a></li>
+<li><a href="#FileFormats">File Formats</a></li>
+</ul></td></tr></table>
+
+<h3><a id="Synopsis">Synopsis</a></h3>
+<pre>
+    icosfit <i>configfile</i>
+</pre>
+
+<h3><a id="Introduction">Introduction</a></h3>
+
+<p>ICOSfit is a non-linear least-squares fit algorithm for
+processing ICOS data from the Anderson Group's <a href="../../../atmobs/sciobj/instrument/cr.html">ICOS
+instrument</a>. It is invoked with the name of a configuration file,
+and all options are specified within that configuration file.</p>
+
+<h3><a id="Options">Options</a></h3>
+
+<p>All options are specified within the configuration file.</p>
+<ul>
+<li><a href="#IOOpts">Input/Output</a></li>
+<li><a href="#LineDefOpts">Line Definitions</a></li>
+<li><a href="#FitOpts">Fitting</a>
+  <ul>
+  <li><a href="#Range">Fitting Range</a></li>
+  <li><a href="#HWConfig">Hardware Configuration</a></li>
+  <li><a href="#Tuning">Tuning Rate</a></li>
+  <li><a href="#FitControl">Fit Controls</a></li>
+  </ul></li>
+</ul>
+
+<h3><a id="IOOpts">Input/Output Options</a></h3>
+
+<p>The input/output options define where the input files are to be found
+and where the output files should be placed.</p>
+<dl>
+  <dt><code>PTFile = <a href="#Path">Path</a>;</code></dt>
+  <dt><code>PTEFile = <a href="#Path">Path</a>;</code></dt>
+  <dt><code>PandTFile = <a href="#Path">Path</a>;</code></dt>
+  <dd>These three options are different ways of specifying where the
+  pressure and temperature data should be found. 'PTFile' indicates
+  a file in the current <a href="#PTFormat">PT format</a>.
+  'PandTFile' refers to a file in the original
+  <a href="#PandTFormat">PandT format</a> and is included for backwards
+  compatability. 'PTEFile' refers to a file that includes
+  <a href="#PTEFileFormat">etalon fit data.</a>
+    The default is: PandTFile = INPUTFILE.txt;</dd>
+  
+  <dt><code>ICOSdir = <a href="#Path">Path</a>;</code></dt>
+  <dd>Specifies the base directory under which the ICOS directory structure is 
+    stored. The default is 'CPCI14', but when the data is stored on a CD, you 
+    will probably need to specify a complete path.</dd>
+  
+  <dt><code>Binary;</code></dt>
+  <dt><code>ASCII;</code></dt>
+  <dd>These define whether the ICOS input files were written in binary or ASCII 
+    format. The default is binary.</dd>
+  
+  <dt><code>BaselineFile = <a href="#Path">Path</a>;</code></dt>
+  <dd>File containing the baseline basis vectors. The format is
+      defined by the <code>writeskewbase</code> matlab routine.</dd>
+  
+  <dt><code>OutputDir = <a href="#Path">Path</a>;</code></dt>
+  <dd>Specifies the directory into which all the output files will be written. 
+    The default is <code>ICOSout</code>.</dd>
+  
+  <dt><code>OutputFile = <a href="#Path">Path</a></code></dt>
+  <dd>Specifies the filename for the main fit results file. The default is
+    <code>ICOSsum.dat</code>. 
+    If the specified filename does not include an absolute path, it will be located 
+    in the <code>OutputDir</code>.</dd>
+  
+  <dt><code>LogFile = <a href="#Path">Path</a></code></dt>
+  <dd>Specifies the filename for the fit log file. The default is <code>ICOSfit.log</code>. 
+    As with OutputFile, the LogFile will be located in the <code>OutputDir</code> 
+    unless an absolute path is specified.</dd>
+  
+  <dt><code>MFile = <a href="#Path">Path</a></code></dt>
+  <dd>Specifies the name of the MATLAB .m file which summarizes some of the configuration 
+    parameters for use in analyzing the results. The default name is
+	<code>ICOSconfig.m</code>, and it will also be located in the
+	<code>OutputDir</code> unless an absolute path is specified.</dd>
+</dl>
+
+<h3><a id="LineDefOpts">Line Definitions</a></h3>
+
+<p>Since the primary purpose of icosfit is to fit absorption lines,
+defining what lines we are trying to fit is an important part of the
+configuration. Each configuration file should have a line definition
+block containing zero or more line definitions:</p>
+
+<pre>
+Lines = {
+ 1 4  1332.015310  1.464e-23 0.0918   221.9461 0.78 -0.002000 344, Position=1518;
+ 6 1  1332.085300  5.760e-20 0.0641   104.7800 0.75 -0.003000 577, Position=1453;
+ 1 2  1332.191200  3.239e-25 0.0865   839.5495 0.70 -0.000260 344, Position=1353;
+};
+</pre>
+
+<p>Each line definition line consists of nine numbers followed by
+zero or more optional elements. The nine numbers are taken almost
+directly from the <a href="http://www.hitran.com/">HITRAN database</a>.
+Details of the applciation of the line parameters can be found
+in the Appendix to the
+<a href="http://cfa-www.harvard.edu/hitran/Download/HITRAN96.pdf">1998
+JQSRT Paper</a>.
+They are listed below with the column number from the HITRAN output
+listed in parentheses:</p>
+
+<ol>
+<li><a href="http://cfa-www.harvard.edu/hitran/facts.html">HITRAN Molecule Number</a> (col 1)</li>
+<li>HITRAN Isotopomer Number (col 1)</li>
+<li>nu: Wavenumber of the spectral line transition (col 2)</li>
+<li>S: Spectral line intensity at 296K. (col 3)</li>
+<li>Gair: Air-broadened halfwidth at half maximum [cm-1/atm] at
+Tref=296K and reference pressure Pref=1atm (col 5)</li>
+<li>E: The lower state energy of the transition [cm-1] (col 7)</li>
+<li>n: coefficient of temperature dependence of the air-broadened
+halfwidth. (col 8)</li>
+<li>delta: air-broadened pressure shift [cm-1/atm] at Tref=296K,
+Pref=1atm. (col 9)</li>
+<li>ierr: Accuracy indices for frequency, intensity and Gair. (col 14)</li>
+</ol>
+
+<p>The optional elements are added after these nine numbers, each
+preceeded by a comma. They are:</p>
+
+<dl>
+<dt><code>Position = </code><i>SampleNumber</i>;</dt>
+<dd>Specifies the initial position of the line in sample space.</dd>
+
+<dt><code>Threshold = </code><i>value</i>;</dt>
+<dd>Specifies the line strength threshold value. If the fitted line
+strength falls below this threshold, the position and widths of the
+line will be made fixed parameters until the line strength rises
+above the threshold. By line strength here we mean the product of
+all the values that are multiplied by the voigt line shape.
+The default threshold is 1e-4, which is fairly conservative. Under
+good conditions, the threshold can be lowered considerably below
+that. Lines which are located on top of other lines may need to
+have their thresholds raised considerably in order to keep their
+fits from wandering.</dd>
+
+<dt><code>Fix Doppler;</code></dt>
+<dt><code>Fix Lorentz;</code></dt>
+<dt><code>Fix FinePosition;</code></dt>
+<dt><code>Float Doppler;</code></dt>
+<dt><code>Float Lorentz;</code></dt>
+<dt><code>Float FinePosition;</code></dt>
+<dd>These options specify whether the Doppler or Lorentz widths
+or the FinePosition for
+this line should be fixed or fit. The default is to float both
+widths and fix the FinePosition.</dd>
+</dl>
+
+<p>Except for <code>Position</code>, these options can also be
+specified globally and then modified for individual lines.</p>
+
+<h3><a id="FitOpts">Fitting Options</a></h3>
+
+<p>The fitting options are loosely grouped into the following
+sub-categories:</p>
+
+<ul>
+<li><a href="#Range">Fitting Range</a></li>
+<li><a href="#HWConfig">Hardware Configuration</a></li>
+<li><a href="#Tuning">Tuning Rate</a></li>
+<li><a href="#FitControl">Fit Controls</a></li>
+</ul>
+
+<h3><a id="Range">Fitting Range</a></h3>
+<dl>
+<dt><code>BackgroundRegion = <a href="#IntegerPair">IntegerPair</a>;</code></dt>
+<dd>Specifies the sample range over which the ICOS signal should be
+averaged to determine the zero offset. Defaults to <code>[10,200]</code>.</dd>
+
+<dt><code>SignalRegion = <a href="#IntegerPair">IntegerPair</a>;</code></dt>
+<dd>Specifies the limits of the sample range over which the fit will be
+performed. Defaults to <code>[350,1750]</code>.</dd>
+
+<dt><code>CPCI14Range = <a href="#IntegerPair">IntegerPair</a>;</code></dt>
+<dd>Specifies the range of scans to be fit. Defaults to all scans, but you
+will almost always need to specify a smaller range.</dd>
+
+<dt><code>QCLI_Wave = <a href="#Integer">Integer</a>;</code></dt>
+<dd>Specifies the waveform number (defined implicitly in the qclicomp
+input file, explicitly in the qclicomp <code>.cmd</code> output file).
+All scans for a particular run of icosfit must be of the same waveform.</dd>
+
+<dt><code>Restart at <a href="#Integer">Integer</a>;</code></dt>
+<dd>A shortcut method for re-running a fit when the fit parameters have not
+changed and don't need to be reinitialized. Restart reads the existing output
+file and uses it to initialize the fit parameters. This is useful, for example,
+if the fit went bad at a particular scan, and you want to retry from a few
+scans earlier after raising the threshold for a particular line. The output
+file is truncated at the restart scan number and subsequent fits are appended
+to the file.</dd>
+
+<dt><code>Restart at <a href="#Integer">Integer</a> PreserveOutput;</code></dt>
+<dd>This is identical to the previous format, but the new fits do not overwrite
+the old fit values. This is useful, for example, when you simply want to
+increase the verbosity of a fit for some subset of scans.</dd>
+</dl>
+
+<h3><a id="HWConfig">Hardware Configuration</a></h3>
+<dl>
+<dt><code>MirrorLoss = <a href="#FloatVal">FloatVal</a> ppm;</code></dt>
+<dd>Specifies the mirror loss determined by ringdown.</dd>
+<dt><code>CavityLength = <a href="#FloatVal">FloatVal</a>;</code></dt>
+<dd>Length of the cavity in cm. (Specifying the units is not currently
+supported. Go figure.)</dd>
+<dt><code>SampleRate = <a href="#FloatVal">FloatVal</a> <a href="#Frequency">Frequency</a>;</code></dt>
+<dd>If specified, SampleRate activates the skew fit algorithm. Defaults to
+<code>0 Hz</code>.</dd>
+<dt><code>SkewTolerance = <a href="#FloatVal">FloatVal</a> ppm;</code></dt>
+<dd>SkewTolerance is the amount of error that is tolerable during the
+skew fit. (See the full skew fit document for more details.) Defaults to
+<code>10 ppm</code>.</dd>
+<dt><code>N_Passes = <a href="#Integer">Integer</a>;</code></dt>
+<dd>Values greater than zero trigger the use of a Herriott Cell
+  model as opposed to an ICOS model. Values for MirrorLoss,
+  SampleRate and SkewTolerance are ignored.</dd>
+</dl>
+
+<h3><a id="Tuning">Tuning Rate</a></h3>
+<dl>
+<dt><code>EtalonFSR = <a href="#FloatVal">FloatVal</a> cm-1;</code></dt>
+<dd>Specifies the free spectral range of the diagnostic etalon. Defaults to
+<code>0.019805</code>. Reported concentrations scale linearly with EtalonFSR,
+so errors in EtalonFSR will propogate. It should be possible to diagnose
+such errors if the reported positions of free lines show a systematic error
+which varies linearly with wavenumber. Such a diagnostic is likely to make
+sense only when skew is taken into account.</dd>
+<dt><code>MinimumFringeSpacing = <a href="#FloatVal">FloatVal</a>;</code></dt>
+<dd>Specifies the number of samples between diagnostic etalon fringes at the
+start of the <a href="#Range">SignalRegion</a>. This is used to initialize
+the filter used to pick out the etalon peaks. Defaults to <code>12</code>.</dd>
+<dt><code>DSFRLimits = [ <a href="#FloatVal">FloatVal</a> , <a href="#FloatVal">FloatVal</a> ];</code></dt>
+<dd>DSFR is the ratio of number of samples between two fringes and the number
+of samples between the previous two fringes of the diagnostic etalon.
+DSFRLimits defines the range of acceptable values for this ratio, defaulting
+to <code>[.95,1.21]</code>. DSFR values near .5 or 2 are an indication that
+an spurious fringe was identified or a fringe was missed, and therefore that
+the determined tuning rate is seriously suspect and that the current scan
+should be discarded.</dd>
+<dt><code>TuningRate = <a href="#FloatVal">FloatVal</a> cm-1/sample;</code></dt>
+<dd>Specifying tuning rate as a constant disables the use of the diagnostic
+etalon. This is useful when testing fits of synthetic spectra or when working
+with a system that has a linear tuning rate and no diagnostic etalon.</dd>
+</dl>
+
+<h3><a id="FitControl">Fit Controls</a></h3>
+<dl>
+<dt><code>TolerableDrift = <a href="#FloatVal">FloatVal</a> cm-1;</code></dt>
+<dd>The amount of drift allowed to a line before increasing its threshold
+to fix its position. Defaults to <code>.01 cm-1</code>.</dd>
+<dt><code>LineMargin = <a href="#FloatVal">FloatVal</a> cm-1;</code></dt>
+<dd>The amount of sample beyond 8 half-widths that must be present
+in the SignalRegion in order for a line to be included in the fit.
+Defaults to <code>.05 cm-1</code>.</dd>
+<dt><code>Sigma = <a href="#FloatVal">FloatVal</a>;</code></dt>
+<dd>The uncertainty of the raw measurement. This is used in the calculation
+of chi-squared, but does not otherwise affect the fit.</dd>
+<dt><code>FitFunction = <a href="#Ident">Ident</a>;</code></dt>
+<dd>This option allows the selection of a few alternate fitting
+functions. Check with Norton to see what fitting functions are available.
+At the time of this writing, specifying SampleRate uses the best fit.</dd>
+</dl>
+
+<h3><a id="Syntax">Configuration File Syntax</a></h3>
+
+<p>The following grammar is specified in the syntax of the
+<a href="EBNF.html">Extended Backus Naur Form</a> or EBNF.
+This shows you what you can legally specify in a configuration
+file. Discussion of what these things actually do will follow.</p>
+
+<pre>
+<a id="ConfigFile">ConfigFile</a> : <a href="#ConfigLine">ConfigLine</a>+ .
+<a id="ConfigLine">ConfigLine</a> : <a href="#ConfigCmd">ConfigCmd</a> ';' .
+<a id="ConfigCmd">ConfigCmd</a> :
+  <a href="#Linedef">Linedef</a> /
+  BackgroundRegion = <a href="#IntegerPair">IntegerPair</a> /
+  SignalRegion '=' <a href="#IntegerPair">IntegerPair</a> /
+  CPCI14Range '=' <a href="#IntegerPair">IntegerPair</a> /
+  Restart at <a href="#Integer">Integer</a> <a href="#opt_preserve">opt_preserve</a> /
+  FitFunction '=' <a href="#Ident">Ident</a> /
+  MirrorLoss '=' <a href="#FloatVal">FloatVal</a> <a href="#opt_ppm">opt_ppm</a> /
+  EtalonFSR '=' <a href="#FloatVal">FloatVal</a> <a href="#opt_cm">opt_cm</a> /
+  MinimumFringeSpacing '=' <a href="#FloatVal">FloatVal</a> /
+  DSFRLimits '=' '[' <a href="#FloatVal">FloatVal</a> ',' <a href="#FloatVal">FloatVal</a> ']' /
+  TolerableDrift '=' <a href="#FloatVal">FloatVal</a> <a href="#opt_cm">opt_cm</a> /
+  LineMargin '=' <a href="#FloatVal">FloatVal</a> <a href="#opt_cm">opt_cm</a> /
+  CavityLength '=' <a href="#FloatVal">FloatVal</a> /
+  Sigma '=' <a href="#FloatVal">FloatVal</a> /
+  TuningRate '=' <a href="#FloatVal">FloatVal</a> <a href="#opt_tunerate">opt_tunerate</a> /
+  QCLI_Wave = <a href="#Integer">Integer</a> /
+  SampleRate = <a href="#FloatVal">FloatVal</a> <a href="#Frequency">Frequency</a> /
+  SkewTolerance = <a href="#FloatVal">FloatVal</a> <a href="#opt_ppm">opt_ppm</a> /
+  <a href="#Threshold">Threshold</a> /
+  <a href="#FixLineParam">FixLineParam</a> /
+  Binary / ASCII /
+  ICOSdir '=' <a href="#Path">Path</a> /
+  PandTFile '=' <a href="#Path">Path</a> /
+  PTFile '=' <a href="#Path">Path</a> /
+  BaselineFile '=' <a href="#Path">Path</a> /
+  OutputDir '=' <a href="#Path">Path</a> /
+  OutputFile '=' <a href="#Path">Path</a> /
+  LogFile '=' <a href="#Path">Path</a> /
+  MFile '=' <a href="#Path">Path</a> /
+  Verbosity '=' <a href="#Integer">Integer</a> .
+<a id="Path">Path</a> : <a href="#PathStr">PathStr</a> / <a href="#Ident">Ident</a> .
+<a id="IntegerPair">IntegerPair</a> : '[' <a href="#Integer">Integer</a> ',' <a href="#Integer">Integer</a> ']' .
+<a id="opt_ppm">opt_ppm</a> : / '%' / ppm .
+<a id="opt_cm">opt_cm</a> : / 'cm-1' .
+<a id="opt_preserve">opt_preserve</a> : / PreserveOutput .
+<a id="opt_tunerate">opt_tunerate</a> : / 'cm-1' '/' sample .
+<a id="Frequency">Frequency</a> : / 'Hz' / 'kHz' / 'MHz' .
+<a id="Threshold">Threshold</a> : Threshold '=' <a href="#FloatVal">FloatVal</a> .
+<a id="Position">Position</a> : Position '=' <a href="#Integer">Integer</a> .
+<a id="Linedef">Linedef</a> : Lines '=' '{' <a href="#Line">Line</a>* '}' .
+<a id="Line">Line</a> : <a href="#Integer">Integer</a> <a href="#Integer">Integer</a> <a href="#FloatVal">FloatVal</a> <a href="#FloatVal">FloatVal</a> <a href="#FloatVal">FloatVal</a> <a href="#FloatVal">FloatVal</a>
+  <a href="#FloatVal">FloatVal</a> <a href="#FloatVal">FloatVal</a> <a href="#Integer">Integer</a> <a href="#LineOpts">LineOpts</a> ';' .
+<a id="LineOpts">LineOpts</a> : ( ',' <a href="#LineOpt">LineOpt</a> )* .
+<a id="LineOpt">LineOpt</a> : <a href="#Threshold">Threshold</a> / <a href="#Position">Position</a> / <a href="#FixLineParam">FixLineParam</a> .
+<a id="FixLineParam">FixLineParam</a> : <a href="#FixFloat">FixFloat</a> <a href="#LineParam">LineParam</a> .
+<a id="FixFloat">FixFloat</a> : Fix / Float .
+<a id="LineParam">LineParam</a> : Lorentz / Doppler / FinePosition .
+<a id="FloatVal">FloatVal</a> : <a href="#Float">Float</a> / <a href="#Integer">Integer</a> / '-' <a href="#FloatVal">FloatVal</a> .
+</pre>
+<h3>Terminals</h3>
+<pre>
+<a id="Float">Float</a> : A floating point constant as defined in C
+<a id="Integer">Integer</a> : A string of decimal digits
+<a id="Ident">Ident</a> : A string of letters, digits and underscores
+<a id="PathStr">PathStr</a> : A filename path
+</pre>
+
+<h3><a id="FileFormats">File Formats</a></h3>
+
+<table class="contents">
+<tr><td>
+<ul class="tight">
+<li>Input Files
+  <ul class="tight"><li><a href="#ICOSFileFormats">ICOS Files</a></li>
+      <li><a href="#PTFileFormat">PTFile</a></li>
+      <li><a href="#PandTFileFormat">PandTFile</a></li>
+      <li><a href="#PTEFileFormat">PTEFile</a></li>
+      <li><a href="#BaselineFileFormat">BaselineFile</a></li></ul>
+</ul></td>
+<td><ul class="tight">
+<li>Output Files
+ <ul class="tight"><li>ICOSconfig.m</li>
+     <li>ICOSsum.dat</li>
+     <li>Verbose Output Files</li></ul>
+</ul>
+</td></tr></table>
+
+<h4><a id="ICOSFileFormats">ICOS Files</a></h4>
+
+<p>ICOS files are located in the directory hierarchy specified under the
+<code>ICOSdir</code> statement. They are written into multiple directories
+according to the conventions of the
+<a href="libref/subject.html#sub14">multi-level file subroutines</a> of
+nortlib. Binary and ASCII formats are supported,
+as specified by the <code>Binary</code> and <code>ASCII</code> statements.</p>
+
+<p>The ASCII format consists of two columns, space-delimited. The first column
+is the ICOS data, and the second column is the diagnostic etalon data. The
+sample number is implicit, starting with 1.</p>
+
+<p>The binary format is preferred, since it takes up less disk space and is now
+generated by default.</p>
+
+<table class="padded">
+<tr><th>Format</th><th>values</th><th>Name</th><th>Description</th></tr>
+<tr><td>uint32</td><td>1</td><td>nsamples</td><td>The number of rows in the file.</td></tr>
+<tr><td>uint32</td><td>1</td><td>ncolumns</td><td>The number of columns in the file.</td></tr>
+<tr><td>float32</td><td>nsamples</td><td>Col1</td><td>The data for column 1</td></tr>
+<tr><td>float32</td><td>nsamples</td><td>Col2</td><td>The data for column 2</td></tr>
+<tr><td colspan="4">...</td></tr>
+<tr><td>float32</td><td>nsamples</td><td>Coln</td><td>The data for column ncolumns</td></tr>
+</table>
+
+<p>At the moment, the number of columns is 2, with the first column being the ICOS data
+and the second column being the diagnostic etalon data. As with the ASCII format, the
+sample number is implicit, starting with 1. <code>uint32</code> is an unsigned 32-bit
+integer in little-endian format. <code>float32</code> is a 32-bit floating point value
+in little-endian IEEE format.</p>
+
+<h4><a id="PTFileFormat">PT File Format</a></h4>
+
+<p><code>PTFile = <a href="#Path">Path</a>;</code></p>
+
+<p>The <code>PTFile</code> statement identifies the file which
+contains the pressure and temperature data for the scans. This
+data is in a text format, and is generated via a TMC extraction
+(PText) and an SNAFU text output script (totext.snf). The
+contents are:</p>
+
+<table class="padded">
+<tr><th>Column</th><th>Name</th><th>Description</th><th>Units</th></tr>
+<tr><td>0</td><td>Time</td><td>Seconds since 00:00:00 1/1/70 UTC</td><td>sec</td></tr>
+<tr><td>1</td><td>CellP</td><td>Cell Pressure</td><td>Torr</td></tr>
+<tr><td>2</td><td>Tavg</td><td>Cell Temperature</td><td>K</td></tr>
+<tr><td>3</td><td>CPCI14</td><td colspan="2">Scan Number</td></tr>
+<tr><td>4</td><td>Cal_F</td><td>Calibration Flow</td><td>SCCM</td></tr>
+<tr><td>5</td><td>InltF</td><td>Inlet Flow</td><td>SCCM</td></tr>
+<tr><td>6</td><td>RORIS</td><td colspan="2">1=>Ringdown, 0=>ICOS</td></tr>
+<tr><td>7</td><td>RateS</td><td colspan="2">1=>50 Hz, 0=>10Hz</td></tr>
+</table>
+
+<p>As of icosfit V1.9 and CR VERSION 1.3, RORIS has been replaced with
+QCLI_Wave, an integer value indicating which waveform is currently being
+sampled. This is backwards compatible, since the default value of zero
+is consistent with the acceptable value for RORIS.</p>
+
+<h4><a id="PandTFileFormat">PandT File Format</a></h4>
+
+<p><code>PandTFile = <a href="#Path">Path</a>;</code></p>
+
+<p>The <code>PandTFile</code> statement specifies the use of an earlier
+file format for pressure and temperature. The PT format is preferred.</p>
+
+<table class="padded">
+<tr><th>Column</th><th>Name</th><th>Description</th><th>Units</th></tr>
+<tr><td>0</td><td>Time</td><td>Seconds since 00:00:00 1/1/70 UTC</td><td>sec</td></tr>
+<tr><td>1</td><td>CellP</td><td>Cell Pressure</td><td>Torr</td></tr>
+<tr><td>2</td><td>Gas1T</td><td>Cell Temperature</td><td>Celcius</td></tr>
+<tr><td>3</td><td>Gas2T</td><td>Cell Temperature</td><td>Celcius</td></tr>
+<tr><td>4</td><td>Gas3T</td><td>Cell Temperature</td><td>Celcius</td></tr>
+<tr><td>5</td><td>Gas4T</td><td>Cell Temperature</td><td>Celcius</td></tr>
+<tr><td>6</td><td>CPCI14</td><td colspan="2">Scan Number</td></tr>
+<tr><td>7</td><td>CPCI16</td><td colspan="2">Scan Number (non-existant)</td></tr>
+<tr><td>8</td><td>Cal_F</td><td>Calibration Flow</td><td>SCCM</td></tr>
+<tr><td>9</td><td>InltF</td><td>Inlet Flow</td><td>SCCM</td></tr>
+<tr><td>10</td><td>RORIS</td><td colspan="2">1=>Ringdown, 0=>ICOS</td></tr>
+<tr><td>11</td><td>RateS</td><td colspan="2">1=>50 Hz, 0=>10Hz</td></tr>
+</table>
+
+<h4><a id="PTEFileFormat">PTE File Format</a></h4>
+
+<p><code>PTEFile = <a href="#Path">Path</a>;</code></p>
+
+<p>The <code>PTEFile</code> statement specifies the use of a
+more minimal set of input data along with etalon fit parameters.</p>
+
+<table class="padded">
+<tr><th>Column</th><th>Name</th><th>Description</th><th>Units</th></tr>
+<tr><td>0</td><td>CPCI14</td><td>File Index</td><td></td></tr>
+<tr><td>1</td><td>CellP</td><td>Cell Pressure</td><td>Torr</td></tr>
+<tr><td>2</td><td>Tavg</td><td>Cell Temperature</td><td>K</td></tr>
+<tr><td>3</td><td>Etln[0]</td><td>Sample Number Offset</td><td>Samples</td></tr>
+<tr><td>4</td><td>Etln[1]</td><td>Constant Coef.</td><td>fringes</td></tr>
+<tr><td>5</td><td>Etln[2]</td><td>Linear Coef.</td><td>fringes/Ksamples</td></tr>
+<tr><td>6</td><td>Etln[3]</td><td>Quadratic Coef.</td><td>fringes/Ksamples^2</td></tr>
+<tr><td>7</td><td>Etln[4]</td><td>1st exp amp.</td><td>fringes</td></tr>
+<tr><td>8</td><td>Etln[5]</td><td>1st exp tau</td><td>Ksamples</td></tr>
+<tr><td>9</td><td>Etln[6]</td><td>2nd exp amp.</td><td>fringes</td></tr>
+<tr><td>10</td><td>Etln[7]</td><td>2nd exp tau</td><td>Ksamples</td></tr>
+</table>
+
+<h4><a id="BaselineFileFormat">Baseline File Formats</a></h4>
+
+<p><code>BaselineFile = <a href="#Path">Path</a>;</code></p>
+
+<p>There are currently two baseline fitting functions, each providing
+considerable flexibility in how the baseline is approximated. Selection
+between the two functions is determined by the format of the specified
+<code>BaselineFile</code>.</p>
+
+<dl>
+  <dt><code>func_base_svdx</code></dt>
+  <dd>This function is indicated by specifying a <code>BaselineFile</code>
+      in standard ICOS binary format. Each column is taken as a baseline
+      basis vector over the raw sample space. The derived baseline is
+      a linear combination of these basis vectors. The generic files
+      <code>sbase.linear</code> and <code>sbase.cubic</code> are
+      useful starting points, providing linear and cubic approximations
+      respectfully.<br><br>
+      As the name implies, you can perform singular value decomposition
+      on baseline data in the absence of absorption to generate
+      appropriate baseline vectors. The Matlab functions
+      <a href="http://forge.abcd.harvard.edu/gf/project/arp-icos/scmcvs/?action=browse&amp;path=%2FMatlab%2FCRfit%2Fwritebase.m&amp;view=markup"><code>writebase</code></a>
+ and <a href="http://forge.abcd.harvard.edu/gf/project/arp-icos/scmcvs/?action=browse&amp;path=%2FMatlab%2FCRfit%2Fwriteskewbase.m&amp;view=markup"><code>writeskewbase</code></a> are used
+      to output the vectors in the correct format.
+  </dd>
+  <dt><code>func_base_ptbnu</code></dt>
+  <dd>This function is indicated by specifying a file output by the
+      Matlab function <a href="http://forge.abcd.harvard.edu/gf/project/arp-icos/scmcvs/?action=browse&amp;path=%2FMatlab%2FCRfit%2Fwriteetlnbase.m&amp;view=markup"><code>writeetlnbase</code></a>. The file format
+      supports basis vectors
+      that are a function of wavenumber rather than sample number, plus
+      a polynomial that is a function of either wavenumber or sample number.
+  </dd>
+</dl>
+
+<h4>Output Files</h4>
+
+<h3>Author</h3>
+<p><a href="mailto:allen@huarp.harvard.edu">Norton Allen</a></p>
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Mon Sep 29 12:00:33 2008</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2008 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

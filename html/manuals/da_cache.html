@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>da_cache Manual</TITLE>
+</HEAD>
+<BODY>
+<CENTER><H2>da_cache: D/A and Software Status
+Driver</H2></CENTER>
+<H2>Contents</H2>
+<UL>
+<LI><A HREF="#P0.0">0.0</A>: Invocation
+<LI><A HREF="#P1.0">1.0</A>: Description
+<LI><A HREF="#P2.0">2.0</A>: Programming Interface
+</UL>
+<H2><A NAME="P0.0">0.0</A>: Invocation</H2>
+
+<PRE>    da_cache [options]
+        -c &lt;node&gt;[,&lt;attached name&gt;] send msgs to another task; default: memo
+        -e &lt;error filename&gt;
+        -H &lt;low&gt;-&lt;high&gt; hardware address range
+        -h &lt;msg header&gt;
+        -l add a level of debug messages
+        -o &lt;device&gt;[,&lt;row&gt;,&lt;col&gt;,&lt;width&gt;,&lt;pass attr&gt;,&lt;warn&gt;,&lt;fail&gt;,&lt;debug&gt;]
+        -S &lt;low&gt;-&lt;high&gt; software address range
+        -s no message sounds
+        -v disable verbose to stderr
+        -x Ask resident da_cache to quit
+        -y disable system error message concatenation to messages
+</PRE>
+
+<H2><A NAME="P1.0">1.0</A>: Description</H2>
+    
+<P>da_cache is a driver that provides read/write access to
+write-only devices on the ARP subbus, specifically D/A
+converters. It also supports software status.
+
+    
+<P>The hardware and software addresses supported must be specified
+on the command line via the -H and -S options. The &lt;low&gt;
+and &lt;high&gt; values are specified in hex. Hardware addresses
+map directly to ARP subbus addresses on write operations, so they
+are assumed to be even addresses and to read and write 16-bit
+values. Software values are also 16-bit, but since the software
+addresses don't map to hardware, they needn't be on even
+addresses. The address ranges can be anywhere within the range
+0-FFFD, but the software addresses must be above the hardware
+address range. The address range is inclusive; in order to
+specify a null range, omit the appropriate option.
+
+<H2><A NAME="P2.0">2.0</A>: Programming Interface</H2>
+
+<P>Library functions are provided for accessing the da_cache
+driver. You can find their
+<A HREF="libref/cache_read.html">descriptions</A> in the
+<A HREF="libref/subject.html">Library Reference</A> under
+Data Collection.
+
+<P>Integrating da_cache into a TMC environment requires the
+following:</P>
+
+<OL>
+<LI>include header file in collection and command server sources.
+<LI>Add appropriate collection rules to tmcbase sources.
+<LI>Add appropriate command rules to cmdbase sources.
+</OL>
+
+<P>To include the header file in a .cmd or .tmc file, add the
+following lines:
+<PRE>
+    %{
+      #include "da_cache.h"
+    %}
+</PRE>
+
+<P>An appropriate collection rule for any da_cache channel or type
+is:</P>
+<PRE>
+    collect x = cache_read(x.address);
+</PRE>
+
+<P>Within a .cmd file, given an address and a value, you can
+simply call</P>
+<PRE>
+    cache_write(address, value);
+</PRE>
+
+<HR>
+<P>Return to <A HREF="index.html">Manuals Guide</A>.<BR>
+<FONT SIZE="-2">Copyright 1999 by President and Fellows of
+Harvard College</FONT>
+</BODY>
+</HTML>

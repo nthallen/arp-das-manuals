@@ -1,0 +1,361 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>tmcalgo V2R1: Chapter 2</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img name="daqlogo" src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map" border="0">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10, 11, 91, 35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91, 6, 246, 43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30, 47, 273, 79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h2>TMCALGO V2R1: Algorithm Compiler</h2>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td>Chap. 2</td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<h3><a name="P2.0">2.0</a>: Writing Algorithms</h3>
+<table cellpadding="8"><tr>
+<td width="45%" valign="TOP">
+<table class="contents"><tr><td>
+<ul>
+<li><a href="#P2.1">2.1</a>: States</li>
+<li><a href="#P2.2">2.2</a>: Accessing Telemetry Data</li>
+<li><a href="#P2.3">2.3</a>: Partitions</li>
+<li><a href="#P2.4">2.4</a>: Embedding C Code and TMC Code</li>
+<li><a href="#P2.5">2.5</a>: Displaying Status</li>
+</ul></td></tr></table>
+</td>
+<td valign="TOP">
+<p>For the purposes of this tutorial, we will use a simulated
+heater control system. Among other things, this system allows
+us to set the heater current and the heater thermal mass.</p>
+</td></tr></table>
+<p>The simplest algorithms are just timed sequences of commands:</p>
+
+<pre>
+        State Init {
+                &gt; Telemetry Start
+             +5 &gt; Set Heater Current 0
+                &gt; Set Heater Thermal Mass 1
+        }
+</pre>
+
+<p>Here &quot;Telemetry Start&quot;, &quot;Set Heater Current 0&quot;, and &quot;Set
+Heater Thermal Mass 1&quot; are all commands which are defined
+via a <a href="cmdgen.html">CMDGEN</a> program, and can be
+issued interactively at the keyboard. The '&gt;' character
+introduces these experiment commands, which continue to the end
+of the line. There may be leading spaces before the first
+character of the command, but within the command the spelling and
+spacing must match the defined command exactly or a syntax error
+will be reported. (see also section
+<a href="tma_6.html#P6.5.1">6.5.1</a>.) The <code><b>&quot;+5&quot;
+</b></code> indicates that the following command should be
+issued 5 seconds after the previous command.</p>
+
+<p>So far this algorithm starts up the system and initializes
+some parameters, but it hasn't done anything interesting. Let's
+add some heat to the system:</p>
+
+<table cellpadding="10">
+<tr><td>
+<pre>
+        State Init {
+                &gt; Telemetry Start
+             +5 &gt; Set Heater Current 0
+                &gt; Set Heater Thermal Mass 1
+             +5 &gt; Set Heater Current 5
+             +5 &gt; Set Heater Current 0
+        }
+</pre>
+</td>
+<td align="CENTER" valign="MIDDLE">Graph of Heater Pulse goes here</td></tr></table>
+
+<p>Now we've got a 5-second pulse of current, and a plot of the
+resulting current and temperature, but once is never enough. What
+will happen if we keep pulsing the current at 5-second intervals?
+To find out, we could duplicate the last two heater current lines
+as many times as desired, but we can do better by defining a new
+state.</p>
+
+<h3><a name="P2.1">2.1</a>: States</h3>
+
+<p>Basic program control flow is accomplished by grouping
+commands into different states. Control is passed to the
+beginning of a new state by use of the
+<a href="tma_6.html#P6.5.3"><code><b>Validate</b></code></a> command.
+A simple loop can be created by validating the current state,
+causing command execution to begin again from the top.</p>
+
+<p>Let's move our current pulse into a new state called
+&quot;Pulse&quot; and make an endless loop:</p>
+
+<table cellpadding="10">
+<tr><td>
+<pre>
+        State Init {
+                &gt; Telemetry Start
+             +5 &gt; Set Heater Current 0
+                &gt; Set Heater Thermal Mass 1
+             +5 Validate Pulse;
+        }
+
+        State Pulse {
+                &gt; Set Heater Current 5
+             +5 &gt; Set Heater Current 0
+             +5 Validate Pulse;
+        }
+</pre>
+</td>
+<td align="CENTER"><img src="tma_hs1.gif" width=98 height=242 border=0 alt="State Diagram" hspace=20></td></tr></table>
+
+<p>Endless loops are not as unreasonable as they might be in other
+sorts of programs since we reserve the option of issuing a &quot;Quit&quot;
+command from the keyboard. In the lab, we might well want to set up a
+sequence of operations for continuous repetition to give us time to
+explore the behaviour of the system.</p>
+
+<h3><a name="P2.2">2.2</a>: Accessing Telemetry Data</h3>
+
+<p>On the other hand, loops that aren't endless are also useful.
+Suppose we want to explore the behaviour of our heater system
+with continual pulses while steadily increasing the heater's thermal
+mass, but we wish to stop when the mass reaches 10. If the thermal
+mass is stored in a variable named <code><b>Ct</b></code>, the
+following code would do the trick:</p>
+
+<table cellpadding="10">
+<tr><td>
+<pre>
+        State Pulse {
+                &gt; Set Heater Current 5
+             +5 &gt; Set Heater Current 0
+             +5 &gt; Add .2 to Heater Thermal Mass
+                { if ( Ct &gt;= 10 ) Validate Idle;
+                  else Validate Pulse;
+                }
+        }
+		
+        State Idle {}
+ </pre>
+</td>
+<td align="CENTER"><img src="tma_hs2.gif" width=151 height=283 border=0 alt="State Diagram" hspace=20></td></tr></table>
+
+<p>In this case, state <code><b>Idle</b></code> simply stops issuing commands, but
+it is easy to see how it might move on to other operations. Some points that are
+worth noting about this example:</p>
+
+<ul>
+<li>The code inside the inner curly braces is actually <a href="tmc.html">TMC</a>
+code. The TMCALGO compiler does not look inside these curly braces; it just passes
+them through verbatim to the <code>.tmc</code> output file, surrounding them with other
+appropriate TMC constructs. Although <code><b>Validate</b></code> outside of
+curly braces is a valid TMCALGO keyword, it is also a valid TMC keyword, and
+that is how it is used in this example.</li>
+
+<li>The relative location of a TMC statement inside a state affects when and
+how often the TMC statement will be executed. For more information, see
+the reference section on <a href="tma_6.html#P6.4">untimed commands</a>.</li>
+
+<li>Since TMC code is in turn compiled into C code, virtually any C statement
+can be placed inside a TMCALGO program. In addition to <code><b>Validate</b></code>,
+some other things that might be usefully done inside a TMC statement include:</li>
+<ul>
+<li>Call <a href="libref/nl_error.html">nl_error()</a> or msg() to write useful
+information, warnings or errors to the experiment log file.</li>
+<li>Modify a local variable for use in other operations.</li>
+<li>Invoke a more complicated C subroutine included in a separate module.</li>
+</ul>
+
+</ul>
+
+<h3><a name="P2.3">2.3</a>: Partitions</h3>
+
+<p>In a simple algorithm, only one state is valid at a time, so
+validating another state discontinues processing of the current
+state. As algorithms grow more complex, it becomes desirable to
+allow processing in more than one state at a time. This is where
+partitions come in.</p>
+
+<p>Partitions break the algorithm up into separate groups of
+states. Within each partition, exactly one
+state is active at a time, but this means that there are as many
+states active simultaneously as there are partitions.</p>
+
+<p>Partitions can be entirely independent or tightly coupled as
+the case requires. States in one partition can be validated from
+another partition, and statements in one partition can
+<a href="tma_6.html#P6.4">depend on</a> states in another partition.
+When a state in another partition is validated, control flow in
+the current partition is not affected, but the control flow of
+the other partition is shifted to the new state regardless of
+its present status.</p>
+
+<p>One useful application for multiple partitions is
+supervisory routines that watch for out-of-range conditions
+independent of the current processing state. Suppose we
+want to watch for an over-temperature condition on our
+heater:</p>
+
+<table cellpadding="10">
+<tr><td>
+<pre>
+State Init {
+        &gt; Telemetry Start
+     +5 &gt; Set Heater Current 0
+        &gt; Set Heater Thermal Mass 1
+     +5 Validate Watch_Temp;
+        Validate Pulse;
+}
+
+State Pulse {
+        &gt; Set Heater Current 5
+     +5 &gt; Set Heater Current 0
+     +5 &gt; Add .2 to Heater Thermal Mass
+        { if ( Ct &gt;= 10 ) Validate Idle;
+          else Validate Pulse;
+        }
+}
+
+State OverTemp {
+        &gt; Set Heater Current 0
+        { msg( 2,
+           &quot;Heater over temperature&quot; ); }
+        Validate Idle;
+}
+
+State Idle {}
+
+PARTITION
+
+State Watch_Idle {}
+
+State Watch_Temp {
+  { if ( THtr &gt; 100 ) {
+      Validate OverTemp;
+      Validate Watch_Idle;
+    }
+  }
+}
+</pre>
+</td>
+<td align="CENTER" valign="TOP"><img src="tma_hs3.gif" width=290 height=434 border=0 alt="State Diagram" hspace=20></td></tr></table>
+
+<h3><a name="P2.4">2.4</a>: Embedding C Code</h3>
+
+<p>It is often useful to take advantage of the fact that TMCALGO compiles
+TMC code which compiles to C code. TMCALGO contains features which allow
+you to embed TMC or C code directly inside your TMCALGO program, often
+eliminating the need to create a separate file for a simple definition.</p>
+
+<p>As we have seen, TMC code can be embedded inside a state using curly
+braces. TMC code may also appear outside of any state usinig curly braces.
+In this case, the outer set of curly braces are removed before the code
+is written to the <code>.tmc</code> file, allowing top-level TMC definitions
+to be made. [This is in violation of normal scoping conventions, of course,
+and a more sophisticated compiler would be able to handle TMC statements
+outside of states without enclosing curly braces, but this approach allows
+the desired results and was easily achievable.]</p>
+
+<p>TMC allows the embedding of C statements (which are otherwise invisible
+to the TMC compiler) by use of &quot;%{&quot; and &quot;%}&quot; bracketing.
+TMCALGO uses the same <a href="#QUOTED-C-CODE">convention</a>, and passes the
+entire block, delimeters included, to the <code>.tmc</code> output. This
+eliminates the need for double-quoting of C-statements in TMCALGO.</p>
+
+<h3><a name="P2.5">2.5</a>: Displaying Status</h3>
+
+<p>Algorithms can generate useful status displays when run from a
+<a href="tma_3.html#P3.3">doit script</a>. The status includes
+information about each partition, what the current state is,
+what command is going to be executed next and how long before
+it is executed. The status display requires two rows on the screen
+for each displayed partition. You can select which partitions
+are displayed and where by defining appropriate fields in the
+corresponding <code><b>.tbl</b></code> or <code><b>.fld</b></code>
+files.</p>
+
+<p>As mentioned in the <a href="mkdoit2.html#P2.3">mkdoit2 manual</a>,
+data fields with names of the form:</p>
+
+<pre>
+    %TMA:<i>&lt;algo&gt;</i>:<i>&lt;partition number&gt;</i>
+</pre>
+
+<p>will be interpreted as defining space for status reports for the
+named <i>algo</i> and <i>partition number</i>, where partitions
+are implicitly numbered starting with 1. The specified fields must
+span the entire width of the display and require two rows.</p>
+
+<p>Defining such fields is most easily accomplished by using
+<a href="table.html">table</a>. An appropriate table field specification
+for the first partition of our <code>hsimalgo</code> would be:</p>
+
+<pre>
+    (%TMA:hsimalgo:1,0+1,2);
+</pre>
+
+<p>The elements after the field name are the width and length, respectively
+of the resulting field. '0+1' indicates the field has no minimum width, but
+should be stretched to be as wide as possible. '2' indicates that exactly
+two rows are required.</p>
+
+<p>If you are going to use the same data display with different algorithms
+at different times, you may want to take advantage of table's
+<a href="table.html#Overlay">Overlay</a> feature optimize your use of
+screen real estate.</p>
+
+<p>It is safe to assume that you can display any partition's status on any
+display. Strictly speaking, there are some restrictions, but they are difficult
+to explain and have yet to be a problem. If you run into trouble, talk to
+Norton.</p>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td>Chap. 2</td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<p>Return to <a href="index.html">Manuals Guide</a>.
+Written by
+<a href="mailto:allen@huarp.harvard.edu">Norton T. Allen</a>
+</p>
+
+
+<br>
+<hr noshade color="#000000">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+  <td>last updated: Mon Apr 26 11:37:27 2004</td>
+  <td align="right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</A></td>
+</tr>
+<tr>
+<td colspan="2"><font size="-2">
+Copyright 2003 by the President and Fellows of Harvard College
+</font></td>
+</tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>nl_make_name</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>nl_make_name</h1>
+<h2>Synopsis</h2>
+<pre>
+    
+    #include "nortlib.h"
+    char *nl_make_name(const char *base, int global);
+    
+</pre>
+<h2>Description</h2>
+<p>  nl_make_name() returns a string of the form: huarp/exp/base
+  where exp is the current value of the
+  environment variable "Experiment" and base is the input
+  argument string. If global is non-zero, the string gets a
+  leading '/'. This is the standard means of building names
+  within the ARP Data Acquisition System architecture which will
+  be used with qnx_name_locate() and qnx_name_attach().<P>
+</p>
+<h2>Returns</h2>
+<p>  A pointer to a static buffer containing the expanded name.
+  You must save the string if it is needed for long.
+</p>
+<h2>See Also</h2>
+<p>  <a href="subject.html#sub13">Nortlib</a> functions.</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/make_name.c">/usr/local/src/nortlib/make_name.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

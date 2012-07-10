@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>rtg_sequence</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>rtg_sequence</h1>
+<h2>Synopsis</h2>
+<pre>
+    
+      #include "rtgapi.h"
+    
+      int rtg_sequence(rtg_t *rtg, double X0, double dX,
+    		int n_pts, float *Y);
+    
+</pre>
+<h2>Description</h2>
+<p>  Reports a sequence of data points to RTG. The rtg argument is the
+  identifier returned by <a href="rtg_init.html">rtg_init</a>(). The data points have an  implicit X-coordinate, based on the X0 and dX paramaters. Y
+  points to an array of n_pts float values.
+</p>
+<h2>Returns</h2>
+<p>  Returns 0 on success, non-zero on failure. As with
+  <a href="rtg_report.html">rtg_report</a>(), all errors are non-fatal.</p>
+<h2>See Also</h2>
+<p>  <a href="rtg_init.html">rtg_init</a>(), <a href="rtg_report.html">rtg_report</a>(),  <a HREF="http://www.arp.harvard.edu/das/manuals/rtg.html">
+  RTG</A>,
+  <a HREF="http://www.arp.harvard.edu/das/manuals/tmg.html">
+  TMG: A TMC Preprocessor for interfacing to RTG</A>.
+</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/rtgapi.c">/usr/local/src/nortlib/rtgapi.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

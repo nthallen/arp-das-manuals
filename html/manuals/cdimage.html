@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CDimage</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h2>Name</h2>
+
+<p>CDimage - CD Mastering Utility for Instrument Data</p>
+
+<h2>Synopsis</h2>
+
+<pre>
+CDimage create ["Description"]
+CDimage select <i>volume_id</i>
+CDimage addrun <i>run</i> [<i>run</i> ...]
+CDimage prepCD
+CDimage mkisofs
+CDimage delete <i>volume_id</i>
+CDimage status
+</pre>
+
+<h2>Description</h2>
+
+<p>CDimage is a utility to assist in the mastering of compact disc (CD)
+images of instrument data within the Anderson Group data acqusition
+architecture. CDimage is a perl script that invokes a number of other
+scripts and utilities to fullfill its mission.</p>
+
+<p>CDimage is run from an experiment's home directory where it expects
+to be able to find the Experiment.config file. It will also look for
+a file called <a href="#CDimagerc">.CDimagerc</a>, which may contain
+perl statements to tailor the operation of CDimage, and .mkisofsrc,
+which should contain some default information for mkisofs.</p>
+
+<p>The usual procedure is as follows:</p>
+
+<pre>
+CDimage create "Test runs, June 30, 2002"
+CDimage addrun 020630.1
+CDimage addrun 020630.2 020630.3
+CDimage prepCD
+CDimage mkisofs >image.iso
+</pre>
+
+<h3>CDimage create ["Description"]</h3>
+
+<p>Creates a new image directory under the CDimageBase directory defined
+in .CDimagerc. Copies the default .mkisofsrc data into a local copy of
+.mkisofsrc and adds the description. Sets the new image as the current
+image.</p>
+
+<h3>CDimage addrun <i>run</i> [ <i>run</i> ... ]</h3>
+
+<p>Adds raw data from the specified run(s) to the current image. CDimage
+looks for the raw data under the current directory and on the flight
+computer if present. It attempts to locate the run under any of the raw
+subdirectories, so a complete path is not required. It does not copy
+the raw data into the image directory, but instead creates a soft
+link to the data where it currently exists.</p>
+
+<p>If $CDimage::link_anal is set to be non-zero in .CDimagerc, the
+anal directory for the run will also be linked into the CD image.</p>
+
+<h3>CDimage prepCD</h3>
+
+<p>Checks the current image to make sure it will be accepted by mkisofs
+by running the prepCD script, then runs dircksum so the CD can be
+thoroughly verified after burning.</p>
+
+<h3>CDimage mkisofs</h3>
+
+<p>Invokes mkisofs to create the ISO9660 image that will be written
+to the CD. The image output is written directly to stdout, so the
+output must be redirected to a suitable output file. This approach
+was used to facilitate transfer to remote systems. CDimage mkisofs
+can be invoked on a remote system via ssh with the output redirected
+to a file on the local system. In this way, a CD image can be created
+and tranferred to another system without making any intermediate
+copies.</p>
+
+<h2>Author</h2>
+
+<p><a href="mailto:allen@huarp.harvard.edu">Norton T. Allen</a></p>
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Fri May  7 15:08:35 2004</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2004 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

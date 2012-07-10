@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>mkdoit2 Manual</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h1>MkDoit2 Manual</h1>
+<h2>Contents</h2>
+<ul>
+<li><a href="#P1.0">1.0</a>: Compiler Invocation</li>
+<li><a href="#P2.0">2.0</a>: Introduction
+<ul>
+<li><a href="#P2.1">2.1</a>: doit scripts</li>
+<li><a href="#P2.2">2.2</a>: .doit files
+<ul>
+<li><a href="#P2.2.1">2.2.1</a>: Playback</li>
+<li><a href="#P2.2.2">2.2.2</a>: Inetin</li>
+<li><a href="#P2.2.3">2.2.3</a>: Serin</li>
+</ul></li>
+<li><a href="#P2.3">2.3</a>: .fld Fields</li>
+</ul></li>
+<li><a href="#P3.0">3.0</a>: Input Syntax</li>
+<li><a href="#PA.0">A.0</a>: Invoking Scripts under QNX Windows</li>
+</ul>
+
+<h2><a id="P1.0">1.0</a>: Compiler Invocation</h2>
+
+Mkdoit2 is invoked with the following command format:<P>
+
+<pre>
+      mkdoit2 [ -o &lt;outputfile&gt; ] [ &lt;inputfile&gt; ... ]
+</pre>
+
+Users of the ARP Data Acquisition System will almost never need
+to invoke the compiler directly; the invocation is handled by
+<a href="appgen.html">appgen</a> and make.
+
+<h2><a id="P2.0">2.0</a>: Introduction</h2>
+<h3><a id="P2.1">2.1</a>: doit scripts</h3>
+
+MkDoit2 is a language to generate "doit" scripts for use with ARP
+Data Acquisition. It supports options for many features which
+are handy to have in a doit script.<P>
+
+For compatibility with <a href="appgen.html">APPGEN</a>, the
+input filename should end in ".doit". The doit script can be generated
+as part of the general make process by adding a line to the .spec
+file such as:
+<pre>
+        abcdoit : abc.doit
+</pre>
+
+The resulting script is designed to work with most if not all
+standard experimental configurations as specified in the
+<a href="exconfig.html">Experiment.config</a> file. Invoking
+the script should start up the instrument or immediately
+attach to the instrument if it is already running. Multiple
+simultaneous invocations are safely arbitrated to avoid conflicts
+and deadlocks.<P>
+
+In addition, the script can take one of two optional arguments,
+"not" and "stop".
+"doit not" is used to prevent an instrument from starting up if
+it would do so automatically, such as in a flight configuration.
+(Up until now, users would need to explicitly issue the command
+"pick_file /dev/null", making sure that the environment variable
+"Experiment" was properly defined first. With the advent of the
+Experiment.config file, it is no longer necessary or desirable
+to have Experiment predefined, since it can be looked up in the
+file, but pick_file (and most of the other binary utilities)
+require this definition. By nesting this command within the doit
+script which reads Experiment.config, this process is simplified.)<P>
+
+"doit not" can also be used to "clean up" in the event that a
+disorderly shutdown has left some processes still running.<P>
+
+"doit stop" will shut down an instrument that is already running
+without requiring the full GSE program to be run. This is
+accomplished by running the command "startdbr quit" on the flight
+node with the appropriate Experiment definition from the
+configuration file.<P>
+
+<h3><a id="P2.2">2.2</a>: .doit files</h3>
+
+A basic .doit input specification will define a display program and
+a keyboard client program. For example:
+<pre>
+        display abcdisp abc
+        client abcclt
+</pre>
+
+specifies that the display program "abcdisp" should be run and
+that it requires one screen which should be initialized with the
+scrdes file "abc.fld". The script will also invoke the keyboard
+client program "abcclt".<P>
+
+To add an algorithm, we could simply add the line:
+<pre>
+        algorithm abcalgo
+</pre>
+
+<p>Telemetry applications are classified into one or more of the
+categories display, extraction, or algorithm. For the purposes of
+mkdoit2, a display program is any TM client generated from a .fld
+file or a .tbl file. An algorithm is any TM client which accesses
+the command server using the "cic" functions, specifically
+cic_options() as referenced from
+/usr/local/include/oui/client.oui, which is true of any program
+generated from .tma source files. Extraction is used for any TM
+client that is not a display or algorithm, or for a display
+program for which additional command-line options are desired.
+</p>
+
+<p>If it is necessary to list an application more than once, the
+"display" entry must come first. For example, a display program
+which also sends commands to the command server is actually both
+a display and an algorithm. In this case, it should be listed
+first as a display and next as an algorithm. It will appear in
+the output file with the display programs, but it will have been
+endowed with the command-line options required by command
+clients. You might also need to list a program as both display
+and extraction in order to specify a command-line option:</p>
+
+<pre>
+        display abcdisp abc
+        extraction abcdisp -h ABCD
+</pre>
+
+<p>In any case, the listing for "display" must come first. Note
+that the screen names listed must match those listed in the .spec
+file in name, number and order or strange problems will
+result.</p>
+
+<p>There are numerous other options available listed in the
+<a href="#P3.0">Input Syntax</a> below, and more will
+inevitably be added as time goes by, so stay tuned!</p>
+
+<h3><a id="P2.2.1">2.2.1</a>: Playback</h3>
+
+<p>The playback option can be used to create a doit script which
+will run on previously logged data. The resulting script takes a
+run directory as an argument and invokes the rdr to playback the
+data. It is possible to run displays, algorithms and graphics in
+this mode, very much the same way as in real time, except that in
+playback you have the option of running everything fast forward
+or in slow motion in addition to real time.</p>
+
+<p>In order to create a playback script from a realtime script,
+replace the client specification with the keyword "playback" and
+make sure any algorithms listed have the -p option (for
+Playback). You may also optionally specify the autostart keyword
+in order to have the data playback begin immediately without
+requiring a manually-entered "Telemetry Start" command.</p>
+
+<h3><a id="P2.2.2">2.2.2</a>: Inetin</h3>
+
+<p>Inetin is used to specify that the script should run the Inetin
+program to connect to a data stream on a remote system. As with
+Playback, this option replaces the client keyword, invoking PBclt
+instead. This configuration will also accept the autostart
+keyword. The resulting script requires that the variable
+RemoteHost be defined in Experiment.config.</p>
+
+<h3><a id="P2.2.3">2.2.3</a>: Serin [options] &lt;device&gt;</h3>
+
+<p>Serin is used to specify that the script should run the serin
+program to connect to a data stream coming in on a serial port. As with
+Playback, this option replaces the client keyword, invoking PBclt
+instead. This configuration will also accept the autostart
+keyword.</p>
+
+<h2><a id="P2.3">2.3</a>: .fld Fields</h2>
+
+<p>In addition to reading the .doit input file, mkdoit2 reads the .fld
+files which are specified in each "display" statement. The following
+field contents are recognized:</p>
+
+<dl>
+<dt>%STATUS:&lt;app&gt;</dt>
+<dd>Defines the location of a status line for the specified
+application.</dd>
+<dt>%STATUS</dt>
+<dd>Defines the location of a general status line for all applications 
+which do not have their own status field.</dd>
+<dt>%CLIENT</dt>
+<dd>Indicates that a keyboard client should run on this screen. If
+no such field is defined, the keyboard client will run on all display
+screens. This is consistent with prior practice. Keyboard clients always 
+appear on the last two rows of a console, so the only information extracted 
+from this field is which screen it is on: row, column and width are 
+ignored.</dd>
+<dt>%TMA:&lt;app&gt;[:#]</dt>
+<dd>Defines a status field for the specified TMCALGO. The partition number 
+may optionally be specified, with the first partition in the algorithm 
+being numbered 1. If no partition number is specified, the field refers to 
+partition 1. All TMCALGO status fields require two rows and are 80 
+characters wide, so the only information extracted from this field
+is the row: column and width are ignored and assumed to be 0 and 80
+respectively.</dd>
+</dl>
+
+<h2><a id="P3.0">3.0</a>: Input Syntax</h2>
+<dl>
+<dt>display &lt;program&gt; &lt;screen file&gt; [ &lt;screen file&gt; ... ]</dt>
+<dd>Specifies a display program to run and the names of the .fld
+files which define it. The list of .fld files must match those
+listed in the .spec file in name, number and order or strange
+problems will result.</dd>
+
+<dt>client &lt;program&gt;</dt>
+<dd>Specifies a keyboard client to run</dd>
+
+<dt>monoconfig &lt;filename&gt;</dt>
+<dt>colorconfig &lt;filename&gt;</dt>
+<dd>Specifies explicit screen configuration files to use for monochrome
+and/or color displays.</dd>
+
+<dt>memo [ &lt;log file name&gt; ]</dt>
+<dd>Specifies that "less +F &lt;log file&gt;" should run on a spare console
+to provide a scrolling status window.</dd>
+
+<dt>algorithm &lt;program&gt; [ options ]</dt>
+<dd>Specifies an algorithm to run.</dd>
+
+<dt>extraction &lt;program&gt; [ options ]</dt>
+<dd>Specifies an extraction to run in realtime, for example an 
+rtg extraction. Algorithms are different from Extractions in
+that they send commands to the command server.</dd>
+
+<dd>If either an algorithm or an extraction has a <b>-v</b>
+option specified, the standard msg option ( -c$FlightNode )
+is suppressed. This prevents status messages from being
+sent to memo. Status messages to memo are also suppressed
+for algorithms in playback mode (<b>-p</b>) accessing a
+local instrument to prevent duplicate messages in the log.</dd>
+
+<dt>batchfile &lt;batch file name&gt;</dt>
+<dd>Specifies which script should be run on the flight node. The default
+is "interact", but this option could be used to specify that the
+flight "runfile.dflt" be used instead.</dd>
+
+<dt>rtg &lt;config file&gt;</dt>
+<dd>Requests that rtg be started if it isn't already running, and
+defines the name of the rtg configuration file to use. The file
+name should be absolute, since rtg will otherwise look in a
+standard configuration directory.</dd>
+
+<dt>playback</dt>
+<dd>Specifies that the script is intended for playback. Playback
+implies the use of the rdr, the PBreg speed regulation utility
+and the PBclt keyboard client. No other client should be
+specified. Any algorithms must have -p specified, for obvious
+reasons.</dd>
+
+<dt>inetin</dt>
+<dd>Specifies that the script is intended for connection to a
+remote data stream via the Inetin program. Like playback, inetin
+implies the use of the PBreg speed regulation utility
+and the PBclt keyboard client. No other client should be
+specified. Algorithms should also have -p specified, since the
+command server will not be reachable. (It is a fairly simple
+matter to extend command capability to remote systems via
+Inetsrvr and Inetcmd programs, but in most cases this is rather
+undesirable.)</dd>
+
+<dt>autostart</dt>
+<dd>Used with playback and inetin, specifies that data should
+begin playing as soon as all the TM clients have registered.</dd>
+
+</dl>
+
+<h2><a id="PA.0">A.0</a>: Invoking Scripts under QNX Windows</h2>
+
+<p>The doit scripts generated by mkdoit2 have been carefully
+designed to operate properly either on standard QNX consoles or
+in QNX Windows wterm windows. Even invocations of rtg are safe,
+as the doit script checks to see if windows is running and only
+launches rtg if it is. Scripts can be invoked via the command
+line in a wterm shell exactly as they are invoked on a QNX
+console, but they can also be added to your personal windows
+configuration to be selectable from the "Programs" menu without
+first bringing up a shell.</p>
+
+<p>In order to add a doit script to your menu, select "Properties..." from
+the Workspace menu. This brings up the list of menu items for editting.
+In the upper right corner, select "Personal" to bring up your private
+selections.</p>
+
+<p>Suppose we wanted to add an entry to run the NO2 instrument using the
+script windoit with the menu entry, "Run NO2". Select the "Name:" field
+and enter "Run NO2". Then select the "Invocation String:" field and
+enter //9/home/no2/windoit.</p>
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Thu Sep 23 10:42:22 2004</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2004 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

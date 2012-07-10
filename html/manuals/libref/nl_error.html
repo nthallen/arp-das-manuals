@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>nl_error</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>nl_error</h1>
+<h2>Synopsis</h2>
+<pre>
+    #include "nortlib.h"
+    int (*nl_error)(unsigned int level, char *s, ...);
+    int nl_err(int level, char *s, ...);
+    
+</pre>
+<h2>Description</h2>
+</p>
+<p>  nl_error() is a retargettable standard error message function.
+  It is actually a function pointer which may be modified either
+  statically or dynamically as the application requires.<P>
+</p>
+<p>  nl_error() functions provide standard printf-style formatting
+  for status messages. The level argument determines how the
+  message is handled:
+</p>
+<p>  <UL>
+	<LI>0: Informational Message
+	<LI>1: Warning Message
+	<LI>2: Error Message
+	<LI>3: Fatal Error Message
+	<LI>4: Internal Fatal Error Message
+	<LI>-1: Normal Exit with Message
+	<LI>-2: Debug level 1 Message
+	<LI>-3: Debug level 2 Message
+  </UL>
+</p>
+<p>  Debug messages normally do not appear, but you can adjust the
+  debug level to see some or all of your debugging messages. For
+  the default functions nl_err() and nl_verror(), the current
+  debug level is stored in the variable nl_debug_level, which may
+  be adjustable by command line flags. For msg(), the debug level
+  is controlled via the -l flag and does not use
+  nl_debug_level.<P>
+</p>
+<p>  The nortlib library provides a default function, nl_err(),
+  which reports warnings to stderr and normal messages to stdout.
+  The default function is included in the same module with the
+  default definition of the nl_error pointer. In order to
+  override the default, you must include your own definition of
+  nl_error and initialize it to point to your own function.<P>
+</p>
+<p>  This is done automatically for programs developed using the ARP
+  Data Acquisition Systems architecture, where nl_error is mapped
+  to the msg() function, which routes messages to a central memo
+  utility. nl_error is also retargetted for many of our compilers
+  to a function which prints out the current input file name and
+  line number. It is then dynamically remapped to the default
+  when input processing is completed. RTG and other QNX
+  Windows-based programs remap nl_error to a function which pops
+  up a window.<P>
+</p>
+<p>  The point here is that library functions can count on calling a
+  standard error message routine, and their messages will be
+  mapped to the correct output processor depending on the
+  application they are linked into.
+</p>
+<h2>Returns</h2>
+<p>  For non-fatal errors, returns the error level code.
+</p>
+<h2>See Also</h2>
+<p>  <a href="nl_response.html">nl_response</a>, <a href="nl_verror.html">nl_verror</a>().<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/nl_error.c">/usr/local/src/nortlib/nl_error.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>nl_response</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>nl_response</h1>
+<h2>Synopsis</h2>
+<pre>
+    
+    #include "nortlib.h"
+    int nl_response;
+    int set_response(int newval);
+    
+</pre>
+<h2>Description</h2>
+<p>  The nl_response setting determines how most all nortlib
+  functions react to errors. nl_response may be set to any value
+  acceptable as a level argument to <a href="nl_error.html">nl_error</a>() or msg(). By  default, nl_response is set to 3, which means any error in a
+  nortlib function will be considered a fatal error. By changing
+  the setting to 1, an error will simply be reported as a
+  warning.<P>
+</p>
+<p>  The philosophy here is that if you have not taken steps to
+  handle an error condition, then the error condition cannot be
+  tolerated. This makes it possible to write simple programs
+  simply and to find out if more sophisticated error handling is
+  required. In many cases, additional error handling will not be
+  required; If your program need to communicate with a particular
+  server and the server cannot be located, that probably should
+  be a fatal error, and no further programming is required to
+  make it so. Additional code is only required when you wish to
+  selectively tolerate specific errors.<P>
+</p>
+<p>  set_response() is a convenient way to manipulate nl_response.
+  It sets nl_response to a new value and returns the old value so
+  that it can be saved and restored after the current operation
+  is completed.<P>
+</p>
+<h2>Returns</h2>
+<p>  set_response() returns the old value of nl_response so that it
+  can be saved and restored.
+</p>
+<h2>See Also</h2>
+<p>  <a href="nl_error.html">nl_error</a>().</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/nlresp.c">/usr/local/src/nortlib/nlresp.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

@@ -1,0 +1,7 @@
+# interact script for abc simulation
+memo -vy -e abc.log &
+namewait memo
+abccol -c0 -vy &
+namewait -g dg
+bfr -c0 -vy &
+abcsrvr -c0 -vy &

@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>CMDGEN Commandline Interface Generator</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="Harvard University Anderson Group Website">
+<meta name="keywords" content="ARP huarp data acquisition qnx atmosphere chemistry Anderson Harvard">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img name="daqlogo" src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map" border="0">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10, 11, 91, 35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91, 6, 246, 43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30, 47, 273, 79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<H1>CMDGEN Commandline Interface Generator</H1>
+<H2>Contents</H2>
+<PRE>    <A HREF="#P0.0">0.0</A>: Invocation
+    <A HREF="#PA.0">A.0</A>: Syntax
+      <A HREF="#PA.1">A.1</A>: Grammar
+      <A HREF="#PA.2">A.2</A>: Lexical Syntax
+</PRE>
+<H2><a id="P0.0">0.0</A>: Invocation</H2>
+<PRE>
+    cmdgen [options] [filename]
+           -q           Print this message
+           -o filename  Write output to this file
+           -v           General verbosity flag
+           -V           Include verbose information
+           -d filename  Write data structures to this file
+           -k           keep output file on error
+           -w           treat warnings as errors
+</PRE>
+    
+<H2><a id="PA.0">A.0</A>: Syntax</H2>
+
+Following is a list of rules for interpreting the
+<A HREF="#PA.1">CMDGEN Input Grammar</A> specification followed
+by the CMDGEN Input Grammar
+specification itself. Don't confuse these rules with the rules
+for interpreting a CMDGEN program, which is what the grammar
+defines. Since we're using a grammar to define a program which
+is used to define other grammars, there is a heavy dose of
+self-referentiation. If you lose your bearings, get outside
+and walk fast enough to double your heartrate for at least 20
+minutes.<P>
+
+<UL>
+<LI>Items typed in <TT>TYPEWRITER</TT> font (uppercase) represent
+keywords which would be entered explicitly in a CMDGEN program.
+
+<LI>An item typed in lowercase is a non-terminal. The grammar
+recursively defines how non-terminals can be expanded. For
+example, the non-terminal <A HREF="#rules">rules</A> can be
+expanded by zero or more <A HREF="#rule">rule</A> non-terminals,
+and so on. Each line beginning with an indented colon (:) marks
+a possible expansion of the non-terminal being defined. Within
+an one of these expansions, each reference to a non-terminal is
+a link to that non-terminal's definition.
+
+<LI>Items bracketed by angle brackets (e.g.
+&lt;INTEGER&gt;) are lexical tokens. Their syntax should be implicit in
+their names.
+
+<LI>I have used brackets ([]) to signify optional items. I use the
+notation [ item ... ] to indicate that an optional item may be
+repreated indefinitely. The colon (:)
+at the beginning of a line identifies a non-terminal expansion
+(right-hand-side).
+Literal punctuation is enclosed in single quotes ('*').
+</UL>
+
+<H2><a id="PA.1">A.1</A>: CMDGEN Input Grammar</H2>
+<PRE>  <a id="rules">rules</A>
+    : [ <A HREF="#rule">rule</A> ... ]
+
+  <a id="rule">rule</A>
+    : '%INTERFACE' <a href="#INTERFACE-SPEC">&lt;INTERFACE-SPEC&gt;</a>
+    : <A HREF="#nt-spec">nt-spec</A> [ ':' <A HREF="#sub-items">sub-items</A> ... ] ';'
+
+  <a id="nt-spec">nt-spec</A>
+    : <A HREF="#NON-TERMINAL">&lt;NON-TERMINAL&gt;</A> [ <A HREF="#TYPE-SPEC">&lt;TYPE-SPEC&gt;</A> ]
+
+  <a id="sub-items">sub-items</A>
+    : [ <A HREF="#sub-item">sub-item</A> ... ]
+
+  <a id="sub-item">sub-item</A>
+    : <A HREF="#WORD">&lt;WORD&gt;</A>
+    : '*'
+    : <A HREF="#NON-TERMINAL">&lt;NON-TERMINAL&gt;</A>
+    : <A HREF="#VAR-SPEC">&lt;VAR-SPEC&gt;</A> [ <A HREF="#PROMPT">&lt;PROMPT&gt;</A> ]
+    : <A HREF="#C-CODE">&lt;C-CODE&gt;</A>
+</PRE>
+
+<H2><a id="PA.2">A.2</A>: CMDGEN Lexical Syntax</H2>
+
+<DL>
+<DT><a id="C-CODE">C-CODE</A></dt>
+<DD>C code is enclosed in curly braces ({}). The input routine is
+not terribly clever, so don't try to embed unbalanced braces inside
+strings or comments! Within the C code, an assignment to $0
+defines the value assigned to the "left-hand-side" non-terminal.
+$1 is the value returned by the variable or non-terminal in the
+first word position of the right-hand-side expression. $2 is
+the value returned for the second word position, etc.</dd>
+
+<DT><a id="NON-TERMINAL">NON-TERMINAL</A></dt>
+<DD>a non-terminal begins with one or two ampersands ($amp;) followed
+by a letter and any number of letters, numbers or underscore characters.
+Examples are "&amp;commands", "&amp;oh_cmd" and "&amp;&amp;local".
+In client/server architectures, non-terminals beginning with two
+ampersands define commands which are to be processed locally rather
+than being sent to the server for execution.</dd>
+
+<dt><a id="INTERFACE-SPEC">INTERFACE-SPEC</a></dt>
+<dd>An interface specification consists of an interface name
+  enclosed in angle brackets. The interface name may have
+  a qualifying string appended after a colon. Accepted
+  syntaxes include:
+  <dl><dt>&lt;<i>name</i>&gt;</dt>
+     <dd>The server will create a readable interface at
+      /dev/huarp/$Experiment/cmd/<i>name</i>. Clients can open this
+      interface and read commands. Within the cmdgen source, commands
+      can be issued using the syntax:
+      <code><i>name</i>_if.Turf(fmt, args ...)</code> where fmt and args
+      are standard printf-style arguments.</dd>
+     <dt>&lt;<i>name</i><b>:DG/data</b>&gt;</dt>
+     <dd>This syntax is used to send data to telemetry via the Col_send()
+       mechanisms. <i>name</i> must be the name of a variable (usually a
+       structure) defined in the server and also referenced in a TM
+       &ldquo;Receive&rdquo; statement. The data is sent via the syntax:
+       <code><i>name</i>_if.Turf();</code></dd>
+     <dt>&lt;<b>subbus</b>&gt; or &lt;<b>subbusd</b>&gt;</dt>
+     <dd>Simply ensures that the subbusd daemon receives a quit
+       command on shutdown. This is useful if subbusd is
+       started as part of the instrument startup script, but not
+       if it is started as part of the system boot scripts.</dd>
+     <dt>&lt;<i>name</i><b>:</b><i>path</i>&gt;</dt>
+     <dd>This syntax is used when the client has its own writable
+       command interface. As with the first syntax above, commands
+       are issued via the syntax: 
+       <code><i>name</i>_if.Turf(fmt, args ...)</code> and the
+       resulting command is written to the specified <i>path</i>.
+       If <i>path</i> does not start with a '/', it is prefixed
+       with <code>/dev/huarp/$Experiment/</code>.</dd>
+  </dl>
+</dd>
+
+<DT><a id="TYPE-SPEC">TYPE-SPEC</A></dt>
+<DD>A type specification is a C data type enclosed in angle brackets
+which defines the type represented by the non-terminal. Examples are
+"&lt;unsigned short&gt;" and "&lt;struct foo *&gt;".</dd>
+
+<DT><a id="PROMPT">PROMPT</A></dt>
+<DD>A prompt is a string enclosed in parentheses which is displayed
+by interactive clients when the previously specified variable
+is being input.</dd>
+
+<DT><a id="WORD">WORD</A></dt>
+<DD>A word is simply any non-whitespace text which doesn't begin with
+a left-brace ({) or a percent sign (%). Words are treated as literal
+command text which must match the input.</dd>
+
+<DT><a id="VAR-SPEC">VAR-SPEC</A></dt>
+<DD>Variables are specified using the following % escapes:
+<PRE>      escape  type                Default Prompt
+      ---------------------------------------------------------------------
+        %d    short  Enter Integer (Decimal: 123, Hex: 0x123F, Octal: 0123)
+        %ld   long   Enter Integer (Decimal: 123, Hex: 0x123F, Octal: 0123)
+        %x    short  Enter Hexadecimal Number
+        %lx   long   Enter Hexadecimal Number
+        %o    short  Enter Octal Number
+        %lo   long   Enter Octal Number
+        %f    float  Enter Floating Point Number
+        %lf   double Enter Floating Point Number
+        %w    char * Enter Word Terminated by &lt;space&gt;
+        %s    char * Enter Word Terminated by &lt;CR&gt;
+</PRE></dd>
+<DT>Arbitrary C Code</dt>
+<DD>A line beginning with "%{" marks the beginning of a segment of
+arbitrary C code which is to be passed through to the output file.
+The segment is terminated by a line beginning with "%}"</dd>
+</DL>
+<HR>
+<p>Return to <A HREF="index.html">Manuals Guide</A></p>
+<hr noshade>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+  <td>last updated: Wed Nov 30 14:00:43 2011</td>
+  <td align="right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</A></td>
+</tr>
+<tr>
+<td colspan="2"><font size="-2">
+Copyright 2008 by the President and Fellows of Harvard College
+</font></td>
+</tr>
+</table>
+</body>
+</html>

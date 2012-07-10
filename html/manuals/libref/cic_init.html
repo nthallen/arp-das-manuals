@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>cic_init</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>cic_init</h1>
+<h2>Synopsis</h2>
+<pre>
+    #include "nortlib.h"
+    int cic_init(void);
+    
+</pre>
+<h2>Description</h2>
+<p>cic_init() Locates the Command Interpreter Server (CIS) using
+either the default node information or the information set
+by cic_options -C node. Once located, if ci_version is
+non-empty, the version is queried. cic_init() uses the
+standard <a href="nl_response.html">nl_response</a> codes to determine whether fatalresponse is required.
+</p>
+<h2>Returns</h2>
+<p>Returns zero on success.
+</p>
+<h2>See Also</h2>
+<p>  <a href="subject.html#sub6">Command Server and Client</a> functions.</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/cic.c">/usr/local/src/nortlib/cic.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

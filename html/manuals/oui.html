@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>OUI: Options, Usage and Initializations</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="Harvard University Anderson Group Website">
+<meta name="keywords" content="ARP huarp data acquisition qnx atmosphere chemistry Anderson Harvard">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<H1>OUI: Options, Usage and Initializations</H1>
+<H2>Contents</H2>
+<PRE>    <A HREF="#P0.0">0.0</A>: Invocation
+    <A HREF="#P1.0">1.0</A>: Introducation
+    <A HREF="#P2.0">2.0</A>: Packages
+    <A HREF="#P3.0">3.0</A>: Options
+    <A HREF="#P4.0">4.0</A>: Initializations
+    <A HREF="#P5.0">5.0</A>: Usage
+    <A HREF="#P6.0">6.0</A>: Handling Default Initializations
+    <A HREF="#P7.0">7.0</A>: See Also
+</PRE>
+<H2><a id="P0.0">0.0</A>: Invocation</H2>
+<PRE>
+oui [options] file [file ...]
+    -k Keep incomplete output file on error
+    -o &lt;filename&gt; Specify Output Filename
+    -q Print usage message
+    -u Don't sort the "sort" strings
+    -v Increasing level of verbosity
+    -w Treat warnings as errors
+</PRE>
+
+<H2><a id="P1.0">1.0</A>: Introducation</H2>
+<code>oui</code>
+is a little language for processing Options, Usage and Initializations
+for C programs.<P>
+
+When invoking a program from a shell command line,
+"options" are characters which may be added to the program name,
+possibly with arguments, which request a change in the behaviour of
+the program. For example, the
+<code>-l</code>
+option to the command
+<code>ls</code>
+causes a long-format output.<P>
+
+"Usage" is text which describes the
+options available from the command line as well as other useful
+information about running the program. Under QNX, usage information
+can be read by invoking the
+<code>use</code> utility, (e.g. <code>use ls.</code>)<P>
+
+"Initializations" are C-language commands which must be executed
+before the features of a particular package can be used. This
+includes processing command-line options as well as any other
+startup operations such as clearing the screen or establishing
+a connection with a windowing system.<P>
+
+<code>oui</code>
+reads in definition files for one or more "packages" and produces
+C source code for a function called 
+<code>oui_init_options()</code>
+and usage information compatible with the QNX
+<code>usemsg</code>
+utility.
+
+<code>oui</code>
+is particularly helpful as an adjunct to function libraries. Many
+library "packages" require initialization code to be run and may
+offer standard options to users from the command line.
+
+<H2><a id="P2.0">2.0</A>: Packages</H2>
+
+Each
+<code>oui</code>
+input file defines one or more "packages". The first line of the file
+should be the package definition:
+<PRE>
+        &lt;package&gt; sample
+</PRE>
+This statement defines the name of the current package to be "sample".
+<code>oui</code>
+guarantees that each file is read only once and that each package is
+defined only once. If an attempt is made to read a file more than once,
+the subsequent attempts are simply ignored. If a package statement is
+encountered for a package which is already defined, all of the statements
+in the new definition are ignored. (This mechanism can be used for
+overriding default definitions.)<P>
+
+It is often the case that one package is only useful in combination
+with another package or packages. This can be indicated by way of the
+"include" statement:
+<PRE>
+        &lt;include&gt; msg
+</PRE>
+
+This statement indicates that the current package requires the "msg"
+package. As it happens, there is a package named msg in the ARP oui
+library which defines the options, usage and initializations for
+programs accessing the
+<code>msg()</code>
+function. Any number of packages may be listed on one include statement.<P>
+
+When combining multiple packages, it is often the case that the
+initializations for one package must come before or after the 
+initializations for another package. This type of dependency can be 
+expressed through the
+<code>&lt;preceed&gt;</code> and <code>&lt;follow&gt;</code> statements.
+
+<PRE>
+        &lt;follow&gt; msg msghdr dg
+</PRE>
+
+This statement requests that the initializations for the current package be 
+sequenced after any initializations for the msg, msghdr and dg packages. 
+The preceed and follow statements do not cause the specified packages to be 
+included. They simply specify the ordering if they are included by some 
+other mechanism.
+
+<H2><a id="P3.0">3.0</A>: Options</H2>
+<code>oui</code>
+supports the POSIX-style command-line options as accepted by the
+<code>getopt()</code>
+function. This style of options consists of single-letter options which are 
+preceeded on the command line by a hyphen (e.g. ls -l). An option letter
+may take an argument (e.g. sin -n 1). Multiple options may be combined by 
+concatenation (e.g. ls -lt).<P>
+
+If your package is going to support one or more command-line options,
+you must specify which option letters it will handle in an
+<code>&lt;opts&gt;</code> statement:
+
+<PRE>
+        &lt;opts&gt; "lt:q"
+</PRE>
+
+This statement indicates that the program will accept option letters l, t 
+and q, and that the t option requires an argument. The syntax of this 
+statement is important. There should be no spaces or tabs after the right 
+angle bracket or between or after the option letters.<P>
+
+When packages are combined, the options required by each package are 
+checked against the options for every other package to guarantee that there 
+are no conflicts. In certain special cases, two related packages may wish 
+to "share" an option letter. This can be accomplished by creating a third 
+package which they both include. This is the case with the msg package and 
+the client package which share the -h option. If they each specified h as 
+an option, oui would complain that there was a conflict.<P>
+
+Specifying the option letters only means that the application will quietly 
+accept those options at runtime. We have not as yet told oui what to do 
+when those options are specified.
+
+<H2><a id="P4.0">4.0</A>: Initializations</H2>
+
+The
+<code>&lt;init&gt;</code>
+statement specifies code to be executed during initialization. This code 
+does not necessarily have anything to do with options:
+<PRE>
+        &lt;init&gt; printf("Starting Up...");
+</PRE>
+
+Within the ARP libraries, we use the convention of naming functions which 
+handle command-line options using the suffix "_init_options()". The DG 
+package contains the lines:
+<PRE>
+        &lt;init&gt;
+          DG_init_options(argc, argv);
+</PRE>
+
+(You should recognize <code>argc</code> and <code>argv</code>
+as the standard C method of accessing the command line in the main 
+program.) Your package may include any number of lines after the
+<code>&lt;init&gt;</code> statement.<P>
+
+If your initialization references a function or data object, that object 
+should most likely be defined prior to its invocation. This is usually done 
+in C via the <code>#include</code>
+statement. In oui, this is replaced with the
+<code>&lt;include&gt;</code> statement:<P>
+
+<PRE>
+        &lt;include&gt; "dg.h"
+        &lt;include&gt; &lt;stdlib.h&gt;
+</PRE>
+
+Note that this is the same keyword which is used for including
+additional oui packages. The difference is that C header filenames
+are enclosed in quotes or angle brackets.<P>
+
+You should include any header files required by your initializations 
+without regard to whether other packages might also be including those 
+headers. oui will guarantee that only one
+<code>#include</code>
+statement will be generated for each required header.<P>
+
+Sometimes you will need to make global or static definitions within the C 
+file which is generated by oui. The
+<code>&lt;defs&gt;</code>
+keyword is used for this purpose. Each line following the
+<code>&lt;defs&gt;</code>
+command is copied into the output file outside of the initialization 
+function:
+<PRE>
+        &lt;defs&gt;
+          int file_count;
+          #define MAX_FILES 5
+</PRE>
+
+In other cases, a local variable is required within the initialization 
+function for holding intermediate values or default initializations. This 
+is handled by the
+<code>&lt;vars&gt;</code>
+command. Each line following this command is placed in the output 
+immediately after the declaration of the initialization function prior to 
+any of the
+<code>&lt;init&gt;</code>
+statements. I will describe later how these variables are used to 
+provide default initialization parameters.<P>
+
+Often you may find you want to add a single option to an existing program, 
+for example passing a calibration constant to a data extraction program.
+Ordinarily, processing any options requires generation of a function which 
+loops while calling
+<code>getopt().</code>
+This is somewhat tedious when only a single option is required. The
+<code>&lt;switch&gt;</code>
+and
+<code>&lt;arg&gt;</code>
+commands will generate this loop for you automatically. Lines following the
+<code>&lt;switch&gt;</code>
+command are placed inside a switch statement in a position suitable for
+<code>case</code>
+statements. For example, the commands:
+<PRE>
+        &lt;switch&gt;
+          case 'l':
+          limit = atoi(optarg);
+          break;
+</PRE>
+
+will process a -l option which takes an integer argument. When an argument 
+is required (as specified by a ':' following the option letter in the
+<code>&lt;opts&gt;</code> statement), the <code>&lt;switch&gt;</code>
+code can reference the argument string via the global variable
+<code>optarg</code> as described in the <code>getopt()</code> documentation.
+
+<P><B>Warning:</B> As currently implemented, the
+&lt;switch&gt; command does not respect the &lt;follow&gt; and
+&lt;preceed&gt; directives. A single loop is generated and is
+placed before all the other initializations.
+<B>However</B> it can still be useful in these cases:
+go ahead and use &lt;switch&gt;, then use the generated C code to
+create your own init_options() function. You can put the new
+init_options() function back into the .oui file under
+&lt;defs&gt;, remove the &lt;switch&gt; and replace it with
+an &lt;init&gt; referencing the new function.
+
+<P>The <code>&lt;args&gt;</code>
+command will place code in a loop which processes any arguments remaining
+on the command line after the options are handled. Again, the
+<code>optarg</code> variable is used to reference each argument in turn:
+<PRE>
+        &lt;args&gt;
+          process(optarg);
+</PRE>
+
+<P>Note that the same caveats apply to &lt;args&gt; as apply to
+&lt;switch&gt;. It is really only useful in very simple cases.
+
+<H2><a id="P5.0">5.0</A>: Usage</H2>
+
+There are three commands which govern the generation of usage
+messages. The <code>&lt;synopsis&gt;</code>
+command may be used to override the default command-line synopsis,
+<code>&lt;sort&gt;</code>
+may be used to give one-line descriptions of the options supported
+by this package, and <code>&lt;unsort&gt;</code>
+may be used to supply more general usage information.<P>
+
+<code>&lt;synopsis&gt;</code>
+accepts exactly one line of text which becomes the first line of
+the programs usage message. There may be only one
+<code>&lt;synopsis&gt;</code>
+statement among all the packages referenced, since there can be
+only one synopsis. The default synopsis is:
+<PRE>
+        %C [options]
+</PRE>
+
+and is often sufficient if coupled with good descriptions of the
+options.<P>
+
+Usage for the options is provided with the <code>&lt;sort&gt;</code>
+command:
+<PRE>
+        &lt;sort&gt;
+          -l &lt;limit&gt; Define a new upper limit
+          -c Clear the server's error count
+</PRE>
+
+Each option line should begin with a tab character, which will line
+up the resulting output with the synopsis' "[options]". As the command
+implies, all the &lt;sort&gt; lines are sorted by option letter before
+being output. This behaviour can be disabled by specifying -u on the
+oui command line.<P>
+
+More general usage can be provided with the
+<code>&lt;unsort&gt;</code>
+command. This text will not be rearranged in the final output,
+so it is possible to provide paragraphs of information.<P>
+
+Oui always ignores blank lines and lines with only whitespace in the
+input, since whitespace often helps to make the input file readable.
+This can present a problem if you want a blank line to appear in the
+output. This is most likely only in the
+<code>&lt;unsort&gt;</code>
+text, but might arise elsewhere also. The
+<code>&lt;blank&gt;</code>
+command will introduce a blank line into the output of the appropriate
+section.<P>
+
+Finally, comments may be introduced to the input file by way of the
+<code>&lt;comment&gt;</code>
+command. All lines following this command up to the next keyword
+are treated as comments and ignored.<P>
+
+<H2><a id="P6.0">6.0</A>: Handling Default Initializations</H2>
+
+Some packages require more information during initialization than
+arrives with the command line. <code>msg_init_options() ,</code>
+for example, requires a default message header which may be overridden
+by a command-line option. Often the package creator can predict a
+reasonable default behaviour, but a particular application may wish
+to provide a different default behaviour. For <code>msg ,</code>
+a default header of "hdr" is OK in the general case, but collection
+programs should use a default of "col", soldrvs should use "sol"
+and so on.<P>
+
+I have come up with a mechanism to provide this sort of flexibility.
+It works like this:<P>
+
+1) The package in question defines a local variable
+to hold the initialization parameter. In our example, the package is
+<code>msghdr</code>
+and the initialization parameter is the message header:
+<PRE>
+        &lt;package&gt; msghdr
+        ...
+        &lt;var&gt;
+          char *msg_hdr;
+</PRE>
+
+2) A second package is defined, usually in the same file as the
+first package, which provides the default initialization:
+<PRE>
+        &lt;package&gt; msghdr_init
+        &lt;init&gt;
+          msg_hdr = "hdr";
+</PRE>
+
+3) Note that the parameter initialization must preceed the use of
+that parameter in the final output. Hence a statement
+<PRE>
+        &lt;follow&gt; msghdr_init
+</PRE>
+must be placed in the package which uses the parameter.<P>
+
+4) An application (or another library package) wishing to override
+the initialization simply redefines the <code>msghdr_init</code>
+package, providing a different initialization. The first package
+by that name which is read by oui is the only one which is
+used, so controlling the order in which the packages is read
+controls which initialization takes effect.<P>
+
+This approach has proven effective in handling a wide range
+of message header defaults. The hooks have not been fully
+realized for other packages requiring additional parameters,
+such as the command control package, but I believe the same
+approach can be made to work there.<P>
+
+<H2><a id="P7.0">7.0</A>: See Also</H2>
+
+For more information, refer to the <code>getopt()</code> function
+in the "Watcom C Library Reference". There is also a compatible
+getopts function available in the shell (<code>/bin/sh</code>), which
+is documented under "sh" in the "QNX Utilities Reference-N to Z"<P>
+
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Wed Nov 21 15:21:10 2007</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2007 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

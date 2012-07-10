@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>cic_transmit</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>cic_transmit</h1>
+<h2>Synopsis</h2>
+<pre>
+    
+    #include "nortlib.h"
+    void cic_transmit(char *buf, int n_chars, int transmit);
+    
+</pre>
+<h2>Description</h2>
+<p>   cic_transmit() is called by keyboard command clients to
+   transmit them as required to the command server
+   using the nortlib routine <a href="ci_sendcmd.html">ci_sendcmd</a>(). Commands are only   actually transmitted if the transmit argument is non-zero.
+   Since the client and server share source code, it is easy
+   for cmdgen to determine whether a particular command will
+   result in an action at the far end.<P>
+</p>
+<p>   cic_transmit also keeps track of the command parser states,
+   recording the commands required to get to a particular
+   state. For example, in the HOX command configuration,
+   entering "OH\r" will cause the parser to change to a new
+   state (submemu) which expects OH commands. This does
+   not require transmission, but it does need to be recorded
+   because of the new state. Subsequent commands will be
+   transmitted prefixed by the "OH\r" until a "\r" is
+   entered, returning the parser to the base state.<P>
+</p>
+<p>   The command in buf is not ASCIIZ. Spaces may be represented
+   by NULs and the terminating newline should be universally
+   represented by a NUL. These must be translated back to
+   their original representation before actual transmission.<P>
+</p>
+<p>   This is an internal function and should not be called
+   casually. <a href="ci_sendcmd.html">ci_sendcmd</a>() is a better choice for sending   commands.<P>
+</p>
+<h2>Returns</h2>
+<p>  Nothing
+</p>
+<h2>See Also</h2>
+<p>  <a href="ci_sendcmd.html">ci_sendcmd</a>(), <a href="subject.html#sub6">Command Server and Client</a> Functions.</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/cictrans.c">/usr/local/src/nortlib/cictrans.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

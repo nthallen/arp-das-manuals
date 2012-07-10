@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>RTG Manual</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+
+<H1>RTG: Real Time Graphing Utility</H1>
+
+<H2>Synopsis</H2>
+<Pre>
+  rtg [ -f filename ]
+       -f  Read in the specified configuration file.
+</Pre>
+
+<H2>FUNCTION</H2>
+
+rtg provides a graphing solution for the <A HREF="../index.html">ARP
+Data Acquisition Environment</A>.
+Running under QNX Windows, rtg can produce real time trend graphs for any
+data collected from an instrument, including values synthesized from
+multiple channels and data extracted into SNAFU spreadsheets.
+
+<H2>Where to get rtg</H2>
+
+For starters, rtg requires QNX Windows, which is a windowing environment
+which runs under the QNX Operating System, the platform of choice for ARP
+Data Acquisition. If your node isn't configured for QNX Windows, ask your
+system adminstrator(s) to configure it for you and show you the basics of
+getting in and out of windows.
+
+<P>Once your node is configured, you can obtain the latest
+release of rtg by running <A HREF="osupdate.html">osupdate</A>. (If
+your node is configured to run windows off of the server, you
+will always have the latest release!)
+
+<P>If your system adminstrators have done their job, you should be able to
+bring up rtg using the Programs menu item.
+
+<H2>Basics</H2>
+
+By default, rtg comes up with a blank window titled "RTG1". rtg windows
+consist of a "Frame" surrounding the "Pane" where the graphs will appear.
+If you press the menu button while the cursor is in the frame, you will
+see the standard "Open Look" window menu. You can use this menu to
+manipulate the windows themselves as well as to quit rtg altogether. If
+you press the menu button while the cursor is in the pane, you will see
+the basic menu for rtg. This is the menu you will use to create and modify
+your graphs.
+
+<P>The basic objects of rtg are windows, channels, axes and graphs. As a
+rule, you can create, delete or edit the properties of any of these
+objects. If you bring up the pane menu (press "menu" with the cursor in
+the pane, remember?) you will see items for Graph, Channel and Window.
+(For now, you access the axes through the graph properties.) Each of these
+items has a submenu containing Properties, Create, amd Delete. Some of the
+selections will be dim, meaning you cannot select them, usually for
+obvious reasons; you can't delete a graph if there are no graphs to
+delete, for example.
+
+<H2>Windows</H2>
+
+<P>Select "Window Create" from the pane menu. Another window will appear
+titled "RTG2". If you select "Window Delete", the window will disappear,
+along with any graphs defined in it. If you delete the last window, rtg
+will terminate. You can reposition a window on the screen by pressing the
+select button anywhere on the frame and dragging the window to the desired
+location. You can change the size of a window by pressing select on any of
+the corners of the frame and dragging the corner until the window is the
+desired size. It is possible you may want to make some windows quite small
+in order to fit more information onto a screen.
+
+<P>You can modify other properties of a window by selecting "Window
+Properties..." from the pane menu. This brings up another menu asking you
+which window's properties you wish to edit, followed by a dialog window
+displaying the selected window's properties. Using this dialog, you can
+change the title of the window, specify that the title not be displayed or
+that the window should always be kept at the "front" of the display, on
+top of any other windows. When you have specified the properties you want,
+select the "Apply" button, and the changes will take effect. If you decide
+not to make any changes, you can select "Reset".
+
+<H2>Channels</H2>
+
+<P>Before you can create a graph, you must define a "channel". A channel is
+the basic unit of data that rtg recognizes. Each channel is a sequence of
+data pairs. For real time data, this is usually a data channel paired with
+the time the data was collected. For SNAFU spreadsheets, this is a column
+of data paired with the data in column 0.
+
+<P>To create a channel from a spreadsheet, select "Channel Create
+Spreadsheet" from the pane menu. This brings up a file menu from which you
+can select an appropriate spreadsheet. If you don't have one handy, There
+is a sample in the rtg distribution. Select the "Path" button and enter
+/windows/apps/rtg and press "Enter". You should now see the file scan.sps
+in the menu. Select that file and then select "Open" and you will have
+succeeded in defining five channels, one for each of columns 1 through 5
+in scan.sps.
+
+<P>Channels for realtime data are defined by the extraction
+programs which send the data to rtg. These are usually generated
+with the <A HREF="tmg.html">TMG</A> preprocessor. When the extraction
+program is running, all the extracted channels will be defined
+automatically.
+
+<P>You can manipulate a channel's properties just like a window's properties
+via the "Channel Properties..." menu item. At the moment, a channel's
+properties consist of the name of the units for the channel's X and Y
+components. The units are important for determining whether graphs should
+share axes or not. By default, two graphs will share an axis if they have
+the same units. Also by default, most channels are created with their
+units defined to be the same as the name of the channel, so most channels
+therefore do not share units with other channels. Hence, if you want two
+channels to be plotted on the same axis, you will have to edit their
+properties so they have the same units.
+
+<H2>Graphs</H2>
+
+<P>Now that you have some channels, you can create some graphs. Select "Graph
+Create" from the pane menu, then select the channel you wish to graph.
+With any luck, you will see a graph of the data in question. Now create
+another graph. You will see that the graphs "stack up" inside the window.
+This is the default behaviour, but it is by no means the only option. By
+default, the axes are scaled to include all the data in the channel, but
+this can also be changed by editing the graph's properties. That's right,
+select "Graph Properties..." from the pane menu. To adjust the options of
+a graph's axes, select "X Axis" or "Y Axis" from the graph properties
+dialog.
+
+<P>From the graph properties dialog, you can change the graph's name, the
+line color and thickness, the symbol and the symbol's color. The axis
+properties present numerous options pertaining to the axes, include the
+name, units, min and max limits, auto scaling, axis positioning and
+triggering modes.
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Thu Jan 2 10:56:33 2003</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2003 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

@@ -1,0 +1,110 @@
+#! /bin/sh
+#__USAGE
+#Starts GSE Operations: Display, Command, Algorithm
+#%C	[options] [algo_exec ...]
+#	-c	no command line
+#	-d	no display
+#	-b <batchfile>
+
+cfile=Experiment.config
+if [ ! -f "$cfile" ]; then
+  echo doit: missing $cfile >&2
+  exit 1
+fi
+unset Experiment FlightNode
+. $cfile
+
+if [ -z "$Experiment" ]; then
+  echo doit: Experiment undefined in $cfile >&2
+  exit 1
+fi
+export Experiment
+
+#----------------------------------------------------------------
+# Start up flight.sh if FlightNode is explicit in Experiment.config
+#----------------------------------------------------------------
+[ -n "FlightNode" ] &&
+  on -f $FlightNode -t //$FlightNode/dev/con /usr/local/bin/flight.sh wait
+
+typeset cmding disping batch algoing
+cmding=yes
+disping=yes
+batch=interact
+algoing=no
+
+while getopts b:dc opt $*; do
+   case $opt in
+     d) disping=no;;
+     c) cmding=no;;
+     b) batch=$OPTARG;;
+     \?) echo; exec use $0;;
+   esac
+done
+
+[ $OPTIND -le $# ] && algoing=yes
+
+echo Waiting for pick_file
+EXP_NODE=`pick_file -n $batch`
+if [ -z "$EXP_NODE" ]; then exit 1; fi
+
+echo Waiting for Data Buffer
+namewait -n$EXP_NODE db
+
+if [ -z "$MONOCHROME" ]; then
+   attrs=02,06,04,05
+   cfgfile=""
+else
+   cfgfile=""
+fi
+
+typeset -i row=24
+[ "$cmding" = "yes" ] && let row=22
+
+out=`tty`,$row,0,80,$attrs
+
+amp="&"
+backgrnd=""
+[ "$cmding" = "no" -a "$algoing" = "no" ] && amp=""
+
+if [ "$disping" = "yes" ]; then
+  scrpaint -v -o $out -c$EXP_NODE abc $cfgfile
+  eval abcdisp -v -o $out -c$EXP_NODE -b$EXP_NODE -i1 $amp
+  [ "$amp" = "&" ] && backgrnd=$!
+fi
+
+let row=row-2
+let A=OPTIND
+
+[ $A -le $# -o "$cmding" = "yes" ] && namewait -n$EXP_NODE cmdinterp
+
+while [ $A -le $# ]; do
+  [ "$cmding" = "no" -a "$A" = "$#" ] && amp=""
+  eval $"$A" -v -o $out -r$row -C$EXP_NODE -c$EXP_NODE -l -b$EXP_NODE -i1 -m $amp
+  [ "$amp" = "&" ] && backgrnd=$!
+  let A=A+1
+  let row=row-2
+done
+
+[ "$cmding" = "yes" ] && abcclt -v -C$EXP_NODE -c$EXP_NODE -o $out
+
+#----------------------------------------------------------------
+# We might have exited from abcclt via an "Exit", in which case
+# disp and algo would not shut down. Let's wait a bit, then
+# ask our local apps to shutdown gracefully.
+#----------------------------------------------------------------
+[ -n "$backgrnd" ] && namewait -t2 -p $backgrnd zzzzxxxx >/dev/null 2>&1
+[ "$disping" = "yes" ] && slay -f -sINT abcdisp
+while [ $OPTIND -le $# ]; do
+  eval slay -f -sINT $"$OPTIND"
+  let OPTIND=OPTIND+1
+done
+
+if [ -n "FlightNode" ]; then
+  #----------------------------------------------------------------
+  # This is a final cleanup for custom-spawned flight.sh
+  #----------------------------------------------------------------
+  pick_file /dev/null
+else
+  sleep 2
+fi
+echo;echo;echo

@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>ARP QNX System/Network Management Guide</TITLE>
+</HEAD>
+<BODY>
+<H1>ARP QNX System/Network Management Guide</H1>
+
+<H2>Preparing a Field Server</H2>
+
+The following lists some of the steps required to make a normal
+QNX node into a field server (node 1).
+
+<PRE>
+Manually remove soft-links (write a perl script!)
+netinstall with all options set
+remove soft-links to /usr/spool/mail and /usr/spool/queue
+mkdir /usr/spool/mail  u+rwx,g+rwxs,o+rx  root:mail
+mkdir /usr/spool/queue ...
+ (These two should be handled by osupdate now...)
+
+Manually place all the key configurations:
+  netmap
+  osupdate(s)
+  update_net
+  lpsrvr.1
+  TCP/IP:
+    hosts.equiv
+    sendmail.cf
+    hosts
+    aliases
+    resolv.conf
+    services
+    tcpip.init
+
+Build a new boot image for node 1
+  save old one in .altboot as usual
+Modify sysinit.n for sysinit.1
+
+</PRE>
+
+(c)1995 <A HREF="mailto:allen@huarp.harvard.edu">Norton T. Allen</A>
+</BODY>
+</HTML>

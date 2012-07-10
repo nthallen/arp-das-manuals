@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>Average_Value</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>Average_Value</h1>
+<h2>Synopsis</h2>
+<pre>
+    #include "average.h"
+    
+    double Average_Value( Average_Data *data );
+    void Average_Point( Average_Data *data, double pt );
+    
+</pre>
+<h2>Description</h2>
+<p>Average_Point() and Average_Value() are used together to simplify
+realtime averaging. The Average_Data data structure holds the
+current sum and number of data points. Average_Value() resets the
+count and sum.
+</p>
+<h2>Returns</h2>
+<p>Average_Value() returns the average of points previously passed
+to Average_Point().
+</p>
+<h2>See Also</h2>
+<p><a href="subject.html#sub1">Average Functions</a>.</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/average.c">/usr/local/src/nortlib/average.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

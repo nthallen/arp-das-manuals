@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>nlcg_receive</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>nlcg_receive</h1>
+<h2>Synopsis</h2>
+<pre>
+    #include "nl_cons.h"
+    
+    void nlcg_receive(pid_t who);
+    
+</pre>
+<h2>Description</h2>
+</p>
+<p>This function is called when <a href="nlcon_getch.html">nlcon_getch</a>() Receives an unrecognizedmessage. The default behaviour is to return DAS_UNKN, but the
+library function may be overridden by a user function of the same
+name.<P>
+</p>
+<p>When Receiving, nlcon_getch() is only interested in the PID of
+the sender, since it is receiving empty proxies. nlcg_receive()
+may extract content from a message by calling Readmsg().<P>
+</p>
+<p>nlcg_receive() is responsible for replying to all messages for
+which it is called.
+</p>
+<h2>See Also</h2>
+<p><a href="nlcon_getch.html">nlcon_getch</a>().<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/cgrecv.c">/usr/local/src/nortlib/cgrecv.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

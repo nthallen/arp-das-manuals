@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>send_dascmd</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>send_dascmd</h1>
+</p>
+<h2>Synopsis</h2>
+<pre>
+    #include "nortlib.h"
+    
+    int send_dascmd(int type, int value, int dg_ok);
+    
+</pre>
+<h2>Description</h2>
+<p>Sends the specified DASCMD to CmdCtrl or the DG. DASCMD types
+are defined in <b>globmsg.h</b>. The dg_ok argument specifies
+whether it is reasonable to send the command to the DG if
+a CmdCtrl cannot be found. This should generally be set to a
+non-zero value if the command is in fact intended for the DG,
+such as DCT_TM or DCT_QUIT.
+</p>
+<h2>Returns</h2>
+<p>send_dascmd() returns 0 on success. Failure to locate CC (or DG)
+is handled according to nl_response rules. Valid error returns
+from CC (or DG) are returned to the calling program.
+</p>
+<h2>See Also</h2>
+<p><a href="DigSelect.html">DigSelect</a>(), <a href="subject.html#sub2">Client/Server</a> functions.</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/senddasc.c">/usr/local/src/nortlib/senddasc.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

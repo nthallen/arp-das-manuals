@@ -1,0 +1,204 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>tmcalgo V2R1: Appendix</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img name="daqlogo" src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map" border="0">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10, 11, 91, 35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91, 6, 246, 43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30, 47, 273, 79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h2>TMCALGO V2R1: Algorithm Compiler</h2>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td><a href="tma_2.html">Chap. 2</a></td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td>App</td>
+</tr></table>
+
+<table><tr><td>
+<h3><a name="PA.0">A.0</a>: Syntax</h3>
+<table class="contents"><tr><td>
+<ul>
+<li><a href="#PA.1">A.1</a>: Grammar</li>
+<li><a href="#PA.2">A.2</a>: Lexical Syntax</li>
+</ul>
+</td></tr></table>
+</td></tr></table>
+
+<p>Following is a list of rules for interpreting the
+<a href="#PA.1">TMCALGO Input Grammar</a> specification followed
+by the TMCALGO Input Grammar
+specification itself. Don't confuse these rules with the rules
+for interpreting a TMCALGO program, which is what the grammar
+defines. Since we're using a grammar to define a program which
+is used to define other grammars, there is a heavy dose of
+self-referentiation. If you lose your bearings, get outside
+and walk fast enough to double your heartrate for at least 20
+minutes.</p>
+
+<ul>
+<li>Items typed in <TT>TYPEWRITER</TT> font (uppercase) represent
+keywords which would be entered explicitly in a TMCALGO
+program.</li>
+
+<li>An item typed in lowercase is a non-terminal. The grammar
+recursively defines how non-terminals can be expanded. For
+example, the non-terminal <a href="#rules">rules</a> can be
+expanded by zero or more <a href="#rule">rule</a> non-terminals,
+and so on. Each line beginning with an indented colon (:) marks
+a possible expansion of the non-terminal being defined. Within
+an one of these expansions, each reference to a non-terminal is
+a link to that non-terminal's definition.</li>
+
+<li>Items bracketed by angle brackets (e.g.
+&lt;INTEGER&gt;) are lexical tokens. Their syntax should be implicit in
+their names.</li>
+
+<li>I have used brackets ([]) to signify optional items. I use the
+notation [ item ... ] to indicate that an optional item may be
+repreated indefinitely. The colon (:)
+at the beginning of a line identifies a non-terminal expansion
+(right-hand-side).
+Literal punctuation is enclosed in single quotes ('*').</li>
+</ul>
+
+<h2><a name="PA.1">A.1</a>: TMCALGO Input Grammar</h2>
+<pre>  <a name="program">program</a>
+    : [ <a href="#prog-item">prog-item</a> ... ]
+  <a name="prog-item">prog-item</a>
+    : <a href="#QUOTED-C-CODE">&lt;QUOTED-C-CODE&gt;</a>
+    : <a href="#untimed-command">untimed-command</a>
+    : STATE <a href="#NAME">&lt;NAME&gt;</a> [ <a href="#file-spec">file-spec</a> ] [ NoLog ] <a href="#state-cmds">state-cmds</a>
+    : PARTITION
+  <a name="file-spec">file-spec</a>
+    : <a href="#QUOTED-STRING">&lt;QUOTED-STRING&gt;</a> [ <a href="#PARENSTAT">&lt;PARENSTAT&gt;</a> ]
+  <a name="state-cmds">state-cmds</a>
+    : '{' <a href="#untimed-commands">untimed-commands</a> <a href="#timed-commands">timed-commands</a> '}'
+  <a name="untimed-commands">untimed-commands</a>
+    : [ <a href="#untimed-command">untimed-command</a> ... ]
+  <a name="timed-commands">timed-commands</a>
+    : [ [ [ '+' ] <a href="#time">time</a> ] <a href="#timed-command">timed-command</a> ... ]
+  <a name="time">time</a>
+    : <a href="#INTEGER">&lt;INTEGER&gt;</a> [ ':' <a href="#INTEGER">&lt;INTEGER&gt;</a> ... ]
+  <a name="untimed-command">untimed-command</a>
+    : <a href="#TMC-STATEMENT">&lt;TMC-STATEMENT&gt;</a>
+    : DEPENDING ON <a href="#PARENSTAT">&lt;PARENSTAT&gt;</a> <a href="#TMC-STATEMENT">&lt;TMC-STATEMENT&gt;</a> 
+  <a name="timed-command">timed-command</a>
+    : <a href="#TEXT-COMMAND">&lt;TEXT-COMMAND&gt;</a>
+    : <a href="#QUOTED-STRING">&lt;QUOTED-STRING&gt;</a> ';'
+    : VALIDATE <a href="#NAME">&lt;NAME&gt;</a> ';'
+    : HOLD UNTIL [ VALID ] <a href="#PARENSTAT">&lt;PARENSTAT&gt;</a> <a href="#timeout">timeout</a>
+    : HOLD [ AND VALIDATE <a href="#NAME">&lt;NAME&gt;</a> ] <a href="#timeout">timeout</a>
+    : RESUME <a href="#NAME">&lt;NAME&gt;</a> ';'
+    : <a href="#untimed-command">untimed-command</a> 
+  <a name="timeout">timeout</a>
+    : ';'
+    : OR <a href="#time">time</a> ';'
+    : OR <a href="#time">time</a> ELSE <a href="#timed-command">timed-command</a>
+</pre>
+
+<h2><a name="PA.2">A.2</a>: TMCALGO Lexical Syntax</h2>
+
+<dl>
+<dt><a name="TEXT-COMMAND">&lt;TEXT-COMMAND&gt;</a></dt>
+<dd>A text command is a written instrument command prefixed by a right
+angle-bracket (&gt;). The syntax must match that of the command
+client/server pair. For example:
+<pre>              &gt; Lamp On
+</pre>
+with the exception that the command text can be prefixed with
+an underscore character to suppress logging:
+<pre>              &gt; _Lamp On
+</pre></dd>
+
+<dt><a name="TMC-STATEMENT">&lt;TMC-STATEMENT&gt;</a></dt>
+<dd>As you might guess, a TMC statement bracketed
+by curly braces ({}). The syntax is not checked until TMC gets it.
+For example:
+<pre>              { msg( 0, &quot;Having Fun, wish you were here!&quot;; }
+</pre><p>
+At the top level, the braces are removed before sending the 
+statement on to TMC, making top-level TMC definitions possible.</p></dd>
+<dt><a name="INTEGER">&lt;INTEGER&gt;</a></dt>
+<dd>An integer consists of one or more digits.</dd>
+<dt><a name="NAME">&lt;NAME&gt;</a></dt>
+<dd>A name is a unique C-style symbol (begins with a letter and
+consists of letters, numbers and/or underscore characters) used
+to identify a state or a TMC variable to be validated.</dd>
+<dt><a name="QUOTED-C-CODE">&lt;QUOTED-C-CODE&gt;</a></dt>
+<dd>C code may be embedded in a TMCALGO program in the same way as in 
+TMC. A line beginning with '%{' marks the beginning of the C code 
+and a line beginning with '%}' marks the end. This code is passed 
+through to the TMC output file complete with the quotation marks, 
+so a double layer of quoting is not required.</dd>
+
+<dt><a name="PARENSTAT">&lt;PARENSTAT&gt;</a></dt>
+
+<dd>An expression or list enclosed in parentheses. TMCALGO does 
+not perform additional syntax checking on the expression within 
+parentheses except to ensure that nested parentheses balance 
+properly.</dd>
+
+<dt><a name="QUOTED-STRING">&lt;QUOTED-STRING&gt;</a></dt>
+
+<dd>A string enclosed in double quotation marks (&quot;&quot;). Used for 
+informational strings and to specify input file names.</dd>
+
+<dt><a name="COMMENT">Comments</a></dt>
+
+<dd>Comments begin with the '#' character and continue to the end
+of the line. You may not append a comment to the end of an
+experiment command. Neither can you embed a comment within a TMC
+statement or <a href="#QUOTED-C-CODE">&lt;QUOTED-C-CODE&gt;</a>,
+although you can usually use C-style comments there.</dd>
+
+</dl>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td><a href="tma_2.html">Chap. 2</a></td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td>App</td>
+</tr></table>
+
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a>.
+Written by
+<a href="mailto:allen@huarp.harvard.edu">Norton T. Allen</a>
+</p>
+
+
+<br>
+<hr noshade color="#000000">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+  <td>last updated: Thu Jan  2 10:51:49 2003</td>
+  <td align="right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</A></td>
+</tr>
+<tr>
+<td colspan="2"><font size="-2">
+Copyright 2002 by the President and Fellows of Harvard College
+</font></td>
+</tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>CltSend</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>CltSend</h1>
+<h2>Synopsis</h2>
+<pre>
+    #include "cltsrvr.h"
+    int CltInit( Server_Def *def );
+    int CltSend( Server_Def *def, void *smsg, void *rmsg, int sbytes, int rbytes );
+    int CltSendmx( Server_Def *def, unsigned sparts, unsigned rparts,
+               struct _mxfer_entry *smsg,
+               struct _mxfer_entry *rmsg );
+    
+</pre>
+<h2>Description</h2>
+<p>  CltInit() and CltSend() provide a general approach to writing
+  Client/Server applications. Based on a configuration structure
+  for a specific server, these functions perform many of the
+  routine tasks involved in maintaining communication between the
+  client and the server. They will locate the server, report
+  errors if the server disappears, and even attempt to reconnect
+  to the server in case it is restarted.<P>
+</p>
+<p>  CltInit() is charged with locating the server (if it has not
+  already been located) without actually sending it any messages.
+  It is not necessary to call CltInit() before calling CltSend(),
+  but some applications will prefer to report problems earlier
+  rather than later.<P>
+</p>
+<p>  CltSend() is a cover for the QNX Send() function. It verifies
+  only that the transaction was successful, but does not attempt
+  to interpret the reply data.<P>
+</p>
+<p>  CltSend() will restart transactions which are interrupted by
+  signals. If you wish to have signals abort a CltSend(), you
+  will need to use sigsetjmp() and siglongjmp().<P>
+</p>
+<p>  CltInit() and CltSend() deal with errors using the minimum 
+  value of <a href="nl_response.html">nl_response</a> and def->response. i.e. a client which   normally dies when the server isn't present can be made to warn 
+  only via set_response(1). Similarly, even if nl_response is set
+  to 3, a particular server may never warrant a fatal error, so
+  def->response may be set to 1 or 2 (or even 0) to allow for
+  non-fatal responses.<P>
+</p>
+<h2>Returns</h2>
+<p>  Both functions return zero on success and -1 otherwise.
+</p>
+<h2>See Also</h2>
+<p>  <a href="subject.html#sub2">Client/Server</a> functions.</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/cltsrvr.c">/usr/local/src/nortlib/cltsrvr.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

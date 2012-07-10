@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>QNX4 osupdate Manual</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<H1>OSUPDATE Manual</H1>
+<H2>Contents</H2>
+<PRE>    <A HREF="#P0.0">0.0</A>: Invocation
+</PRE>
+<H2><a id="P0.0">0.0</A>: Invocation</H2>
+<PRE>    osupdate [options] &lt;server node&gt; &lt;target node&gt;
+             Update destination node from server node
+             Looks for distribution information in //$src/etc/config/osupdate.$src
+             -f &lt;file&gt; Base configuration file name. Actual file will be
+               //$src/etc/config/$file.$src  Default is osupdate.
+             -R Delete target directory trees when a soft-link is specified
+                (Use with caution!)
+             -D Debug mode: don't actually do anything.
+    
+             Codes within the configuration file include:
+               O: OS Installation: OS, TCP/IP, rundos
+               O: OS, TCP/IP User, rundos (separated by config file)
+               U: Upgrade (for temporary inclusion in primary file)
+               Q: Server files (requires 'q' exclusion also)
+               C: C Compiler Executables
+               c: C Compiler Executables Soft-Linked
+               L: Libraries and Include Files
+                  (including /usr/local/include &amp; lib)
+               l: Libraries and Include Files soft-linked
+            (requires the 'l' exclusion also)
+               S: Watcom SQL
+               W: Windows RT
+               w: Windows Soft-Linked
+               K: Windows TK
+               k: Windows tk Soft-Linked
+               T: TCP/IP Server
+               B: /usr/local/bin
+               b: /usr/local/bin soft-linked
+               E: /usr/local/bin32
+               e: /usr/local/bin32 soft-linked
+               M: /usr/GNU/Emacs/emacs-18.55-qnx
+               m: /usr/GNU/Emacs/emacs-18.55-qnx soft-linked
+               F: Free Unix Utilities
+               f: Free Unix Utilities soft-linked
+               H: Documentation directories: man and doc
+               h: Documentation directories soft-linked
+               -: Obsolete files: delete if found
+       Exclusions:
+         n: Norton's System
+         e: Eileen's System
+         q: A Server ('Q' config code)
+         l: A node with the 'l' config code
+         f: A flight computer (not implemented)
+             Flags after files
+               S: File is to be soft-linked to source node file (may be specified)
+               s: File is to be soft-linked to specified target node file
+               H: File is to be hard-linked to specified target node file 
+</PRE>
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Thu Jan  2 10:56:30 2003</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2003 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

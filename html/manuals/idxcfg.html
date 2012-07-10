@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>idx64cfg: Indexer64 Software Configuration Utility</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="Harvard University Anderson Group Website">
+<meta name="keywords" content="ARP huarp data acquisition qnx atmosphere chemistry Anderson Harvard">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+
+<div id="banner">
+<img name="daqlogo" src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map" border="0">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10, 11, 91, 35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91, 6, 246, 43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30, 47, 273, 79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<H1>idx64cfg: Indexer64 Software Configuration Utility</H1>
+<H2>Contents</H2>
+<OL>
+<LI><A HREF="#Invocation">Invocation</A>
+<LI><A HREF="#Introduction">Introduction</A>
+<LI><A HREF="#Description">Description</A>
+<LI><A HREF="#Syntax">Syntax</A>
+<LI><A HREF="#SeeAlso">See Also</A>
+</OL>
+<H2><A NAME=Invocation>Invocation</A></H2>
+<PRE>
+        idx64cfg &lt;inputfile&gt; [&lt;prefix&gt;]
+</PRE>
+<H2><A NAME=Introduction>Introduction</A></H2>
+
+<P>Idx64cfg is a code-generation utility that provides support for
+data acquisition systems using the
+<A HREF="http://www.arp.harvard.edu/eng/elec/idx64/index.html">Indexer64</A> board. Use of the Idx64
+requires specialized code to control the device, and special code
+to collect and display the data associated with it.</P>
+
+<P>Given a single input file, idx64cfg will generate five 
+output files:</P>
+<OL>
+<LI>&lt;root&gt;.tmc
+<UL><LI>.tmc definitions that belong in tmcbase</UL>
+<LI>&lt;root&gt;col.tmc
+<UL><LI>code required by collection</UL>
+<LI>&lt;root&gt;flag.tmc
+<UL><LI>code for useful display of indexer data</UL>
+<LI>&lt;root&gt;drv.cmd
+<UL><LI>definition of indexer drive names for commands</UL>
+<LI>&lt;root&gt;.idx64
+<UL><LI>Initialization string to be referenced from interact</UL>
+</OL>
+
+<P>If the &lt;root&gt; is not specified, the default is
+"idx".</P>
+
+<P>Unlike most of our code generators, idx64cfg has not been
+integrated into appgen, and will probably not be integrated
+anytime soon. The main reasons for this are 1) that the source is
+unlikely to change very often and 2) the most common changes only
+affect the &lt;root&gt;.idx64 file. The "make" utility we are
+using isn't clever enough to figure out that only one of the five
+files has changed, and would instead try to recompile almost
+everything in the directory whenever the input file is
+modified.</P>
+
+<P>Instead, idx64cfg is run manually to generate these source
+files. Idx64cfg will compare the new and old output files 
+and only update the output files if their contents have changed.
+After running idx64cfg, you should make again to determine
+whether anything has changed.</P>
+
+<H2><A NAME=Description>Description</A></H2>
+<dl>
+<dt>Indexer Status <A HREF="#rate">rate</A>
+  <A HREF="#mnemonic">mnemonic</A></dt>
+<dd>Defines the rate and mnemonic for the scan status word. The
+defaults are 4 Hz and "IXStt", but it is recommended that you
+define them explicitly. This word is maintained in software by
+the idx64 software and records the scan and chop status for each
+channel.</dd>
+
+<dt>Channel <A HREF="#integer">integer</A> [ <A HREF="#name">name</A> ] [ <A HREF="#Channel_Def">Channel_Def</A> ... ]</dt>
+<dd>Defines an indexer channel for subsequent definitions. The
+integer is the channel number, counting from 0, based on the
+physical address. For the first board, the channels are 0-5, for
+the second, 6-11, etc. The name specifies how the drive should be
+addressed in commands. Any <A HREF="#Channel_Def">Channel_Def</A>s
+should appear on following lines.</dd>
+
+<dt>Position <A HREF="#rate">rate</A> <A HREF="#mnemonic">mnemonic</A></dt>
+<dd>Defines the rate and mnemonic for the channel's step number.
+If omitted, the step number will not be collected.</dd>
+
+<dt>Status <a href="#rate">rate</a> <a href="#mnemonic">mnemonic</a>
+ [ Diagram <a href="#mnemonic">mnemonic</a> ]
+ [ KillStat <a href="#mnemonic">mnemonic</a> ]</dt>
+<dd>Defines the rate and mnemonic for the channel's drive status
+word, which contains the status lines for the limit switches,
+kill switches, direction, "running", zeroref and cmdenbl. If
+omitted, the status word will not be collected. You may
+optionally specify a mnemonic for a "Diagram" datum which, when
+displayed, provides a simple graphic representation of the motion
+of the channel and the status of the limit switches.</dd>
+
+<dt>Scanstat <A HREF="#mnemonic">mnemonic</A></dt>
+<dd>Defines a mnemonic for the scan and chop data for this
+channel. The data for this is extracted from the indexer status
+word. Scanstat data displays in a text format.</dd>
+
+<dt>Speed <A HREF="#Drive_Speed">Drive_Speed</A></dt>
+<dd>Specifies the default speed for the channel. The speed can be
+modified interactively also.</dd>
+
+<dt>Disable Zeroref</dt>
+<dd>Used when there is no physical zero reference switch. This
+instructs the hardware to use the in limit switch as the zero
+reference.</dd>
+
+<dt>Swap Limits</dt>
+<dd>Exchanges the definition of which physical limit switch is
+&ldquo;in&rdquo; and which is &ldquo;out.&rdquo;</dd>
+
+<dt>Invert Step</dt>
+<dt>Invert Direction</dt>
+<dt>Invert Run</dt>
+<dd>Applies an inversion to the step, direction or enable outputs, respectively. For step, this is usually irrelevant, since every step includes both a rising and falling edge. Inverting direction switches which direction is &ldquo;in&rdquo; and which is &ldquo;out.&rdquo;</dd>
+
+<dt>Invert In Limit</dt>
+<dt>Invert Out Limit</dt>
+<dt>Invert Zero Reference</dt>
+<dt>Invert Kill A</dt>
+<dt>Invert Kill B</dt>
+<dd>Inverts the associated input signal. These bits are only valid in
+the DACS version of the indexer circuit.</dd>
+
+<dt>Scan</dt>
+<dd>Enables scanning for the channel and reserves a bit in the
+indexer status word for the scan status.</dd>
+
+<dt>Chop</dt>
+<dd>Enables chopping for the channel and reserves 2 bits in the
+indexer status word for chopping status.</dd>
+</dl>
+
+<H2><A NAME=Syntax>Syntax</A></H2>
+
+<PRE>
+Program
+  : [ <A HREF="#Definition">Definition</A> ... ]
+<A NAME=Definition>Definition</A>
+  : Indexer Status <A HREF="#rate">rate</A> <A HREF="#mnemonic">mnemonic</A>
+  : Channel <A HREF="#integer">integer</A> [ <A HREF="#name">name</A> ] [ <A HREF="#Channel_Def">Channel_Def</A> ... ]
+<A NAME="Channel_Def">Channel_Def</A>
+  : Position <A HREF="#rate">rate</A> <A HREF="#mnemonic">mnemonic</A>
+  : Status <A HREF="#rate">rate</A> <A HREF="#mnemonic">mnemonic</A> [ Diagram <A HREF="#mnemonic">mnemonic</A> ] [ KillStat <A HREF="#mnemonic">mnemonic</A> ]
+  : Scanstat <A HREF="#mnemonic">mnemonic</A>
+  : Speed <A HREF="#Drive_Speed">Drive_Speed</A>
+  : Disable Zeroref
+  : Swap Limits
+  : Invert Step
+  : Invert Direction
+  : Invert Run
+  : Invert In Limit
+  : Invert Out Limit
+  : Invert Zero Reference
+  : Invert Kill A
+  : Invert Kill B
+  : Scan
+  : Chop
+<A NAME=rate>rate</A>
+  : integer [ / integer ] Hz
+<A NAME=Drive_Speed>Drive_Speed</A>
+  : 53 Hz
+  : 80 Hz
+  : 107 Hz
+  : 160 Hz
+  : 267 Hz
+  : 400 Hz
+  : 533 Hz
+  : 800 Hz
+  : 1067 Hz
+  : 1600 Hz
+  : 2133 Hz
+  : 3200 Hz
+  : 5033 Hz
+  : 8000 Hz
+  : 10667 Hz
+  : 16000 Hz
+</PRE>
+
+
+<H3>Lexical Elements</H3>
+
+<DL>
+<DT><A NAME=integer>integer</A>
+<DD>A decimal integer
+<DT><A NAME=mnemonic>mnemonic</A>
+<DD>A word suitable to be used as a variable name in C and TMC.
+<DT><A NAME=name>name</A>
+<DD>The name of the drive as it should appear in commands. May
+contain spaces.
+</DL>
+
+<H2><A NAME=SeeAlso>See Also</A></H2>
+<P><A HREF="http://www.arp.harvard.edu/eng/elec/idx64/index.html">Indexer64
+Specification</A><BR>
+<A HREF="http://www.arp.harvard.edu/eng/elec/idx64/idx64.html">Indexer64
+Design Documentation</A></P>
+
+<HR>
+Return to <A HREF="index.html">Manuals Guide</A><BR>
+<A HREF="mailto:allen@huarp.harvard.edu">Norton T. Allen</A>
+<br>
+
+<hr noshade>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+  <td>last updated: Fri Jan 14 08:38:45 2011</td>
+  <td align="right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</A></td>
+</tr>
+<tr>
+<td colspan="2"><font size="-2">
+Copyright 2008 by the President and Fellows of Harvard College
+</font></td>
+</tr>
+</table>
+</body>
+</html>

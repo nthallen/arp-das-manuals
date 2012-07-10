@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>Col_reset_proxy</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>Col_reset_proxy</h1>
+<h2>Synopsis</h2>
+<pre>
+    
+    #include "collect.h"
+    int Col_reset_proxy(unsigned char id);
+    
+</pre>
+<h2>Description</h2>
+<p>  Col_reset_proxy() instructs the TM collection program to
+  cease sending to the indicated proxy and detaches the proxy.
+</p>
+<p>  id is the magic number agreed-upon between the process and
+  collection for identifying which proxy is designated.
+</p>
+<h2>Returns</h2>
+<p>  Returns 0 on success. On error, returns -1 unless <a href="nl_response.html">nl_response</a>  indicates a fatal action.
+</p>
+<h2>See Also</h2>
+<p>  <a href="subject.html#sub3">Data Collection</a> functions, <a href="Col_set_proxy.html">Col_set_proxy</a>().</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/colrprx.c">/usr/local/src/nortlib/colrprx.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

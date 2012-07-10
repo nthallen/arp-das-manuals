@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>TMG Manual</title>
+</head>
+<body>
+<center>
+<h1>TMG:<br>A TMC Preprocessor<br>for<br>Interfacing to <a href="rtg.html">RTG</a></h1>
+</center>
+<dl>
+<dt>RTG_REPORT( &lt;name&gt;, X, Y );</dt>
+<dd>Produces initialization for rtg and translates the current 
+statement into the appropriate syntax for rtg_report(). This 
+statement may appear wherever an rtg_report() call could be, 
+possible nested inside other TMC statements.</dd>
+<dt>RTG_REPORT( &lt;name&gt;[ &lt;const&gt; ], X, Y );</dt>
+<dd>Defines an array of channels and an index variable. The index 
+variable can be incremented via the RTG_INCREMENT( &lt;name&gt; )
+command.</dd>
+<dt>RTG_INCREMENT( &lt;name&gt; );</dt>
+<dd>Increments the index associated with specified &lt;name&gt;. 
+&lt;name&gt; must have been referenced as an array, or this 
+instruction will generate a no-op.</dd>
+<dt>RTG_SCAN( &lt;state&gt;, &lt;name&gt;[ &lt;const&gt; ], X, Y);</dt>
+<dd>Generates all TMC commands necessary to display the 
+associated data in scans identified by the specified &lt;
+state&gt; variable. Whenever the &lt;state&gt; is validated, the 
+scan index is incremented. The RTG_SCAN() statement itself is 
+placed inside a TMC statement depending on the specified
+&lt;state&gt;. As such, the entire statement must fall on one 
+line of the source file and should not be nested inside other 
+statements, as is possible with RTG_REPORT().</dd>
+<dt>RTG_TIME_SCAN( &lt;state&gt;, &lt;name&gt;[ &lt;const&gt; ], Y );</dt>
+<dd>This is the same as RTG_SCAN() except that the X coordinate 
+is implicitly time since the &lt;state&gt; was validated. TMG2TMC 
+generates time base initialization automatically.</dd>
+</dl>
+<pre>
+<hr>
+Return to <a href="index.html">Manuals Guide</a>
+(c)1995 <a href="mailto:allen@huarp.harvard.edu">Norton T. Allen</a>
+</pre>
+</body>
+</html>

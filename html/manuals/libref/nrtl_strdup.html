@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>nrtl_strdup</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>nrtl_strdup</h1>
+<h2>Synopsis</h2>
+<pre>
+    #include "nortlib.h"
+    char *nrtl_strdup(const char *s);
+    char *nl_strdup(const char *s);
+    
+</pre>
+<h2>Description</h2>
+<p>  nrtl_strdup() and nl_strdup() both provide the functionality of
+  the semi-standard strdup() function with the exception that
+  if memory allocation fails, it will cause a fatal error.
+  As such, both functions are guaranteed to return a
+  newly-allocated copy of the passed string.
+</p>
+<p>  nrtl_strdup() is the function that is included in the nortlib
+  library. nl_strdup() is implemented as a macro in nortlib.h
+  only if memlib.h has not been included, since the name
+  conflicts with a routine in that library.
+</p>
+<h2>Returns</h2>
+<p>  Returns a newly allocated copy of the argument string.
+  If memory allocation fails, the program will terminate
+  via <a href="nl_error.html">nl_error</a>(3).</p>
+<h2>See Also</h2>
+<p>  <a href="nl_response.html">nl_response</a>, <a href="new_memory.html">new_memory</a>().<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/strdup.c">/usr/local/src/nortlib/strdup.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

@@ -1,0 +1,340 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Graphics Test</title>
+ <script src="raphael.js"></script>
+ <script src="jquery-1.7.1.min.js"></script>
+ <style type="text/css">
+    body { background-color: #CCCCCC; }
+    .MB, .MC, .MD, .ME { display: none }
+    p { width: 480px }
+    #canvas {
+      float: left;
+      margin-right: 15px;
+    }
+    .Note p { width: 250px }
+    .Note { float: left; display: none }
+    #Buttons {
+      clear: left;
+      width: 480px;
+      text-align: center;
+    }
+    #Buttons .ModeBtn {
+      background-color: white;
+    }
+    #Buttons .selected {
+      background-color: #EEEEEE;
+      border: grey inset;
+    }
+    .red { color: red }
+    .blue { color: blue }
+  </style>
+  <script>
+      $(document).ready(function(){
+        var paper = Raphael("canvas", 480, 380);
+        paper.clear();
+        paper.rect(0, 0, 480, 380, 10).attr({fill: "#fff", stroke: "none"});
+        var StA = paper.set();
+        var Sta = paper.set();
+        var StB = paper.set();
+        var Stb = paper.set();
+        var StC = paper.set();
+        var Stc = paper.set();
+        var StD = paper.set();
+        var Std = paper.set();
+        var StE = paper.set();
+        var Ste = paper.set();
+        
+        function rollover(label) {
+          // alert("rollover " + label);
+          $(".Note").hide();
+          $("#"+label).show();
+        }
+        function classify( obj, isa, isb, isc, isd, ise ) {
+          (isa?StA:Sta).push(obj);
+          (isb?StB:Stb).push(obj);
+          (isc?StC:Stc).push(obj);
+          (isd?StD:Std).push(obj);
+          (ise?StE:Ste).push(obj);
+        }
+        function newrect( x, y, dx, dy, name, isa, isb, isc, isd, ise ) {
+          var r = paper.rect( x, y, dx, dy, 2).attr({opacity: 0, fill: "#6666FF", stroke : "#000"});
+          var l = paper.text( x+dx/2, y+dy/2, name ).attr( { "font-weight": "bold", "font-size": 12, opacity: 0 } );
+          classify( r, isa, isb, isc, isd, ise );
+          classify( l, isa, isb, isc, isd, ise );
+          r.mouseover( function() {
+            rollover(name);
+          });
+        }
+        function newarrow( x1, y1, x2, y2, clr, isa, isb, isc, isd, ise ) {
+          var ps = "M" + x1 + "," + y1 + "L" + x2 + "," + y2;
+          var p = paper.path( ps ).attr({ fill: clr, stroke: clr,
+            "arrow-end": "classic-wide-long", "stroke-width": 2, opacity: 0}) ;
+          classify( p, isa, isb, isc, isd, ise );
+        }
+        function selectmode(ismode, notmode, delay) {
+          $(".m" + notmode).hide();
+          $(".M" + ismode).show();
+          $(".Note").hide();
+          switch(ismode) {
+            case 'A':
+              Sta.animate({ opacity: 0 }, delay, "linear");
+              StA.animate({ opacity: 1 }, delay, "linear");
+              break;
+            case 'B':
+              Stb.animate({ opacity: 0 }, delay, "linear");
+              StB.animate({ opacity: 1 }, delay, "linear");
+              break;
+            case 'C':
+              Stc.animate({ opacity: 0 }, delay, "linear");
+              StC.animate({ opacity: 1 }, delay, "linear");
+              break;
+            case 'D':
+              Std.animate({ opacity: 0 }, delay, "linear");
+              StD.animate({ opacity: 1 }, delay, "linear");
+              break;
+            case 'E':
+              Ste.animate({ opacity: 0 }, delay, "linear");
+              StE.animate({ opacity: 1 }, delay, "linear");
+              break;
+            default:
+              break;
+          }
+        }
+        // cx and dx are the command and data delimiter lines
+        var kx = 50, dx = kx+110, cx = dx + 75;
+        var ky = 75, kdx = 70;
+        var blk_dy = 30;
+        var cmdy = ky+2*blk_dy + 20, cmd_dx = 50;
+        newrect( kx, ky, kdx, blk_dy, "Keyboard", 1, 0, 1, 0, 1);
+        newarrow( kx+kdx/2, ky+blk_dy, kx+kdx/2, cmdy, "red", 1, 0, 1, 0, 1 );
+
+        var cmdx = kx+(kdx-cmd_dx)/2;
+        newrect( cmdx, cmdy, cmd_dx, blk_dy, "Cmd", 1, 1, 1, 0, 1);
+        newarrow( cmdx+cmd_dx, cmdy+blk_dy/2, cx+10, cmdy+blk_dy/2, "red", 1,1,1,0,1);
+
+        var coldx = 50;
+        newrect( cx+10, cmdy, coldx, blk_dy, "Col", 1, 1, 0, 0, 0);
+        newrect( cx+10, cmdy, coldx, blk_dy, "Rdr", 0, 0, 1, 1, 0);
+        newrect( cx+10, cmdy, coldx, blk_dy, "Inetin", 0, 0, 0, 0, 1);
+
+        var algow = 50, algox = (dx+cx-algow)/2;
+        newrect( algox, cmdy-1.5*blk_dy, algow, blk_dy, "algo", 1,1,1,0,1);
+        newarrow( algox, cmdy-blk_dy, kx+(kdx+cmd_dx)/2, cmdy, "red", 1,1,0,0,0);
+        
+        var tmx = cx + 10 + coldx + 20+20;
+        newrect( tmx, cmdy, coldx, blk_dy, "TMbfr", 1, 1, 1, 1, 1);
+        newarrow( cx+10+coldx, cmdy+blk_dy/2, tmx, cmdy+blk_dy/2, "blue", 1,1,1,1,1);
+        newarrow( tmx, cmdy, algox+algow, cmdy-blk_dy, "blue", 1,1,1,0,1);
+        
+        var extw = 40, extov = 10;
+        newrect( tmx+coldx/2-1.5*extw+extov, ky, extw, blk_dy, "ext", 1,0,1,1,1);
+        newarrow( tmx+(coldx-extw)/4+extov/2, cmdy, tmx+(coldx-extw)/4+extov/2, ky+blk_dy, "blue", 1,0,1,1,1);
+        newrect( tmx+coldx/2+extw/2-extov, ky, extw, blk_dy, "disp", 1,0,1,0,1);
+        newarrow( tmx+(3*coldx+extw)/4-extov/2, cmdy, tmx+(3*coldx+extw)/4-extov/2, ky+blk_dy, "blue", 1,0,1,0,1);
+        newrect( tmx+coldx/2-extw/2, ky-blk_dy-10, extw, blk_dy, "rtg", 1,0,1,0,1);
+        newarrow( tmx+coldx/2, cmdy, tmx+coldx/2, ky-10, "blue", 1,0,1,0,1);
+        
+        var drvy = cmdy+blk_dy+40;
+        newrect( dx-20, drvy, cx-dx+40, blk_dy, "driver", 1,1,0,0,0);
+        newarrow( cmdx+cmd_dx, cmdy+blk_dy, dx-10, drvy, "red", 1,1,0,0,1);
+        newarrow( cx+10, drvy, cx+20, cmdy+blk_dy, "blue", 1,1,0,0,1);
+        var hwy = drvy + blk_dy+40;
+        newrect( cmdx, hwy, cx+50-cmdx, blk_dy, "hardware", 1,1,0,0,0);
+        newarrow( cmdx+cmd_dx/2, cmdy+blk_dy, cmdx+cmd_dx/2, hwy, "red", 1,1,0,0,0);
+        newarrow( dx-10, drvy+blk_dy, dx-10, hwy, "red", 1,1,0,0,0);
+        newarrow( cx+10, hwy, cx+10, drvy+blk_dy, "blue", 1,1,0,0,0);
+        newarrow( cx+35, hwy, cx+35, cmdy+blk_dy, "blue", 1,1,0,0,0);
+        
+        newrect( tmx+coldx/2, drvy, extw, blk_dy, "lgr", 1,1,0,0,0);
+        newarrow( tmx+coldx/2, cmdy+blk_dy, tmx+(coldx+extw)/2, drvy, "blue", 1,1,0,0,0);
+        
+        newrect( tmx-extw/2, hwy, extw, blk_dy, "disk", 1,1,1,1,0);
+        newarrow( tmx+(coldx+extw)/2, drvy+blk_dy, tmx, hwy, "blue", 1,1,0,0,0);
+        newarrow( tmx, hwy, cx+10+coldx/2, cmdy+blk_dy, "blue", 0,0,1,1,0);
+        
+        newrect( dx-20, drvy, cx-dx+40, blk_dy, "network", 0,0,0,0,1);
+        
+        $(".ModeBtn").click(function(event){
+          var ismode = event.target.id[0];
+          var notmode = event.target.id[1];
+          $(".ModeBtn").removeClass("selected");
+          $("#"+event.target.id).addClass("selected");
+          //alert("Button Selected: " + event.target.id[0]);
+          selectmode(ismode,notmode,300);
+        });
+        selectmode("A","a",300);
+      });
+  </script>
+</head>
+<body>
+<h1 class="MA mb mc md me">Full Configuration</h1>
+<h1 class="ma MB mc md me">Flight Configuration</h1>
+<h1 class="ma mb MC md me">Playback Configuration</h1>
+<h1 class="ma mb mc MD me">Data Extraction</h1>
+<h1 class="ma mb mc md ME">Remote Operation</h1>
+<div id="Cvn">
+<div id="canvas"></div>
+
+<div class="Note" id="Keyboard">
+<h2>Keyboard</h2>
+<p>The Keyboard program provides an interactive
+keyboard interface to the command server. Command
+syntax and prompts are defined using the
+<a href="http://www.arp.harvard.edu/eng/das/manuals/cmdgen.html">CMDGEN</a>
+language in <code>.cmd</code> files.</p>
+</div>
+
+<div class="Note" id="Cmd">
+<h2>Command Server</h2>
+<p>The Command Server interprets commands sent via the
+keyboard interface or from the programmed algorithm. It
+provides a variety of interfaces for delivering commands
+to the other programs in the architecture.</p>
+<p>As with the keyboard clients, the command
+syntax, interfaces and operations are defined using the
+<a href="http://www.arp.harvard.edu/eng/das/manuals/cmdgen.html">CMDGEN</a>
+language in <code>.cmd</code> files.</p>
+</div>
+
+<div class="Note" id="Col">
+<h2>Collection</h2>
+<p>Collection is a data generator, meaning it is responsible
+for assembling the telemetry frame and transmitting it to
+the TM buffer. The telemetry frame is defined using TMC.
+Collection provides a number of interfaces for receiving
+data from drivers and commands from the command server.</p>
+</div>
+
+<div class="Note" id="algo">
+<h2>Flight Algorithm</h2>
+<p>Flight algorithms are the only programs that can see the complete
+data stream and also issue commands. Experimenters use the
+<a href="http://www.arp.harvard.edu/eng/das/manuals/tmcalgo.html">TMCALGO</a>
+language, which uses a state machine model to organize instrument
+operations.</p>
+</div>
+
+<div class="Note" id="TMbfr">
+<h2>TM Buffer</h2>
+<p>TMbfr manages the distribution of telemetry data to a number of
+&ldquo;data client&rdquo; programs. It can be optimized for either
+fast realtime response (for data display) or maximum throughput
+(for data extraction.)</p>
+</div>
+
+<div class="Note" id="ext">
+<h2>Extraction</h2>
+<p>Extraction programs operate on the data stream to produce
+output compatible with other programs. Conversion to
+standard units and various types of averaging are possible.
+Extractions are generally code using
+<a href="http://www.arp.harvard.edu/eng/das/manuals/tmc.html">TMC</a>, but may also
+use <a href="http://www.arp.harvard.edu/eng/das/manuals/edf.html">EDF</a>
+or <a href="http://www.arp.harvard.edu/eng/das/manuals/cycle2.html">Cycle</a>
+definitions, which generate TMC code.</p>
+</div>
+
+<div class="Note" id="disp">
+<h2>Data Display</h2>
+<p>The display programs provide text-based display of the telemetry data.
+Data screens are laid out using the
+<a href="http://www.arp.harvard.edu/eng/das/manuals/table.html">Table</a>
+language.</p>
+</div>
+
+<div class="Note" id="rtg">
+<h2>Data Realtime Graphing</h2>
+<p>Realtime Graphing displays realtime data as trend graphs.
+It can also perform simple analysis tasks such as detrending the data or
+calculating a fast fourier transform.</p>
+</div>
+
+<div class="Note" id="driver">
+<h2>Drivers</h2>
+<p>Drivers are the glue between the data acquisition software and the hardware.
+Some hardware is simple enough to be accessed directly from other programs, but
+hardware that requires significant configuration or complicated state data will
+generally require a separate driver.
+</p>
+</div>
+
+<div class="Note" id="hardware">
+<h2>Hardware</h2>
+<p>This hardware block represents whatever interface electronics are connected
+to the data acquisition system.</p>
+</div>
+
+<div class="Note" id="lgr">
+<h2>Data Logger</h2>
+<p>Lgr is a data client program which formats the write the telemetry data
+to disk in a robust format suitable for archiving. The data stream is broken
+up into many small files in order to guarantee that if any file is lost or
+corrupted, the data loss should be limited to a small time span.</p>
+</div>
+
+<div class="Note" id="disk">
+<h2>Disk Storage</h2>
+<p>This is the system hard or flash disk to which data is logged and
+from which it is later retrieved.</p>
+</div>
+
+<div class="Note" id="network">
+<h2>Network</h2>
+<p>With the appropriate drivers and network rules, telemetry data can be
+received from anywhere on the internet.</p>
+</div>
+
+<div class="Note" id="Rdr">
+<h2>Disk Reader</h2>
+<p>Rdr is the program that reads telemetry data from previously
+logged disk files. Like collection and inetin, rdr is a &ldquo;data
+generator,&rdquo; which is to say that it assembles a telemetry
+stream which it writes to TMbfr for processing by any of the data
+client programs.</p>
+</div>
+
+<div class="Note" id="Inetin">
+<h2>Inetin</h2>
+<p>Like rdr, Inetin is a &ldquo;data generator,&rdquo; that assembles
+a telemetry stream and writes it to TMbfr. Instead of reading the
+telemetry data from the disk, Inetin reads it over TCP/IP, allowing
+realtime monitoring of remote systems.</p>
+</div>
+
+</div>
+<div id="Buttons"><button id="Aa" type="button" class="ModeBtn selected">Full</button>
+  <button id="Bb" type="button" class="ModeBtn">Flight</button>
+  <button id="Cc" type="button" class="ModeBtn">Playback</button>
+  <button id="Dd" type="button" class="ModeBtn">Data</button>
+  <button id="Ee" type="button" class="ModeBtn">Remote</button>
+</div>
+  
+<p class="MA mb mc md me">The Full Configuration includes the control and acquisition programs running on
+  the flight computer as well as the display and interactive command capabilities running on the
+  ground support computer (GSE).
+</p>
+
+<p class="ma MB mc md me">The Flight Configuration is for autonomous operation with no
+exposed user interface. Since the user interfaces are separate programs, they can be
+excluded from the flight configuration to reduce system overhead.
+</p>
+
+<p class="ma mb MC md me">The Playback Configuration can be used to review data previously
+collected during a run using the same interfaces ordinarily used in the lab.
+</p>
+
+<p class="ma mb mc MD me">Data Extraction is how previously logged data is extracted
+from the compact instrument-specific logging format and formatted for use with common
+data analysis tools. As with playback, the data is read from the disk by the <code>rdr</code>
+utility, but since this operation is not interactive, no command interface is required.
+</p>
+
+<p class="ma mb mc md ME">Remote Operation is how a user interface can be set up
+on a system remote from the actual instrument. The command and data streams are
+routed across the network, encapsulated in TCP/IP.
+</p>
+
+</body>
+</html>

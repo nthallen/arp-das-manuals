@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>cpci_init</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>cpci_init</h1>
+<h2>Synopsis</h2>
+<pre>
+    
+    #include "analogic.h"
+    
+    Server_Def *cpci_init( char *name );
+    int cpci_setup( Server_Def *cpci, analogic_setup_t *setup );
+    int cpci_stop( Server_Def *cpci );
+    int cpci_quit( Server_Def *cpci );
+    
+</pre>
+<h2>Description</h2>
+<p>These functions provide an API for controlling the drivers for
+the Analogic high-speed A/D boards. The boards we are supporting
+are called the CPCI-16 and the CPCI-14, so I have used the 'cpci'
+prefix for these functions. Of course 'cpci' refers to the form
+factor, "Compact PCI", and is not specific to Analogic or A/D
+conversion, but I'll ignore that for lack of a better short
+mnemonic.
+</p>
+<p>Since we anticipate supporting more than one board in a system,
+we will likewise anticipate more than one server in a system.
+Whereas other client APIs in nortlib can maintain a single static
+Server_Def structure out of view, we'll need to create them
+dynamically. cpci_init() performs this dynamic creation, taking a
+single argument, the server's short name, e.g. "cpci14". The
+programmer may choose to call <a href="CltSend.html">CltInit</a>() after callingcpci_init(), although that is optional.
+</p>
+<p>cpci_setup() requests that the driver configure the board for
+data acquisition using the parameters in the setup structure.
+The structure is defined as:
+</p>
+<pre>
+    typedef struct {
+      unsigned long FSample;
+      unsigned long NSample;
+      unsigned long NReport;
+      unsigned long NAvg;
+      unsigned short NCoadd;
+      unsigned short FTrigger;
+      unsigned short Options;
+    } analogic_setup_t;
+</pre>
+<p>FSample is the sample frequency in Hz. This rate must be
+supported by the selected board.
+</p>
+<p>NSample is the number of samples to take per trigger at the
+specified sample frequency.
+</p>
+<p>NReport is how many points to report. This should be equal
+to or evenly divide NSample.
+</p>
+<p>NAvg applies when Fit Analysis is selected. It defines the number
+of sequential reduced data points that are averaged together into
+each report bin. NAvg*NReport*NCoadd*NSample is the total number of
+raw points that would go into a report with Fit Analysis. Without
+Fit Analsys, only NCoadd*NSample raw samples are required.
+</p>
+<p>NCoadd is the number of passes that should be coadded into the
+report before it is recorded. Coadding is essentially vector
+addition for summing repeating waveforms.
+</p>
+<p>Options is a bit-mapped word that selects which channels should
+be collected and/or reported and whether a specific analysis
+should be performed on the data. The bits are:
+</p>
+<pre>
+    ANLG_OPT_A:   Collect Channel A
+    ANLG_OPT_B:   Collect Channel B
+    ANLG_OPT_C:   Collect Channel C
+    ANLG_OPT_D:   Collect Channel D
+    ANLG_OPT_FIT: Perform time constant analysis
+</pre>
+<p>OPT_FIT applies to the CPCI14 only and is used in ringdown modes
+to reduce the ringdowns to a single time constant. OPT_C and
+OPT_D are only valid with the CPCI16, since the CPCI14 only has
+two channels.
+</p>
+<p>cpci_stop() requests the driver to suspend data acquisition. This
+is required before reconfiguring the board.
+</p>
+<p>cpci_quit() requests the driver to terminate.
+</p>
+<h2>See Also</h2>
+<p><a href="CltSend.html">CltInit</a>().</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/analogic.c">/usr/local/src/nortlib/analogic.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

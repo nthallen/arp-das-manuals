@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>read_molecule_list</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>read_molecule_list</h1>
+<h2>Synopsis</h2>
+<pre>
+      #include "runnum.h"
+      void read_molecule_list( FILE *fp, run_params *rp );
+</pre>
+<h2>Description</h2>
+  read_molecule_list() is called by an HPF command server
+  to extract useful information about the current run from
+  the file "molecule.list". The invocation is found in
+  /usr/local/lib/src/hpfrun.cmd.
+</p>
+<p>  If syntax errors are found or if no line matches the
+  specified run_params, errors or warnings will be issued,
+  but they will not interfere with the further processing of the
+  run.
+</p>
+<h2>Returns</h2>
+<p>  Nothing.
+<h2>See Also</h2>
+  <a href="subject.html#sub17">HPF Support Routines</a>.<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/runmol.c">/usr/local/src/nortlib/runmol.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+<head>
+<title>TMCALGO Software Status Example</title>
+<link rel=stylesheet type="text/css"
+      href="manual.css" title="manual">
+</head>
+<body bgcolor="White">
+<h2>TMCALGO V2R1: Algorithm Compiler</h2>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td><a href="tma_2.html">Chap. 2</a></td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<h3>Software Status Example</h3>
+
+<p>This example was extracted wholesale from the Total Water and Ozone instrument.
+The software status variable is called &quot;SWStat&quot;, and can be set with
+the command &quot;SWStatus Set To <i>n</i>&quot;. Specific values can be indicated
+by other &quot;SWStatus&quot; commands such as &quot;SWStatus Shutdown&quot;.</p>
+
+<p>I have included a realtime algorithm file input partition here as well,
+since the two techniques are very often coupled in the lab. Whenever the
+software status is set to 254, the ReadFile state is validated, causing the
+file &quot;two.tmas&quot; to be read and executed. (One may wish
+to include a value to validate ReadFile_idle as well to allow an easy
+interactive way to abort a realtime file, but note that the same
+effect can be achieved by removing two.tmas and validating ReadFile.)</p>
+<hr>
+<pre>
+# ------------------------------
+# Partition 2: Software Status
+# ------------------------------
+
+Partition
+
+State SW_Stat_Wait {
+  { int reset_it;
+    reset_it = 1;
+    switch (SWStat) {
+        default:
+        case 0:   reset_it = 0; break;
+        case 254: Validate ReadFile; break;
+        case 255: Validate Shutdown; break;
+    }
+    if (reset_it) Validate SW_Stat_Reset;
+  }
+}
+
+State SW_Stat_Reset {
+  &gt; SWStatus Set To 0
+  Hold until (SWStat == 0) or 10;
+  Validate SW_Stat_Wait;
+}
+
+
+# ----------------------------------
+# Partition 3: Realtime File Input
+# ----------------------------------
+Partition
+
+State ReadFile_idle {}
+
+State ReadFile &quot;two.tmas&quot; {
+  +5 Validate ReadFile_idle;
+}
+</pre>
+
+<hr>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td><a href="tma_2.html">Chap. 2</a></td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<p>Return to <a href="index.html">Manuals Guide</a>.
+Written by
+<a href="mailto:allen@huarp.harvard.edu">Norton T. Allen</a><br>
+<font size="-2">Copyright &copy; 2001 by the President and Fellows of Harvard
+College</font>
+</p>
+
+</body>
+</html>

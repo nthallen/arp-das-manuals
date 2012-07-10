@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>RunLog_write</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>RunLog_write</h1>
+<h2>Synopsis</h2>
+<pre>
+      #include "runnum.h"
+      FILE *RunLog_write( char *runtype ) {
+      void RunLog_hdr( FILE *fp, char *hdr, char *val ) {
+      void RunLog_close( FILE *fp ) {
+      void Run_LinkAlgo( char *link, char *src ) {
+</pre>
+<h2>Description</h2>
+  RunLog_write() attempts to create a new HPF run log,
+  writing out the initial "!Begin Run" and "!RunType"
+  lines. It will die if rundate has not been successfully
+  initialized by <a href="rundate.html">RunNum_init</a>(). RunLog_write() calls  <a href="srvr_runHasBegun.html">srvr_runHasBegun</a>() to determine whether a run is currently  executing, and refuses to create a new run log if so.
+</p>
+<p>  RunLog_hdr() is a simple support routine to output
+  lines of the form "!<hdr> <value>" to a currently open run log.
+</p>
+<p>  RunLog_close() outputs the "!Defs" line to the open run log
+  as well as the contents of configuration.def if present,
+  closes the file, links "hpfrun.alg" to the specified algo
+  and calls <a href="srvr_runHasBegun.html">srvr_BeginRun</a>() to actually start the run.</p>
+<h2>Returns</h2>
+<p>  RunLog_write() return the FILE pointer to the newly create run
+  log on success or NULL on failure. None of the other routines
+  return values.
+<h2>See Also</h2>
+  <a href="subject.html#sub18">HPF Command Server Routines</a>, <a href="subject.html#sub17">HPF Support Routines</a>.<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/runwrite.c">/usr/local/src/nortlib/runwrite.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

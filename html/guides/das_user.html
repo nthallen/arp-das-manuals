@@ -1,0 +1,520 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>ARP Data Acquisition User's Guide</TITLE>
+</HEAD>
+<BODY>
+<H1>ARP Data Acquisition User's Guide</H1>
+
+<H2>Contents</H2>
+<UL>
+  <LI><A HREF="#P0">0</A>: Welcome and Introduction
+  <LI><A HREF="#P1">1</A>: Basic Setup
+  <LI><A HREF="#P2">2</A>: Running an Instrument
+  <UL>
+    <LI><A HREF="#P2.1">2.1</A>: Shutting Down
+    <UL>
+      <LI><A HREF="#P2.1.1">2.1.1</A>: Quit
+      <LI><A HREF="#P2.1.2">2.1.2</A>: Exit: Just the GSE
+    </UL>
+    <LI><A HREF="#P2.2">2.2</A>: IOMODE
+  </UL>
+  <LI><A HREF="#P3">3</A>: Data Analysis
+  <UL>
+    <LI><A HREF="#P3.1">3.1</A>: reduce
+    <LI><A HREF="#P3.2">3.2</A>: saverun
+    <LI><A HREF="#P3.3">3.3</A>: extract
+    <LI><A HREF="#P3.4">3.4</A>: Realtime Analysis
+  </UL>
+  <LI><A HREF="#P4">4</A>: Software Modifications
+  <UL>
+    <LI><A HREF="#P4.1">4.1</A>: Source Directory
+    <LI><A HREF="#P4.2">4.2</A>: make & make distribution
+  </UL>
+  <LI><A HREF="#P5">5</A>: Software Components
+  <UL>
+    <LI><A HREF="#P5.1">5.1</A>: Experiment.config
+    <LI><A HREF="#P5.2">5.2</A>: tm.dac
+    <LI><A HREF="#P5.3">5.3</A>: *.pcm
+    <LI><A HREF="#P5.4">5.4</A>: interact
+    <LI><A HREF="#P5.5">5.5</A>: runfile.xxxx
+    <LI><A HREF="#P5.6">5.6</A>: runfile.dflt
+    <LI><A HREF="#P5.7">5.7</A>: doit
+  </UL>
+  <LI><A HREF="#P6">6</A>: System Maintainance
+  <UL>
+    <LI><A HREF="#P6.1">6.1</A>: osupdate
+    <LI><A HREF="#P6.2">6.2</A>: fixdisk
+    <LI><A HREF="#P6.3">6.3</A>: settime
+    <LI><A HREF="#P6.4">6.4</A>: flttime
+  </UL>
+  <LI><A HREF="#P7">7</A>: Flight Operations
+  <UL>
+    <LI><A HREF="#P7.1">7.1</A>: Know Your System
+    <LI><A HREF="#P7.2">7.2</A>: Question Updates
+    <LI><A HREF="#P7.3">7.3</A>: Test Using Flight Configuration
+    <LI><A HREF="#P7.4">7.4</A>: Test New Algorithms
+  </UL>
+  <LI><A HREF="#P8">8</A>: Troubleshooting
+</UL>
+
+<H2><A NAME="P0">0</A>: Welcome and Introduction</H2>
+
+Welcome to the Atmospheric Research Project (ARP) Data Acquisition
+Systems. This is a large body of software designed to provide
+powerful, flexible, extensible and efficient data acquisition and
+control to a wide range of scientific instruments.<P>
+
+This guide is intended to outline what you need to know in order
+to operate your instrument. It assumes some knowledge of computer
+systems in general and QNX in particular. If you feel you are
+missing some of this background, you are invited to review the
+"QNX System Architecture" and "QNX User's Guide" which provide
+a fairly comprehensive overview. Your resident experts will also
+be happy to answer your questions to help you get up to speed.<P>
+
+For starters, you will need to have a QNX account in order to be
+able to login. If you don't already have one, see your system
+administrators to request one.<P>
+
+<H2><A NAME="P1">1</A>: Basic Setup</H2>
+
+Your instrument is operated via one or more computers which are 
+interconnected by a computer network. If you are using more than 
+one computer, only one is directly connected to the instrument 
+and will be referred to as the "flight computer". (It is called
+this even if your instrument has never or will never fly. Maybe
+that's wishful thinking, maybe just stupidity, but that's what
+we call it!) Any other computers are used to display data and/or
+control the instrument and are called the "Ground Support 
+Equipment" or GSE.<P>
+
+If your instrument actually does fly, the flight computer will 
+need to be able to operate when separated from the network, so it 
+will have its own hard disk (or other mass storage device) with 
+its own copy of the instrument software. The GSE will also need 
+its own hard disk and copy of the software, since it must operate 
+independently during pre-flight operations. In some cases, a 
+lab-based flight computer can be configured to run without its 
+own hard disk.<P>
+
+In a two-computer two-disk configuration, the instrument should 
+have a "home directory" on the GSE and another home directory
+on the flight computer. The home directory contains all the
+special software required to operate the instrument. As a rule,
+you will operate the instrument from the home directory on the
+GSE. If the home directory is <TT>/home/abc</TT>, you will type:
+<PRE>
+        cd /home/abc
+</PRE>
+
+<H2><A NAME="P2">2</A>: Running an Instrument</H2>
+
+The command to start up the instrument is <TT>doit</TT>. (On
+some instruments there is more than one "doit" command with
+slightly different names.)  Entering this command will
+begin the process of starting up the instrument. It may
+take 20-30 seconds for the instrument to initialize, as there
+are many different programs which must be loaded. Once the
+initialization is complete, you should be presented with a
+data screen and a command line. (If not, advance to
+<A HREF="#P8">Troubleshooting</A>.)<P>
+
+Your instrument may or may not begin taking data immediately. If
+not, you will have to issue the command "Telemetry Start". Once
+data acquisition has begun, you should be able to see the minor
+frame counter (MFCtr) counting and other channels updating.<P>
+
+Telemetry Start is one of a group of basic commands incorporated
+into every instrument. These include:
+
+<DL>
+<DT>Telemetry Start
+<DD>Begins data acquisition.
+<DT>Telemetry Logging Suspend
+<DD>If the lgr is running, this instructs it to stop writing data
+to disk files. If issued before Telemetry Start, no log files
+will be created.
+<DT>Telemetry Logging Resume
+<DD>If the lgr is running, this instructs it to resume writing 
+data to disk files.
+<DT>Quit
+<DD>Terminates data acquisition and requests all instrument
+software processes to shut down.
+<DT>Exit
+<DD>Shuts down GSE operations without affecting data acquisition.
+This command may not be present on your instrument.
+<DT>IOMODE n
+<DD>Affects how the command line behaves. The details are
+described below under <A HREF="#P2.2">IOMODE</A>
+</DL>
+
+<H3><A NAME="P2.1">2.1</A>: Shutting Down</H3>
+
+Now that you have all the balls in the air, you need to know how
+to bring them down gracefully. While turning off the power is
+usually quite effective at terminating operations, it is almost
+certain to result in corruption of your hard disk's file system
+unless you have completed a proper shutdown first. There are
+two ending commands which are quite different and deserve
+special mention.<P>
+
+<H4><A NAME="P2.1.1">2.1.1</A>: Quit</H4>
+
+Quit is the total shutdown command. It not only shuts down your
+command and data display, but it also shuts down all the data
+acquisition and control programs on the flight computer and any
+other display or algorithm programs running elsewhere on the
+network. This is the command which must be issued before the
+flight computer can be safely powered down.
+
+<H4><A NAME="P2.1.2">2.1.2</A>: Exit: Just the GSE</H4>
+
+Exit, in contrast, makes no requests at all of the flight 
+computer, but simply shuts down local GSE operations. It is
+possible to shut down your GSE in order to do some other
+operation, and then start it up again with <TT>doit</TT>
+without ever terminating the data acquisition on the flight
+computer.<P>
+
+If you have more than one GSE console running, or you have an
+algorithm running which issues a Quit command, the flight
+computer's data acquisition may shutdown before you shutdown your
+GSE. In this case, your GSE should also shut down gracefully with
+the system. If it doesn't, you may need to issue an Exit command.
+Issuing a Quit will work also, but you will get a nasty message
+due to the fact that the flight command servers have already
+terminated.<P>
+
+<H3><A NAME="P2.2">2.2</A>: IOMODE</H3>
+
+The IOMODE command affects how the command line behaves. The 
+default bahaviour is to automatically complete a word whenever 
+the input is sufficient to do so. Other options are to never 
+complete words, or to complete words only when the user types a 
+space character. The value of n is bit-mapped, so it is 
+determined by adding up the values of the desired options.
+The available options are:
+
+<DL>
+<DT>Backspace=1
+<DD>indicates that typing a backspace should backup
+to the last significant input character. An input character
+is significant if it narrows the list of possible commands.
+<DT>Space=2
+<DD>Indicates that typing a space or newline should be treated as a
+request to auto-advance.
+<DT>Always=4
+<DD>Words or letters are filled in whenever the following letters
+are unambiguous.
+<DT>Word=8
+<DD>Disables advances within words unless the rest of the current
+word is unambiguous (e.g. prevents advancing 'O' for On/Off)
+<DT>Wordskip=16
+<DD>Allows auto-advancement over entire words. If
+not specified, auto-advance will always stop at the
+beginning of a word.
+</DL>
+
+The default value for IOMODE is 7 (Backspace, Space, Always).<P>
+
+<H2><A NAME="P3">3</A>: Data Analysis</H2>
+
+After your data acquisition is completed, post-run analysis 
+begins. To begin, the log files are saved as a "run". This
+is handled directly or indirectly by the <A 
+HREF="#P3.2">saverun</A> utility which creates an appropriately
+named directory and moves the log files into it. Next, the data 
+may need to be copied off of the flight computer onto the GSE for 
+analysis and/or archiving. Finally, extraction programs are 
+applied to the raw data to render the data in a form useful for 
+subsequent analysis by the <A HREF="#P3.3">extract</A> utility.<P>
+
+This entire process is automatated at a higher level by the
+<A HREF="#P3.1">reduce</A> utility. When properly configured,
+a simple "reduce" command will perform all these functions in
+one step.<P>
+
+<H3><A NAME="P3.1">3.1</A>: reduce</H3>
+
+Reduce is the one-stop-shopping solution to post-run data 
+analysis. It is configurable via the
+<A HREF="../manuals/exconfig.html">Experiment.config</A> file.
+It will invoke saverun if you haven't already, or you
+may specify an existing data directory to re-run extractions
+and analyses. For flight operations, reduce can also 
+perform filesystem diagnostics prior to moving the data in order
+to better ensure the data integrity.<P>
+
+<H3><A NAME="P3.2">3.2</A>: saverun</H3>
+
+Saverun is invoked by reduce to create a run directory. You may
+find a need to run saverun independently, but then again, you
+may not. Saverun's operation is also configured in
+<A HREF="../manuals/exconfig.html">Experiment.config</A>.
+
+<H3><A NAME="P3.3">3.3</A>: extract</H3>
+
+Extract is used to replay the instrument's data stream. It takes 
+as arguments the name of the data directory and the name of 
+programs which will process the data stream. These programs are
+commonly "extraction" programs which convert the data to useful
+units and save it in a useful form, such as a SNAFU spreadsheet.
+Like saverun, extract is run indirectly by reduce, but you may
+find it useful to run extract directly under certain 
+circumstances.<P>
+
+<H3><A NAME="P3.4">3.4</A>: Realtime Analysis</H3>
+
+Not all data analysis needs to be done after your run is complete.
+It is possible to perform fairly complex calculations in real
+time. One of the key goals in the design of the
+<A HREF="../manuals/tmc.html">TMC</A> language was to make this
+sort of analysis possible with a minimum of effort.<P>
+
+In addition, I have developed a slightly higher-level processor
+known as <A HREF="../manuals/cycle2.html">CYCLE</A> which is
+particularly suited to averaging data over command cycles. Cycle
+is capable of everything the SNAFU Solenoid Difference Calculation
+is and quite a bit more.<P>
+
+<H2><A NAME="P4">4</A>: Software Modifications</H2>
+
+<P>Since this is a <STRONG>User's Guide</STRONG>, we won't go
+into great detail regarding programming. See the
+<A HREF="das_dev.html">ARP Data Acquisition Experiment
+Developer's Guide</A> for more information.
+
+<P>As a user, you will find most of the instrument programming
+has been taken care of, but you may find a need to modify an
+algorithm or a SOLDRV cycle definition or an extraction.
+
+<H3><A NAME="P4.1">4.1</A>: Source Directory</H3>
+
+<P>The first thing you need to know is that the source code for
+you instrument is not kept in the home directory, but rather in a
+dedicated source code directory. [Yes, you do see
+<CODE>tmc</CODE> and <CODE>tma</CODE> files in the home directory
+also, but these are copies of the real source, distributed here
+for archival reasons. (Alright: they are copied into the data
+directory by <A HREF="#P3.2"><CODE>saverun</CODE></A> so that
+next month you will be able to figure out what you were doing.)]
+
+<P>In any event, you'll need to know where the source code is
+kept. It might be in a subdirectory of the home directory named
+"<CODE>src</CODE>", or it might be in a subdirectory of that
+directory, or it might be located on a different computer.
+
+<H3><A NAME="P4.2">4.2</A>: make & make distribution</H3>
+
+<P>After you've made your changes, there are two more steps
+before they can be used. First, you must <STRONG>compile</STRONG>
+your changes, or translate them into a format the computer can
+understand. The single command that will compile all your source
+code is "<CODE>make</CODE>". If <CODE>make</CODE> encounters any
+errors along the way, you'll have to go back and fix the
+appropriate source code. (see
+<A HREF="das_dev.html#PA.0">Troubleshooting Compilations</A>).
+
+<P>Once you've compiled all your source code, you need to
+<STRONG>distribute</STRONG> the results to the home directories
+of the GSE and flight computers. The command for this is:
+
+<PRE>
+        make distribution TGTNODE=//<i>n</i>
+</PRE>
+
+<P>where <i>n</i> is replaced with the node number of computer
+to which you wish to distribute.
+
+<H2><A NAME="P5">5</A>: Software Components</H2>
+
+<P>The following provides a brief description of some of the
+files to be found in the home directory.
+
+<H3><A NAME="P5.1">5.1</A>: Experiment.config</H3>
+
+<P>This file defines several key parameters used by many of the
+programs which make up the data acquisition system. The most
+important parameters are "Experiment" and "HomeDir" which
+identify the instrument's name and home directory. All the
+parameters are defined in the <A HREF="../manuals/exconfig.html">
+Experiment.config Reference Manual</A>.
+
+<H3><A NAME="P5.2">5.2</A>: tm.dac</H3>
+
+<P>This file is generated during the compilation of the
+instrument's collection program. It is a small binary file
+containing a crude specification of the generated telemetry
+frame. It doesn't contain any of the individual data definitions,
+just enough information to allow some generic utilities to
+process the files. The format of the file is specified in the
+header file <CODE>/usr/local/include/dbr.h</CODE>.
+
+<H3><A NAME="P5.3">5.3</A>: *.pcm</H3>
+
+<P>This file provides a much more verbose description of the
+generate telemetry frame, including the precise location of every
+datum therein. Of particular interest is the summary information
+at the top of the file which outlines the basic size and shape of
+the frame. The "bits/sec" number can be used to precisely
+calculate how much disk space the instrument will require for a
+given flight.
+
+<H3><A NAME="P5.4">5.4</A>: interact</H3>
+
+<P><CODE>interact</CODE>, and <CODE>runfile.*</CODE> are the
+names most often given to the shell scripts which start up the
+data acquisition system on the flight computer.
+<CODE>interact</CODE> specifically implies how the instrument
+should run when started interactively via a <CODE>doit</CODE>
+script.
+
+<H3><A NAME="P5.5">5.5</A>: runfile.xxxx</H3>
+
+<P><CODE>runfile.xxxx</CODE> is an instrument start-up script
+that may be enabled for disabled based on the position of
+configuration switches on the instrument. Since flight systems
+must ordinarily start taking data on turn-on without operator
+intervention, this provides a means of disabling automatic
+start-up in the lab.
+
+<H3><A NAME="P5.6">5.6</A>: runfile.dflt</H3>
+
+<P><CODE>runfile.dflt</CODE> is a start-up script which is run if
+no appropriate <CODE>runfile.xxxx</CODE> script is found. This
+file cannot be disable by a switch setting (unless the switches
+select another existing file).
+
+<H3><A NAME="P5.7">5.7</A>: doit</H3>
+
+<P><CODE>doit</CODE> is the generic name given to GSE start-up
+scripts. Instruments often have more than one of these scripts,
+allowing more than one view of the instrument(s). This file is
+compiled from a source file of type <CODE>.doit</CODE>. See
+the <A HREF="../manuals/mkdoit2.html">MkDoit2 Manual</A> for
+details on the format of the source file.
+
+<P>Assuming the flight system is powered up and standing by, the
+data acquisition system can be started by entering the doit
+command. Alternately, the doit command can be issued before the
+instrument is powered on in order to redirect its default
+behaviour. In this case, the command "<CODE>doit not</CODE>" is
+useful to request that the flight system <em>not</em> start up.
+
+<P>If the flight system is up and running, and you need to shut
+it down but don't have a GSE screen up, you can send a low-level
+shutdown command via the command "<CODE>doit stop</CODE>". This
+is particularly useful if you've managed to get your GSE and
+flight system software out of synch so the flight command server
+rejects your keyboard client's "quit" command.
+
+<H2><A NAME="P6">6</A>: System Maintainance</H2>
+
+<P>Here are a number of utilities we've written over the years
+to allow users to perform some tasks usually reserved for super
+users.
+
+<H3><A NAME="P6.1">6.1</A>: osupdate</H3>
+
+<P>This utility allows a user to update the system software on
+their node. From time to time, we write new programs, fix bugs in
+old programs or add new features. We have found it unadvisable to
+distribute these updates without users' knowledge, since any
+changes may have unforseen consequences which may arise at very
+inconvenient times. Instead, we allow the users to decide when
+they are ready to deal with changes, and install them using this
+command. Usually such updates are transparent to the user, but if
+they've done the udpate themselves and a problem does arise, they
+are more likely to associate the problem with the update, which
+will enhance our ability to resolve it.
+
+<P>Whenever an update is performed with osupdate, the results are
+mailed to the system administrator and the node administrators.
+This means that you and I both know that a change has occurred,
+whether you initiated it or I did.
+
+<H3><A NAME="P6.2">6.2</A>: fixdisk</H3>
+
+<P><CODE>fixdisk</CODE> is a thin cover for the QNX
+<CODE>chkfsys</CODE> utility. Ordinarily you need to be root to
+run chkfsys. fixdisk will let you run it if you are a node
+administrator.
+
+<H3><A NAME="P6.3">6.3</A>: settime</H3>
+
+<P>Like fixdisk, <CODE>settime</CODE> is a thin cover for the QNX
+<CODE>date</CODE> and <CODE>rtc</CODE> utilities, allowing node
+administrators to update their node's system and hardware clocks.
+See "use settime" for more information.
+
+<H3><A NAME="P6.4">6.4</A>: flttime</H3>
+
+<P><CODE>flttime</CODE> is related to settime, and is used to
+synchronize the clocks of a flight computer and a GSE computer by
+setting the flight computer's clock to the current time on the
+GSE computer. See "use flttime" for more information.
+
+<H2><A NAME="P7">7</A>: Flight Operations</H2>
+
+<P>What follows are few guidelines for users during field
+deployments. This is partly my opinion and partly what I've
+learned from watching our best scientists in the field.
+
+<H3><A NAME="P7.1">7.1</A>: Know Your System</H3>
+
+<P>Perhaps the most important thing to understand as a scientist on
+a field mission is that you are ultimately responsible for the
+successful operation of your instrument. Yes, you have software
+support, but if the instrument fails, you are the one who has to
+explain it to the other experimenters. Your best hope is to
+cultivate a thorough understanding of your system. This will
+serve you well when you need to make configuration choices at
+0400.
+
+<H3><A NAME="P7.2">7.2</A>: Question Updates</H3>
+
+<P>As a rule, change is a dangerous thing during field
+operations. If it ain't broke, don't fix it. Resolve stylistic
+issues before reaching the field, or during test flights.
+
+<P>Structure your code so routine algorithm adjustments are
+localized. Use revision control to document all changes. Use rcsdiff
+to double-check the changes you've made against the version from
+the previous flight.
+
+<P>If the change you wish to make is not routine, question
+carefully whether it is worth attempting. Ask your software
+support how big the change is, but reserve judgement for
+yourself.
+
+<P>Be particularly careful when attempting to identify system
+failure modes and compensate for them. Make certain you are not
+introducing failure modes rather than eliminating them. If
+possible, make sure the action will only take effect when you are
+otherwise guaranteed to get no useful data.
+
+<H3><A NAME="P7.3">7.3</A>: Test Using Flight Configuration</H3>
+
+<P>Be very careful to ascertain that the system will operate in a
+flight configuration. Starting via "doit" is not good enough,
+since flight mode usually uses a different start-up script.
+Disconnect from the network and power up the system. Does it
+start up alright? After the system is up and running, you can
+reconnect to see how it's doing.
+
+<H3><A NAME="P7.4">7.4</A>: Test New Algorithms</H3>
+
+<P>Make sure any changes you've made will work by exercising them
+in a flight configuration. If the changes are intended to
+compensate for a possible failure mode, be sure to simulate that
+failure mode to make sure the results are as desired.
+
+<H2><A NAME="P8">8</A>: Troubleshooting</H2>
+
+<HR>
+[<A HREF="index.html">Data Acquisition Guides</A>]<BR>
+<FONT SIZE="-2">Copyright 1999 by the President and Fellows of
+Harvard College</FONT>
+</BODY>
+</HTML>

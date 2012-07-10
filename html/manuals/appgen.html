@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>APPGEN Manual</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="Harvard University Anderson Group Website">
+<meta name="keywords" content="ARP huarp data acquisition qnx atmosphere chemistry Anderson Harvard">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h1>APPGEN Manual</h1>
+<h2>Contents</h2>
+<ul>
+<li><a href="#P0.0">0.0</a>: Invocation
+</ul>
+<h2><a id="P0.0">0.0</A>: Invocation</h2>
+<pre>    appgen [-s] [spec file]
+           -s Do not include subbus support be default
+    
+           Generates an application based on the spec_file input
+           If spec file isn't specified, appgen will look for a
+           file of the form *.spec. If there is a unique one, it
+           will be used.
+           appgen automatically overwrites the Makefile, so care
+           should be taken that it is not invoked where it is not
+           used.
+    
+     Spec_file format:
+     # comment line
+     prefix = &lt;prefix&gt;  (optional: derived from spec file name)
+     tmcbase = &lt;files&gt;
+     cmdbase = &lt;files&gt;
+     NOSUBBUS  (equivalent to the -s option)
+     CLEANDIST (distributes into the bin/$VERSION hierarchy)
+     var = substitution (supported vars are SRC TOOL OBJ
+                         TGT (targets to build. copied to $TGTDIR/bin/$VERSION)
+                         SCRIPT (source to be copied to $TGTDIR/bin/$VERSION)
+                         DISTRIB (other files to be copied to $TGTDIR/bin/$VERSION)
+                         SRCDIST (source to be copied to $TGTDIR/bin/$VERSION/Base)
+                         IDISTRIB (to be copied to $TGTDIR)
+                         MNC (defaults to prefix)
+                         HOMEDIR (defaults to cwd, less node)
+                         TGTNODE TGTDIR
+                         SERVER (defaults if server is generated)
+                         SUBDIRS (passed on to Makefile)
+                         SUBDIRS4 (passed on to Makefile)
+                         NONRCS (backed up as SOURCE, but not RCSed)
+     target : &lt;files&gt;
+     ...
+     %%
+     &lt;additional Makefile contents&gt;
+    
+     The following target types are supported:
+       *algo   TMCBASE  dc usage
+       *col    TMCBASE  dg usage T1 etc.
+       *ext    TMCBASE  dc usage
+       *disp   TMCBASE  dc usage
+       *clt    CMDBASE  nl_cons, client usage
+       *srvr   CMDBASE  T1
+       *.dccc
+       *.sft
+       *doit
+     The following source types are supported:
+       *tmc.prt
+       *ext.prt
+       *.edf
+       *.cfg
+       *.tbl
+       *.fld
+       *.tma
+       *.cyc
+       *.tmc
+       *.tmg
+       *cmd.prt
+       *.cmd
+       *.c
+       *.slp (soldrv proxy) ==&gt; .sol and something else
+       *.oui
+       *.doit
+       *.DR
+</pre>
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Wed Jun  7 10:34:42 2006</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2006 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

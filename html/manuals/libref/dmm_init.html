@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>dmm_init</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>dmm_init</h1>
+<h2>Synopsis</h2>
+<pre>
+    unsigned short dmm_command( unsigned short function,
+                               unsigned short address,
+                               unsigned short data );
+    unsigned short dmm_shutdown(void);
+    unsigned short dmm_quit(void);
+    unsigned short dmm_read(unsigned short address);
+    unsigned short dmm_write(unsigned short address, unsigned short value);
+    unsigned short dmm_scdc_command(unsigned short addr);
+    unsigned short NCAR_read_rf_a2d(unsigned short addr);
+    unsigned short NCAR_read_rf_d2a(unsigned short addr);
+    unsigned short NCAR_write_rf_d2a(unsigned short addr, unsigned short value);
+    unsigned short NCAR_read_500V_a2d(unsigned short addr);
+    unsigned short NCAR_read_500V_d2a(unsigned short addr);
+    unsigned short NCAR_write_500V_d2a(unsigned short addr, unsigned short value);
+    unsigned short NCAR_set_mass(unsigned short mass);
+    unsigned short NCAR_set_gain(unsigned short addr, unsigned short gain);
+    
+</pre>
+<h2>Description</h2>
+<p>  <P>NCAR_set_mass() causes both of the D/A channels on the RF
+  board to be written. The mass parameter is in .1 AMU units,
+  i.e. 10 represents 1 AMU. This function uses three pairs of
+  constants to calculate the appropriate output values by a
+  simple slope-intercept formula. The constants may be changed
+  via NCAR_set_gain(), with the appropriate addresses defined in
+  the header file.</P>
+</p>
+<h2>Returns</h2>
+<p>  <P>Most functions return 0 on success. Failures are generally
+  non-fatal. Read functions return values appropriate to the
+  device being read. The client is responsible for converting the
+  raw value to reasonable units, which may involve converting the
+  unsigned value to a signed value.</P>
+</p>
+<h2>See Also</h2>
+<p>  <a href="subject.html#sub10">Driver Interfaces</a>  <a href="subject.html#sub4">Startup</a>  <a href="subject.html#sub7">Shutdown</a><h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/dmmclient.c">/usr/local/src/nortlib/dmmclient.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

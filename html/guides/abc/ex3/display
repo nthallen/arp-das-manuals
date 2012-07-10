@@ -1,0 +1,12 @@
+memo -vy -e abc.log &
+namewait memo
+scrpaint -v -c0 abc
+abccol -c0 -vy &
+namewait -g dg
+abcdisp -c0 -vy &
+abcsrvr -c0 -vy &
+namewait cmdinterp
+abcclt -c0 -vy
+while namewait -t 1 -g dg 2>/dev/null; do : ; done
+memo -k0 -v
+while namewait -t 1 memo 2>/dev/null; do : ; done

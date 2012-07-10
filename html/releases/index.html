@@ -1,0 +1,705 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>Data Acquisition System Releases</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+
+<div id="banner">
+<img name="daqlogo" src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map" border="0">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10, 11, 91, 35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91, 6, 246, 43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30, 47, 273, 79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h1>ARP Data Acquisition Software Releases</h1>
+<h2>Contents</h2>
+<ul>
+    <li><a href="#Intro">Introduction</a></li>
+    <li><a href="#Releases">Releases</a></li>
+    <li><a href="#Changes">Revision History</a></li>
+</ul>
+
+<h2><a name="Intro">Introduction</a></h2>
+
+The following archives provide the basic tools to implement
+data acquisition and instrument control as described in the
+accompanying <a href="../guides/index.html">Guides</a> and
+<a href="../manuals/index.html">Manuals</a>. The archives
+are stored in tar-ed frozen format, which is very binary,
+and should be downloaded rather than dereferenced if you don't
+want your browser to get sick. Once downloaded, the archives
+can be unpacked with the QNX command:
+<pre>
+        /etc/install -u &lt;archive&gt;
+</pre>
+<p>where &lt;archive&gt; is the archive's filename. You must be
+root in order for this installation to succeeded, since files
+need to be placed in some system directories, and some files
+may need to be made privileged.</p>
+
+<p>If you would like to preview the contents of an archive before
+unleashing it on your system, the command:</p>
+<pre>
+        fcat &lt;archive&gt; | pax | more
+</pre>
+<p>will list the contents without unpacking.</p>
+
+<h2><a name="Releases">Releases</a></h2>
+<dl>
+<dt><a href="http://www.arp.harvard.edu/dasrel/dasmin.020424.tar.F">dasmin.020424.tar.F</a></dt>
+<dd>Description of <a href="#RH020424">Changes</a> in this 
+release.<br>
+Review the
+<a href="http://www.arp.harvard.edu/dasrel/dasmin.020424.setup.txt">
+setup script.</a><br>
+Minimal Release 1.5.1 including perl 5.6.0, ssh and support for
+Harvard hardware.</dd>
+
+<dt><a href="http://www.arp.harvard.edu/dasrel/dasfull.020424.tar.F">dasfull.020424.tar.F</a></dt>
+<dd>Review the
+<a href="http://www.arp.harvard.edu/dasrel/dasfull.020424.setup.txt">
+setup script.</a><br>
+Everything in dasmin 020424 minus Harvard Hardware support, plus extra
+documentation, RTG, support for commercial hardware.</dd>
+
+<dt><a href="http://www.arp.harvard.edu/dasrel/dasmin.001115.tar.F">dasmin.001115.tar.F</a></dt>
+<dd>Description of <a href="#RH001115">Changes</a> in this 
+release.<br>
+Review the
+<a href="http://www.arp.harvard.edu/dasrel/dasmin.001115.setup.txt">
+setup script.</a><br>
+Minimal Release 1.5.1 including perl 5.6.0, ssh and support for
+Harvard hardware.</dd>
+
+<dt><a href="http://www.arp.harvard.edu/dasrel/dasfull.001115.tar.F">dasfull.001115.tar.F</a></dt>
+<dd>Review the
+<a href="http://www.arp.harvard.edu/dasrel/dasfull.001115.setup.txt">
+setup script.</a><br>
+Everything in dasmin 001115 minus Harvard Hardware support, plus extra
+documentation, RTG, support for commercial hardware.</dd>
+
+<dt><a href="http://www.arp.harvard.edu/dasrel/dasmin.001005.tar.F">dasmin.001005.tar.F</a></dt>
+<dd>Description of <a href="#RH001005">Changes</a> in this 
+release.<br>
+Review the
+<a href="http://www.arp.harvard.edu/dasrel/dasmin.001005.setup.txt">
+setup script.</a><br>
+Minimal Release 1.5 including perl 5.6.0, ssh and support for
+Harvard hardware.</dd>
+
+<dt><a href="http://www.arp.harvard.edu/dasrel/dasfull.001005.tar.F">dasfull.001005.tar.F</a></dt>
+<dd>Review the
+<a href="http://www.arp.harvard.edu/dasrel/dasfull.001005.setup.txt">
+setup script.</a><br>
+Everything in dasmin minus Harvard Hardware support, plus extra
+documentation, RTG, support for commercial hardware.</dd>
+
+<dt><a href="http://www.arp.harvard.edu/dasrel/dbmalloc.pax.F">dbmalloc.pax.F</a></dt>
+<dd>QNX port of dbmalloc library.</dd>
+
+<dt><a href="http://www.arp.harvard.edu/dasrel/das970508.tar.F">das970508.tar.F</a></dt>
+<dd>Description of <a href="#RH970508">Changes</a> in this 
+release.<br>
+Full Release 1.4.<br>
+cksum: 4131593326    2568298 das970508.tar.F</dd>
+
+<dt><a href="http://www.arp.harvard.edu/dasrel/rtgrt970311.tar.F">rtgrt970311.tar.F</a></dt>
+<dd>Executable RTG utility.<br>
+cksum:  3464682115     110903 rtgrt970311.tar.F</dd>
+<dt><a href="http://www.arp.harvard.edu/dasrel/rtg970310.tar.F">rtg970310.tar.F</a></dt>
+<dd>Source code for RTG utility.<br>
+cksum:  1151445024     195124 rtg970310.tar.F</dd>
+<dt>das960524.tar.F [no longer available]</dt>
+<dd>Description of <a href="#RH960524">Changes</a> in this 
+release.<br>
+Full Release 1.3.<br>
+cksum:  530304281    2182229 das960524.tar.F</dd>
+<dt>das960524i.tar.F [no longer available]</dt>
+<dd>Incremental Release 1.3. Requires das960105.tar.F.<br>
+cksum: 1686473809     804852 das960524i.tar.F</dd>
+<dt>das960105.tar.F [no longer available]</dt>
+<dd>Description of <a href="#RH960105">Changes</a> in this 
+release.<br>
+Full Release 1.2.<br>
+cksum: 3077399311    2168581 das960105.tar.F</dd>
+<dt>das960105i.tar.F [no longer available]</dt>
+<dd>Incremental Release 1.2. Requires das951006.tar.F.<br>
+cksum: 1296892356     790241 das960105i.tar.F</dd>
+<dt>das951006.tar.F [no longer available]</dt>
+<dd>Description of <a href="#RH951006">Changes</a> in this 
+release.<br>
+Full Release 1.1.<br>
+cksum: 122637798 2102242 das951006.tar.F</dd>
+<dt>das951006i.tar.F [no longer available]</dt>
+<dd>Incremental Release 1.1. Requires das950606.tar.F.<br>
+cksum: 2504998527 523207 das951006i.tar.F</dd>
+<dt>das950606.tar.F [no longer available]</dt>
+<dd>Description of <a href="#RH950606">Changes</a> in this 
+release.<br>
+Full Release 1.0.<br>
+cksum: 773566436 2041953 das950606.tar.F</dd>
+</dl>
+<h2><a name="Changes">Revision History</a></h2>
+
+<h3><a name="Unreleased">Not Yet Released</a></h3>
+
+<p>Changes listed in this section are not in the official release.
+For users on the ARP home network, the lastest versions may be
+available on node 1 or 2, although you are advised to consult with
+Norton before using unreleased software.</p>
+
+<dl>
+<dt>040621: /usr/local/bin/appgen,flight.sh,saverun</dt>
+<dt>040621: /usr/local/lib/src/mkdoit2.sh,mkdoit2.awk</dt>
+<dd>Support for CLEANDIST distribution into the bin/$VERSION
+hierarchy</dd>
+
+<dt>040401: /usr/local/lib/src/idx64.cmd, /usr/local/bin/idx64</dt>
+<dd>Support for directly setting altline and offline positions.</dd>
+
+<dt>040311: /usr/local/bin/rcs2html</dt>
+<dd>Ignore OBJ files</dd>
+
+<dt>020723: /usr/local/lib/src/mkdoit2.awk</dt>
+<dd>Suppress messages to memo if -v option is specified.</dd>
+
+<dt>020722: /usr/local/bin/getarc</dt>
+<dd>Ongoing changes to support new file naming and better
+summaries.</dd>
+
+<dt>020716: /usr/local/bin/snafu</dt>
+<dd>Fixed merge bug causing mis-binning when merging between
+two files with identical spacing but opposite phase.</dd>
+
+<dt>020707: /usr/local/bin/getarcsum</dt>
+<dd>Support for .csv and other ancillary files. More information
+in tables, including a legend.</dd>
+
+<dt>020705: /usr/local/bin/sps2csv</dt>
+<dd>Converter from snafu .sps format to .csv.</dd>
+
+<dt>020513: /usr/local/bin/checkts</dt>
+<dd>Script to quickly test integrity of raw TM log files.</dd>
+
+</dl>
+
+<p>(End of Unreleased section)</p>
+
+<h3><a name="RH020424">04/24/02</a></h3>
+
+<dl>
+<dt>020424: /usr/local/bin/CDimage</dt>
+<dd>New script to ease building of CD images.</dd>
+
+<dt>020424: /usr/local/bin/prepCD</dt>
+<dd>Script to check a CD image before invoking mkisofs.</dd>
+
+<dt>020304: /usr/local/bin/dircksum</dt>
+<dd>Support for MD5 checksums.</dd>
+
+<dt>/usr/local/bin/snafu</dt>
+<dd>010525: Fixed display of dates after 2000. Made ASCII Input
+tolerant of non-standard YY MM DD quantities.</dd>
+
+<dt>/usr/local/bin/Inetin,Inetout</dt>
+<dd>010423: Now tolerates reading fewer bytes than requested
+from socket.</dd>
+
+<dt>/usr/local/bin/da_cache</dt>
+<dd>010419: Fixed bug in software addressing when
+storing data longer than 2 bytes.</dd>
+
+<dt>/usr/local/bin/tmcalgoV2R1</dt>
+<dd>010212: New beta release of TMCALGO including bug fixes,
+support for new syntaxes Hold [and Validate], Resume, support
+for DOT-format output for generating state-diagram drawings,
+eliminated command sorting.</dd>
+
+<dt>/usr/local/bin/tmcV1R9</dt>
+<dd>011026: Implemented MD5 hash on telemetry frame to
+detect unreported VERSION changes.</dd>
+<dd>010417: Eliminated arbitrary limit on &quot;Lexbuf&quot;
+size. Stopped propogating comments.</dd>
+<dd>010209: Added warning for non-32-bit-safe declarations.
+Added -H option to generate #defines for address definitions.
+</dd>
+
+<dt>/usr/local/lib/src/appgen.mk</dt>
+<dd>010208: Added $(COLFLAGS) to TMC.col macro.</dd>
+
+<dt>/usr/local/lib/nortlib*</dt>
+<dd>010123: Support for new tmcalgo syntaxes.</dd>
+
+<dt>/usr/local/bin/reduce</dt>
+<dd>010724: Added CopyHook and CopySpace support</dd>
+
+<dt>/usr/local/bin/saverun</dt>
+<dd>010724: Added RunType distinction and SaverunHook</dd>
+<dd>010110: Fixed typo causing an error regarding
+&quot;OLDDIR&quot;</dd>
+
+<dt>/usr/local/bin/DR2tmc</dt>
+<dd>001117: Added support for header lines beginning with '%'</dd>
+
+<dt>/usr/local/lib/src/flttime.tmc</dt>
+<dd>991115: Standard code to display time.</dd>
+</dl>
+
+<h3><a name="RH001115">11/15/00</a></h3>
+
+<dl>
+<dt>/usr/local/bin/DR2tmc</dt>
+<dd>New <a href="../manuals/DR2tmc.html">compiler</a> for HPF
+datarecvext. (Also fixed a bug present in the 001114 release.)</dd>
+
+<dt>/usr/local/include/oui/drext.oui, runnum.oui</dt>
+<dd>HPF support</dd>
+
+<dt>/usr/local/lib/nortlib*</dt>
+<dd>Added HPF run number and datarecvext support.</dd>
+
+<dt>/usr/local/bin/appgen</dt>
+<dd>Added support for DR2tmc for HPF datarecvext</dd>
+
+<dt>/usr/local/bin/saverun</dt>
+<dd>Added support for logging into a CrntRun directory
+as well as saving pertinent src in a SaveSrc directory.</dd>
+
+<dt>/usr/local/bin/extract</dt>
+<dd>Now exports TMLOGDIR and TMBINPATH environment variables.
+Also will no longer complain if ./tm.dac is not found.</dd>
+
+<dt>/usr/local/bin/cmdgen</dt>
+<dd>Added #-style comments to .cmd syntax</dd>
+
+<dt>/usr/local/bin/Make, Makelib</dt>
+<dd>Added usage</dd>
+
+<dt>HTML::FormatLynx.pm</dt>
+<dd>Corrected bugs which generated warnings under Perl 5.6.0</dd>
+
+<dt>/usr/local/bin/rcs2html</dt>
+<dd>Added some more usage, improved table of contents layout.</dd>
+</dl>
+
+<h3><a name="RH001005">10/05/00</a></h3>
+
+<dl>
+<dt>/usr/local/bin/Inetin, Inetout</dt>
+<dd>Support for TM over IP (TM/IP?). See <a
+href="../manuals/mkdoit2.html#P2.2.2">mkdoit2 manual</a> for
+configuration information.</dd>
+
+<dt>/usr/local/bin/tmc, tmcV1R8</dt>
+<dd>Support for col_send messages longer than 95 bytes.
+Numerous errors in calibration codes. Fixed problems
+relating to 32-bit compiles.</dd>
+
+<dt>/usr/local/bin/tmcalgo</dt>
+<dd>Added the ability to selectively suppress certain log
+messages. Adding the NoLog keyword in a state definition
+will suppress the &quot;Entering State&quot; messages, making
+continuous looping more palatable. Prefixing any text
+command with an underscore character (_) will suppress
+logging of that command.</dd>
+
+<dt>/usr/local/bin/Backup4, Copyin4</dt>
+<dd>New generation source backup utilities</dd>
+
+<dt>/usr/local/bin/snafu</dt>
+<dd>Resolved Y2K bug in ASCII Input</dd>
+
+<dt>perl-5.6.0</dt>
+<dd>Now included in the standard distribution</dd>
+
+<dt>/usr/local/bin/distribute</dt>
+<dd>Support -f option to force distribution</dd>
+
+<dt>/usr/local/bin/flight.sh</dt>
+<dd>Support for Experiment.config.$NODE, allowing another means
+of differentiating between experiments when two or more nodes
+share a disk.</dd>
+
+<dt>/usr/local/bin/getarc</dt>
+<dd>Utility to collect data from NASA FTP archives</dd>
+
+<dt>/usr/local/bin/getcon</dt>
+<dd>Resolved race conditions not evident before running on really
+fast machines</dd>
+
+<dt>/usr/local/bin/mkdoit2</dt>
+<dd>usage update, support for Inetin/out.</dd>
+
+<dt>/usr/local/bin/osupdate</dt>
+<dd>More checks to avoid corrupting the source node.
+Support for tarballs.</dd>
+
+<dt>/usr/local/bin/vt100</dt>
+<dd>Updated to use ssh by default</dd>
+
+<dt>/usr/local/lib/nortlib*.lib</dt>
+<dd>Continual minor updates and documentation.
+Support for quiet states in cmdsrvr. Support for
+longer col_send messages.</dd>
+
+<dt>/usr/local/lib/src/Makefile.pm</dt>
+<dd>Fixed bugs with nested variable expansion affecting
+Backup3 and Backup4</dd>
+
+<dt>/usr/local/lib/src/mkdoit2.sh</dt>
+<dd>Numerous changes to support better getcon,
+better support for RTG, etc.</dd>
+
+<dt>/usr/local/bin/idx64cfg, /usr/local/lib/src/idx64cfg.awk</dt>
+<dd>Newly documented utility to generate code to access the Indexer64
+board.</dd>
+<dt>/usr/local/bin/mount_od, umount_od, odinit, archive</dt>
+<dd>Changed names of odin and odout. New names are more
+appropriate and avoid a future name clash with another utility
+named odin (as in the Norse god).</dd>
+<dt>/usr/local/bin/extract, saverun</dt>
+<dd>Support for the new VERSION file, allowing transparent
+extraction despite incompatible source changes.</dd>
+<dt>/usr/local/bin/dircksum, dircompare</dt>
+<dd>Perl-based tools to aid in verifying the integrity of
+archived data.</dd>
+</dl>
+
+<h3><a name="RH970508">05/08/97</a></h3>
+
+<dl>
+<dt><a href="../manuals/table.html">/usr/local/bin/table</a></dt>
+<dd>New compiler for generating data screen layouts.</dd>
+<dt><a href="../manuals/cycle2.html">/usr/local/bin/cycle</a></dt>
+<dd>New compiler for realtime cycle averaging.</dd>
+<dt>/usr/local/bin/snafu</dt>
+<dd>Fixed bug in merge/average where first point in a bin was
+often discarded. Fixed median filter to avoid crash when
+evaluating a long string of NaNs. Fixed bug in &quot;operate from time&quot;
+when the final time was beyond the end of the file. Moved snafu
+to /usr/local/bin from /bin32. Standard distribution is now
+32-bit only. NOTE: you must rm /bin32/snafu or the old version
+will persist in spite of this update.</dd>
+<dt>/usr/local/lib/src/mkdoit.*</dt>
+<dd>Added support for
+<a href="../manuals/mkdoit2.html#P2.2.1">playback</a>.</dd>
+<dt>/usr/local/bin/tmc,tmcV1R4,tmcV1R3</dt>
+<dd>Promoted tmcV1R4beta to tmc, aka tmcV1R4. The old tmc has
+been renamed to tmcV1R3. Attempting to convert() a non-TM datum
+has been reduced to a warning.</dd>
+<dt>/usr/local/lib/src/mkdoit2.awk</dt>
+<dd>Made statusscreen the default, elminating the alternative as
+unnecessary.</dd>
+<dt>/usr/local/bin/solfmt</dt>
+<dd>Raised allowable number of modes to 255!</dd>
+<dt>/usr/local/bin/tmcalgo</dt>
+<dd>Fixed bug which allowed some syntax errors through.</dd>
+<dt>/usr/local/lib/src/cycle.awk</dt>
+<dd>Added &quot;discard unless&quot; syntax</dd>
+<dt>/usr/local/lib/src/edf2ext.awk</dt>
+<dd>Added &quot;condition&quot; syntax</dd>
+<dt>/usr/local/bin/tmc, tmcV1R4beta</dt>
+<dd>New release of TMC (V1R4beta) provides more complete and flexible
+support for type conversions. See TMC manual for descriptions.</dd>
+<dt>/usr/local/lib/src/appgen.mk</dt>
+<dd>Alternate version support for TMC and TMCALGO. You can 
+specify &quot;make TMCVER=tmcV1R4beta&quot; to use the new version. Similarly
+&quot;make TMAVER=tmcalgoR1&quot; will use the old TMCALGO. This is simpler than
+the previously specified method. Added support for
+<a href="../manuals/cycle2.html">cycle</a> and
+<a href="../manuals/table.html">table</a> compilers.</dd>
+<dt>/usr/local/lib/nortlib*.lib</dt>
+<dd>Changes to tma_read_file() to correct inability to read long 
+files (more than 32 statements) and files with a modtime of zero.</dd>
+<dt>/usr/local/bin/tmcalgo</dt>
+<dd>Parser rejected TMC statements before the first state. Also 
+fixed assertion failure when a &quot;hold until&quot; immediately followed 
+a TMC statement with no intervening elapsed time. Also modified 
+default modtime on runtime input files (slurp files).</dd>
+<dt>/usr/local/lib/src/cmdgen.skel</dt>
+<dd>Fixed bug where invalid data was propagated to commands in 
+complex situations.</dd>
+<dt>/usr/local/include/rtgapi.h, /usr/local/lib/nortlib*.lib(rtgapi)</dt>
+<dd>Support for rtg_sequence(), a more efficient method of 
+reporting graphical data when an entire scan is ready.</dd>
+<dt>/usr/local/lib/nortlib*.lib(linefind)</dt>
+<dd>New library routines to support generic line acquisition 
+using an FFT-based correlation method.</dd>
+<dt>/usr/local/lib/nortlib*.lib(tmaR2)</dt>
+<dd>Fixed bug where validate commands at T==0 were ignored.</dd>
+</dl>
+
+<h3><a name="RH960524">05/24/96</a></h3>
+
+<dl>
+<dt>/usr/local/bin/tmcalgo, /usr/local/bin/tmcalgoR1</dt>
+<dd>New release of tmcalgo compiler with new syntaxes. Old 
+release has been renamed tmcalgoR1 to support those wishing to 
+delay conversion, but conversion is strongly recommended.</dd>
+<dt>/usr/local/bin/tmc</dt>
+<dd>Fix to SIGSEGV and an assert failure under error conditions.
+Now supports narrow formats on char conversions.</dd>
+<dt>/usr/local/bin/idx64, intserv, /usr/local/include/idx64.h</dt>
+<dd>Support for new Indexer64 board.</dd>
+<dt>/usr/local/lib/subbus*.lib</dt>
+<dd>Added sbba() and sbwa() which do the same as sbb() and sbw()
+except they return zero if no acknowledge is detected.</dd>
+<dt>/bin32/snafu, /usr/local/bin/snafu,
+/usr/local/lib/curses*.lib, /usr/local/lib/snf*.lib</dt>
+<dd>New version of the curses library which better supports 
+terminal connections.</dd>
+<dt>/usr/local/lib/src/mkdoit2.awk</dt>
+<dd>Special case bug #7 arising when using statusscreen but 
+running without windows and only one screen is required.</dd>
+</dl>
+
+<h3><a name="RH960105">01/05/96</a></h3>
+
+<dl>
+<dt>/usr/local/bin/mkdoit2,/usr/local/lib/src/mkdoit2.awk</dt>
+<dd>Numerous changes to provide better QWindows support and fewer
+hangups requiring expert resolution.</dd>
+<dt>/usr/local/bin/flight.sh</dt>
+<dd>Additions to simplify creation of runfile and interact 
+scripts.</dd>
+<dt>/usr/local/bin/fixdisk</dt>
+<dd>Now supports non-root filesystems, e.g. //1/pc/</dd>
+<dt>/usr/local/bin/saverun</dt>
+<dd>Supports new AltDir definition to support removable media. 
+saverun now performs all the waiting functions if the flight 
+directory is not located.</dd>
+<dt>/usr/local/bin/reduce</dt>
+<dd>Changes to support saverun mods and AltDir keyword.</dd>
+<dt>/usr/local/bin/ext2rtg</dt>
+<dd>Quick-and-dirty routine to generate an RTG configuration from
+an extraction program.</dd>
+<dt>/windows/apps/rtg/rtg</dt>
+<dd>Icons are now labeled with the window title. Direct draw now
+works, may provide better response (but won't print...).</dd>
+<dt>/bin32/snafu</dt>
+<dd>Version 2.1b. Includes new trace facility:<br>
+&quot;snafu -t&lt;tracefile&gt;&quot; will write every character input to the
+specified file. This can be helpful for developing scripts.</dd>
+<dt>/usr/local/bin/tmg2tmc,appgen, /usr/local/lib/src/tmg2tmc.awk,
+appgen.mk</dt>
+<dd>New micro-language for sending data to RTG. Now only one file 
+is required and the initializations are more automatic.</dd>
+<dt>/usr/local/bin/extract,reduce</dt>
+<dd>Restructured both routines to support run-specific extraction 
+procedures. This addresses the need to apply corrections to time 
+bases on a run-by-run basis.</dd>
+<dt>/usr/local/bin/idx64</dt>
+<dt>/usr/local/include/idx64.h</dt>
+<dt>/usr/local/lib/nortlib*.lib</dt>
+<dd>New indexer drivers for Indexer64, the Xilinx-based Subbus64
+version of the indexer.</dd>
+<dt>/usr/lib/windows/apps/rtg/rtg</dt>
+<dd>Eliminated arbitrary limit on the number of spreadsheet 
+channels supported.</dd>
+<dt>/usr/local/lib/ssp*.lib</dt>
+<dd>Eliminated arbitrary limit on the number of spreadsheet 
+positions supported.</dd>
+<dt>/usr/local/lib/src/edf2ext.tmc</dt>
+<dd>Added support for appending to existing spreadsheets.</dd>
+<dt>/usr/local/bin/extract</dt>
+<dd>Added support for rdr -L and -F options.</dd>
+<dt>/usr/local/bin/reduce</dt>
+<dd>Minor change to allow options to extraction programs 
+specified via Extractions in Experiment.config. Syntax now 
+supported is:
+<pre>            Extractions=&quot;'peakext -pyl' hox3ext&quot;
+</pre></dd>
+<dt>/usr/local/bin/parent</dt>
+<dd>Added new quit support code 'pf'. When received, parent will 
+only quit if it can locate a pick_file name on the network.</dd>
+<dt>/usr/local/bin/pick_file</dt>
+<dd>Now uses the new 'pf' quit code to parent and loops until
+parent acknowledges that the pick_file name is visible from 
+parent's node.</dd>
+<dt>/usr/local/lib/src/mkdoit2.awk</dt>
+<dd>Added support for &quot;doit wait&quot;</dd>
+</dl>
+
+<h3><a name="RH951006">10/6/95</a></h3>
+
+<dl>
+<dt>/usr/local/bin/ttdriver</dt>
+<dd><a href="../manuals/ttdriver.html">Thompson Stack Driver.</a></dd>
+<dt>/usr/local/bin/SerClient and SerServer</dt>
+<dd>General utilities for
+forwarding commands via RS232 or RS422 connection. Makes command 
+control possible via radio or modem.
+</dd>
+<dt>/usr/local/lib/src/cmdgen.skel</dt>
+<dd><p>Now sets nl_response to 1 
+before invoking compiled actions. This prevents the command 
+server from dying because some library routine reported an error.
+Also added changes to support screens of different sizes. This 
+change requires that client programs be recompiled before 
+linking. Clients will still use 80 columns regardless of the 
+console's width and will always use the bottom two rows of the 
+console. This will not be fully functional until nl_con_display()
+is modified and the TM skeltons are modified accordingly.</p>
+
+<p>Also added simple support for command forwarding through generic 
+command servers. The key was to allow a quit command to go out 
+from a client without having that client terminate, since the 
+forwarding mechanism is not guaranteed. Instead want the client 
+to wait for external verification of the remote system's 
+termination before terminating via an &quot;Exit&quot; command. This allows 
+a single client to exhibit slightly different behaviour depending 
+on whether it is being used in a networked or remote 
+configuration.</p>
+</dd>
+<dt>/usr/local/lib/nortlib*.lib cic.c</dt>
+<dd><p>Change to cic_init() to support generic version code in a 
+server as well as in a client. This is to support command 
+forwarding for serial connections.</p>
+
+<p>Added ttclient module to support ttdriver control of the Tommy
+Thompson Stack.</p>
+</dd>
+<dt>/usr/local/bin/winsetsize</dt>
+<dd>New utility to configure Wterm
+windows in QNX Windows to support data displays of varying sizes.
+</dd>
+<dt>/usr/local/src/fld2disp.awk</dt>
+<dd>Made #FIELD# selection rule more
+selective in order to support non-data field types for mkdoit2.
+</dd>
+<dt>/usr/local/bin/appgen and /usr/local/lib/src/appgen.mk</dt>
+<dd>Made some operations prettier.
+</dd>
+<dt>/usr/local/bin/pick_file</dt>
+<dd>Removed spurious warning about VC sid_nid.
+</dd>
+<dt>/usr/local/lib/src/mkdoit2.awk</dt>
+<dd><p>Better error reporting. 
+Mkdoit2 now complains about lines it doesn't understand and 
+complains about display lines with no screen definition. It also 
+deletes earlier files prior to creating a new one, which should 
+head off an error from chmod. Additional help text added to the 
+usage to explain operation under QNX Windows. Scripts will now 
+create empty rtg config files if they don't already exist.</p>
+
+<p>Added groundconfig keyword to support alternate DG 
+configurations, specifically serin and possibly rdr for 
+playback.</p>
+
+<p>Changes to take advantage of new parent feature.</p>
+</dd>
+<dt>/usr/local/bin/namewait</dt>
+<dd>Removed code which lowered namewait's
+priority to 1. Dan Dodge says it isn't necessary, and we've run
+into trouble where that priority was too low if something gets
+into an endless loop.
+</dd>
+<dt>/usr/local/bin/flight.sh</dt>
+<dd>Added a strategic namewait (on
+the advice of Dan Dodge) to resolve a race condition when
+FlightNode is defined in Experiment.config.
+</dd>
+<dt>/usr/local/bin/parent</dt>
+<dd>Added feature to clear consoles listed
+as argument on the command line.
+</dd>
+<dt>/usr/local/bin/subbus_*</dt>
+<dd>mods to resident libraries to support new
+set_cmdstrobe() function (required by syscon104).
+</dd>
+<dt>/usr/local/include/subbus.h</dt>
+<dd>mods for syscon104 support.
+</dd>
+<dt>/usr/local/bin/<a href="../manuals/mkdoit2.html">mkdoit2</a></dt>
+<dd>new application to create &quot;doit&quot; scripts.
+</dd>
+<dt>/usr/local/bin/appgen</dt>
+<dd>modified to support mkdoit2.
+</dd>
+<dt>/usr/local/bin/pick_file</dt>
+<dd>fixed bug when FlightNode is explicitly defined
+and different from the current node. Migrated to use oui and added
+-l option.
+</dd>
+<dt>/usr/local/bin/oui</dt>
+<dd>fixed bug which caused a SIGSEGV compiling packages
+with a specific number of options, none of which take arguments.</dd>
+</dl>
+
+<h3><a name="RH950606">6/6/95</a></h3>
+
+<dl>
+
+<dt>/usr/local/bin/parent</dt>
+<dd>Created to eliminate zombies. This replaces
+the use of namewait as the parent of all processes started from
+&quot;interact&quot; or &quot;runfile&quot; scripts.</dd>
+
+<dt>/usr/local/bin/flight.sh</dt>
+<dd>Refinements to improve operations when FlightNode
+is specified explicitly in Experiment.config. Also references new
+parent application.
+</dd>
+<dt>/usr/local/bin/saverun, reduce, flttime</dt>
+<dd>Modified to look for parent instead of namewait.
+</dd>
+<dt>/usr/local/bin/pick_file:</dt>
+<dd>Modified to spawn flight.sh when FlightNode is specified
+explicitly in Experiment.config.
+</dd>
+<dt>cmdgen.skel, nortlib*.lib, appgen and mkdoit:</dt>
+<dd>Modified to provide
+improved keyboard client behaviour during Quit and Exit. Keyboard
+clients, and hence entire GSE sessions, will now shutdown automatically
+whenever the &quot;flight&quot; program terminates, whether by algorithm or
+from another GSE station. Also shutdowns are much smoother for both
+Quit and Exit.
+</dd>
+<dt>/usr/local/lib/src/root.cmd</dt>
+<dd>Good example of the basic commands required for data acquisition.
+</dd>
+<dt>/usr/local/bin/nav</dt>
+<dd>Nav updated for new ER-2 nav format.
+</dd>
+<dt>/usr/local/bin/getcon</dt>
+<dd>New application to facilitate supporting multiple screens for
+one display program.</dd>
+
+</dl>
+
+<p>[<a href="http://www.arp.harvard.edu/">Anderson Group</a>]
+[<a href="../index.html">Data Acquisition Systems</a>]</p>
+
+<br>
+<hr noshade color="#000000">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+  <td>last updated: Mon Jun 21 10:49:36 2004</td>
+  <td align="right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</A></td>
+</tr>
+<tr>
+<td colspan="2"><font size="-2">
+Copyright 2004 by the President and Fellows of Harvard College
+</font></td>
+</tr>
+<tr>
+  <td align="center" colspan="2" width="100%">
+	<a href="/">[Home]</a>
+	<a href="/news.html">[News]</a>
+	<a href="/people.html">[People]</a>
+	<a href="/moreinfo.html">[More Info]</a>
+	<a href="/sci/">[Research Areas]</a>
+	<a href="/field/">[Field Missions]</a>
+	<a href="/eng/">[Engineering]</a>
+  </td>
+</tr>
+</table>
+</body>
+</html>

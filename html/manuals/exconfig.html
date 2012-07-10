@@ -1,0 +1,264 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Experiment.config Reference Manual</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="Harvard University Anderson Group Website">
+<meta name="keywords" content="ARP huarp data acquisition qnx atmosphere chemistry Anderson Harvard">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+
+<body>
+<div id="banner">
+<img name="daqlogo" src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map" border="0">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h1>Experiment.config Reference Manual</h1>
+
+	<p>The <tt>Experiment.config</tt> file is a shell script
+	which defines key features
+	of an instrument's configuration by defining shell variables.
+	It should originate in your source directory and 
+	also be added to your .spec file on a line which reads:</p>
+	
+	<pre>
+	  SCRIPTS = Experiment.config
+	</pre>
+
+	<p>This will cause "make distribution" to copy this file to the 
+	GSE directory and/or the flight directory. In real flight 
+	configurations where a separate computer is used for data 
+	acquisition, Experiment.config must also be copied into the 
+	/home/flight directory. (More on that later)</p>
+
+	<p>Among other things, Experiment.config may contain the 
+	following:</p>
+
+<table><tr><td>
+<ul>
+<li><a href="#Experiment">Experiment</a>=abc</li>
+<li><a href="#HomeDir">HomeDir</a>=/home/abc</li>
+<li><a href="#FlightNode">FlightNode</a>=3</li>
+<li><b>Reduce variables:</b>
+<ul>
+<li><a href="#AltDir">AltDir</a>=//1/pc/home/abc</li>
+<li><a href="#Extractions">Extractions</a>=&quot;abcext ctsext&quot;</li>
+<li><a href="#Analysis">Analysis</a>='anal/crunch.sh $analdir'</li>
+<li><a href="#CopyData">CopyData</a>=yes</li>
+<li><a href="#CopyHook">CopyHook</a>='. CopyHook'</li>
+<li><a href="#CopySpace">CopySpace</a>=5000</li>
+</ul></li></ul></td>
+<td><ul>
+<li><b>Saverun variables:</b>
+<ul>
+<li><a href="#AltDir">AltDir</a>=//1/pc/home/abc</li>
+<li><a href="#FixDisk">FixDisk</a>=yes</li>
+<li><a href="#SaveFiles">SaveFiles</a>=&quot;run.info&quot;</li>
+<li><a href="#LogFiles">LogFiles</a>=&quot;run.info&quot;</li>
+<li><a href="#LogDirs">LogDirs</a>=&quot;log*&quot;</li>
+<li><a href="#RunLog">RunLog</a>=saverun.log</li>
+<li><a href="#Dircksum">Dircksum</a>=maybe</li>
+<li><a href="#RunType">RunType</a>=raw/flight</li>
+<li><a href="#SaverunHook">SaverunHook</a>='. SaveHook'</li>
+</ul></li>
+</ul></td>
+<td valign="top"><ul><li><b>QNX6 flight.sh variables:</b>
+<ul>
+  <li><a href="#SCRIPT_OVERRIDE">SCRIPT_OVERRIDE</a>=/net/$FlightNode$HomeDir/script</li>
+  <li><a href="#PICKFILE">PICKFILE</a>='eval echo runfile.`sbswitch`'</li>
+  <li><a href="#RUNFILE">RUNFILE</a>=interact</li>
+  <li><a href="#SUBBUSD">SUBBUSD</a>=serusb</li>
+</ul></li></ul></td>
+</tr></table>
+
+<dl>
+
+<dt><a name="Experiment"><b>Experiment</b>=abc</a></dt>
+<dt><a name="HomeDir"><b>HomeDir</b>=/home/abc</a></dt>
+<dd>These two lines are always required. The HomeDir must not
+be node-specific, since it should refer to both the GSE 
+directory on the GSE node and the flight directory on the 
+flight node.</dd>
+
+<dt><a name="FlightNode"><b>FlightNode</b>=3</a></dt>
+<dd>This is usually not required, since the scripts should be 
+able to locate the flight node via the Experiment name. This
+may be specified for ad-hoc experiments or simulations.
+It is very important that this agree with reality if
+specified.<br><br>
+<b>For QNX6:</b> Since node names are easily configurable,
+it is required that FlightNode be defined whenever using
+a dedicated parent loop (usually by invoking 'login flight'
+from tinit) and must not be defined when running ad hoc
+operations on a local node. The value is the node's simple
+hostname, e.g. <code>FlightNode=tilde</code>.
+</dd>
+
+<dt><a name="AltDir"><b>AltDir</b>=//1/pc/home/abc</a></dt>
+<dd>AltDir specifies an alternate location to find the flight 
+directory. This is used when the flight filesystem is on 
+removable media which might move to a different location for data 
+analysis. The AltDir specification will only be used if the 
+flight node is not found on the network.</dd>
+
+<dt><a name="Extractions"><b>Extractions</b>="abcext ctsext"</a></dt>
+<dd>This line replaces the definition of EXTRACTIONS in earlier 
+versions of the reduce script. If defined, these extractions 
+will be run during a "reduce".</dd>
+
+<dt><a name="Analysis"><b>Analysis</b>='anal/crunch.sh $analdir'</a></dt>
+<dd>Defines an executable (or executable script) to be
+invoked by reduce after any extractions have been performed.
+$analdir is a shell variable which defines where the extraction 
+products (e.g. spreadsheets) are located. $directory is another 
+variable which indicates where the raw data is located.
+If the script requires options, they should be included
+in the definition.
+
+<p>It is my practice to store Analysis scripts in the anal
+subdirectory, so a natural definition might be:
+Analysis='anal/script -f opt $analdir'. Note that single quotes 
+must be used in this definition so the shell variables won't be 
+expanded too early.</dd>
+
+<dt><a name="FixDisk"><b>FixDisk</b>=no</a></dt>
+<dd>Referenced by saverun, this option determines whether the
+QNX chkfsys is run on the flight disk before any file copying 
+is performed. The default is no.</dd>
+
+<dt><a name="CopyData"><b>CopyData</b>=yes</a></dt>
+<dd>Referenced by reduce, this option determines whether logged 
+TM data is copied from the flight node to the GSE node. The 
+default is yes. Specifying no does not disable extractions or 
+analysis which will simply reference the raw data directly on 
+the flight node. The extracted data will be place in the 
+current directory and in subdirectories thereof.</dd>
+
+<dt><a name="CopyHook"><b>CopyHook</b>='. CopyHook'</a></dt>
+<dd>If defined, reduce eval's this variable after data is
+copied.</dd>
+
+<dt><a name="CopySpace"><b>CopySpace</b>=5000</a></dt>
+<dd>If defined, specifies the amount of space in KB that
+should be left on the target device after the data is
+copied. If the condition cannot be met, the copy is skipped
+and a warning message is issued, but the rest of the reduce
+operation continues.</dd>
+
+<dt><a name="SaveFiles"><b>SaveFiles</b>="run.info"</a></dt>
+<dd>When creating a run directory, saverun automatically copies
+all files in the HomeDir matching the patterns "*.pcm *.tmc *.prt
+*.tma *.sol tm.dac VERSION". SaveFiles is a list of additional
+files which saverun should copy. This is useful if you have
+custom configuration files which vary from run to run which you
+would like to save.</dd>
+
+<dt><a name="LogFiles"><b>LogFiles</b>="*.log"</a></dt>
+<dd>LogFiles identifies files located in the HomeDir of the
+flight node that should be <em>moved</em> into the run directory by
+saverun. The default value of "*.log" will move the standard
+experiment log file, (and *.log should therefore be part of any
+LogFiles definition). Any directories which match these patterns
+will be ignored.</dd>
+
+<dt><a name="LogDirs"><b>LogDirs</b>="log*"</a></dt>
+<dd>LogDirs identifies subdirectories that saverun should move
+into the run directory. Any regular files (non-directories) which
+match these patterns will be ignored.</dd>
+
+<dt><a name="RunLog"><b>RunLog</b>="saverun.log"</a></dt>
+<dd>RunLog indicates that the specified file should contain text
+describing the nature of the run. If the file is found in the run
+directory after all the SaveFiles, LogFiles and LogDirs have been
+processed, no further action is required. Otherwise, saverun will
+prompt the user to enter a description of the run which will be
+written to this file.</dd>
+
+<dt><a name="Dircksum"><b>Dircksum</b>=maybe</a></dt>
+<dd>If set to "yes", specifies that dircksum should be run on all
+new run directories after all the files are moved and/or copied
+into it. If set to "no", dircksum will never be run.
+If set to &quot;maybe&quot;, the user will be prompted to
+determine whether a dircksum is warranted unless the run
+has been designated a 'flight' run, in which case the
+&quot;maybe&quot; is promoted to &quot;yes&quot;.
+If Dircksum is undefined, dircksum will be run for
+flight data only and not for any other run type.
+<p>Running dircksum can add a considerable amount of
+time to the processing of flight data,
+but experimenters should definitely consider enabling this option
+as one of the best methods of safeguarding the quality of their
+data as it is propogated from system to system.</p></dd>
+
+<dt><a name="RunType"><b>RunType</b>=raw/flight</a></dt>
+<dd>Specifies the subdirectory under which new runs should
+be saved by saverun. The specified directory must be one of
+'raw/flight', 'raw/preflt', 'raw/cal', 'raw/data', 'raw/junk'
+or 'ask'. In the case of 'ask', the user will be prompted for
+where to save the data. If RunType is unspecified, the runs
+are saved directly under the run directory.</dd>
+
+<dt><a name="SaverunHook"><b>SaverunHook</b>='. SaveHook'</a></dt>
+<dd>If defined, saverun eval's this variable after it is
+determined that there are log files worth saving and
+before the RunType has been determined.</dd>
+</dl>
+
+<h2>QNX6 Script Selection Variables</h2>
+<p>These variables define what instrument operation script is run
+by the <code>flight.sh</code> script.</p>
+
+<dl>
+<dt><a name="SCRIPT_OVERRIDE"><b>SCRIPT_OVERRIDE</b></a>=<code>/net/$FlightNode$HomeDir/script</code></dt>
+<dd>This variable allows a "doit" script to specify the script to run
+or to prevent any script from running. As such, it is probably required
+for any instrument, and the value specified here is a useful default.
+The value of this variable is the name of a file that may contain
+the name of a script. If the file exists, the name of the script is
+read from the file, and the file is deleted.</dd>
+
+<dt><a name="PICKFILE"><b>PICKFILE</b></a>=<code>'eval echo runfile.`sbswitch`'</code></dt>
+<dd>If SCRIPT_OVERRIDE is not defined or the file it specifies does
+not exist and PICKFILE is defined,
+PICKFILE is eval'ed, and the output is the name of a script file.
+</dd>
+
+<dt><a name="RUNFILE"><b>RUNFILE</b></a>=<code>interact</code></dt>
+<dd>If neither of the previous two cases apply and RUNFILE is defined, it is the name of the script to run. Otherwise the script name is
+<code>runfile.dflt</code>.
+</dd>
+
+<dt><a name="SUBBUSD"><b>SUBBUSD</b></a>=<code>serusb</code></dt>
+<dd>Since subbus access may be required by PICKFILE before the
+RUNFILE is executed, we need a place to start subbusd. If this
+variable is defined and /dev/huarp/subbus is not present, flight.sh
+will launch subbusd_$SUBBUSD before deciding what script to run.
+The currently available options are <code>serusb</code> and
+<code>sc104</code>.
+</dd>
+</dl>
+
+<p>Additional definitions may be added over time and should be
+documented here when added. Ambitious experimenters are
+encouraged to add their own configuration information to
+this file. I will be happy to help implement such an 
+approach.</p>
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Mon Feb 14 12:52:32 2011</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2011 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

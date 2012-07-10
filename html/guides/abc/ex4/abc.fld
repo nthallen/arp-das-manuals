@@ -1,0 +1,12 @@
+/* form: lines, cols, pos_y, pos_x */
+#FORM# 25 80 0 0
+/* attribute type */
+#ATTRIBUTES# NORMAL FIELD 
+/* fields: number, line, col, width, length, attribute code, string */
+#FIELD# 2 5 24 5 1 1 "C2"
+#FIELD# 1 4 24 5 1 1 "C1"
+/* strings: line, col, attribute code, string */
+#STRING# 4 20 0 "C1"
+#STRING# 4 24 1 "     "
+#STRING# 5 20 0 "C2"
+#STRING# 5 24 1 "     "

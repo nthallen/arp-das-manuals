@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>ci_sendcmd</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>ci_sendcmd</h1>
+<h2>Synopsis</h2>
+<pre>
+    #include "nortlib.h"
+    #include "cmdalgo.h"
+    
+    int ci_sendcmd(const char *cmdtext, int mode);
+    
+</pre>
+<h2>Description</h2>
+<p>ci_sendcmd() is the basic method to send a command to a
+CMDGEN-generated Command Server. cmdtext is a NUL-terminated
+ASCII string. It should include any terminating newline (e.g.
+"Quit\n") or the command will not actually be executed. The
+string must conform to the syntax specified in the CMDGEN input
+for the particular server or a syntax error will occur.<P>
+</p>
+<p>If cmdtext is NULL, a syntax-independent quit request is sent to
+the server.<P>
+</p>
+<p>The mode argument takes on the following values:
+</p>
+<p><DL>
+  <DT>CMDINTERP_SEND (0)
+  <DD>Execute the command and log it to memo via msg().
+  <DT>CMDINTERP_TEST (1)
+  <DD>Check the command for syntax only, but do not execute it
+  or log it.
+  <DT>CMDINTERP_SEND_QUIET (2)
+  <DD>Execute the command but do not log it to memo.
+</DL>
+</p>
+<h2>Returns</h2>
+<p>  Returns zero on success. If the command server cannot be
+  located (and <a href="nl_response.html">nl_response</a> is set below 3) returns 1.  Otherwise, the return value is the sum of a type code and a
+  value. The possible types are CMDREP_QUIT, CMDREP_SYNERR and
+  CMDREP_EXECERR. CMDREP_QUIT indicates that the command you sent
+  was a quit request, which probably means the client should shut
+  down also. CMDREP_SYNERR indicates there was a syntax error in
+  the command you sent. The value portion of the return code is
+  the offset within the command where the error occurred.
+  CMDREP_EXECERR indicates that an error occurred when the server
+  was executing the instructions associated with the command. The
+  value portion of the return code is the error code.
+</p>
+<h2>See Also</h2>
+<p>  <a href="ci_sendfcmd.html">ci_sendfcmd</a>(), <a href="ci_settime.html">ci_settime</a>(), <a href="ci_settime.html">ci_time_str</a>(), and  <a href="subject.html#sub6">Command Server and Client</a> functions.</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/cic.c">/usr/local/src/nortlib/cic.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

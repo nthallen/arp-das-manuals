@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>EDF Syntax</TITLE>
+</HEAD>
+<BODY>
+<H1>EDF Syntax</H1>
+
+Files with a <CODE>.edf</CODE> extension are used to define 
+the extraction of experimental data from the raw data files 
+written by the <CODE>lgr</CODE> program to SNAFU spreadsheet 
+format, which is more suitable for data analysis. The 
+<CODE>edf2ext</CODE> compiler converts these definitions into TMC 
+code, which is in turn compiled to C and linked into an 
+executable which performs the actual extraction.
+The SNAFU spreadsheet format is not the only possible format for 
+data analysis, and creating other methods of extraction is not 
+difficult. The <CODE>.tmc</CODE> output from <CODE>edf2ext</CODE> 
+can be used as a starting point for the development of 
+alternative extractions.<P>
+
+An <CODE>.edf</CODE> file defines extraction to one or more 
+spreadsheets. Each spreadsheet must be identified by name and the 
+number of columns. An optional keyword, <CODE>separate</CODE> can 
+be added, which is explained later.
+<PRE>
+        spreadsheet &lt;name&gt; &lt;n_columns&gt; [ separate ]
+</PRE>
+After the spreadsheet is identified, the columns to which data is 
+to be extracted are defined:
+<PRE>
+        &lt;column&gt; &lt;mnemonic&gt; &lt;format&gt; [ &lt;conversion&gt; ]
+</PRE>
+<CODE>&lt;column&gt;</CODE> is the column number, which must be 
+greater than zero and less than the number of columns in the 
+spreadsheet. Column zero is reserved for Time.<P>
+
+<CODE>&lt;mnemonic&gt;</CODE> is the datum mnemonic which must 
+correspond to a TMC definition.<P>
+
+<CODE>&lt;format&gt;</CODE> is a C-style output format which 
+SNAFU can use to display the data. (SNAFU supports some extensions 
+to the C formats. Refer to the SNAFU manual for details.)<P>
+
+<CODE>&lt;conversion;&gt;</CODE> is an optional parameter which 
+allows you to override the conversion defined for the mnemonic's 
+TMC type. This is useful, for example, if you would like to 
+extract the raw, unconverted data or use a more sophisticated 
+conversion than the one used for realtime display.<P>
+
+At any point in the file, the keyword <CODE>init_only</CODE> may 
+be specified to suppress the generation of the code which places 
+each data point into the spreadsheet. This is useful when you 
+wish to take more direct control of how data is written to the 
+spreadsheet or when multiple numbered spreadsheets are required 
+from a single specification (e.g. one for each scan).<P>
+
+Another method for controlling what data goes into a spreadsheet 
+is the <CODE>condition</CODE> keyword. This may be placed on the 
+line immediately following <CODE>spreadsheet</CODE> and includes 
+a conditional statement which defines which values should be 
+included. For example:
+
+<PRE>
+        spreadsheet foo 5
+		condition if ( status == 7 )
+</PRE>
+
+or
+
+<PRE>
+        spreadsheet foo 5
+		condition depending on ( SCANNING )
+</PRE>
+
+The optional <CODE>separate</CODE> keyword indicates that each 
+column should be inserted when it is received independent of the 
+rates of the other data in the spreadsheet. By default, data is 
+inserted into the spreadsheet at the rate of the slowest channel 
+in the spreadsheet. When <CODE>separate</CODE> is in effect, 
+slower-rate channels will have blank cells when the higher-rate 
+data is inserted. This is rarely useful. More commonly, data is 
+segregated by rate and then combined as appropriate using SNAFU's 
+merge capabilities.<P>
+<PRE>
+<HR>
+Return to <A HREF="index.html">Manuals Guide</A>
+(c)1995 <A HREF="mailto:allen@huarp.harvard.edu">Norton T. Allen</A>
+</PRE>
+</BODY>
+</HTML>

@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>rtg_report</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>rtg_report</h1>
+<h2>Synopsis</h2>
+<pre>
+    
+      #include "rtgapi.h"
+    
+      int rtg_report(rtg_t *rtg, double X, double Y);
+    
+</pre>
+<h2>Description</h2>
+<p>  Sends a single data point to RTG.
+</p>
+<h2>Returns</h2>
+<p>  Returns 0 on success, non-zero
+  on error. All errors are non-fatal. Even if the RTG server dies,
+  subsequent calls to rtg_report() can connect to a new invocation
+  of the server.
+</p>
+<h2>See Also</h2>
+<p>  <a href="rtg_init.html">rtg_init</a>(), <a href="rtg_sequence.html">rtg_sequence</a>(),  <a HREF="http://www.arp.harvard.edu/das/manuals/rtg.html">
+  RTG</A>,
+  <a HREF="http://www.arp.harvard.edu/das/manuals/tmg.html">
+  TMG: A TMC Preprocessor for interfacing to RTG</A>.
+</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/rtgapi.c">/usr/local/src/nortlib/rtgapi.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>IntSrv_Int_attach</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>IntSrv_Int_attach</h1>
+</p>
+<h2>Synopsis</h2>
+<pre>
+    #include "intserv.h"
+    
+    int IntSrv_Int_attach( char *cardID, unsigned short address,
+    						int region, pid_t Proxy );
+    int IntSrv_Int_detach( char *cardID );
+    int IntSrv_IRQ_attach( char *cardID, int IRQ, pid_t Proxy );
+    int IntSrv_IRQ_detach( char *cardID, int IRQ );
+    
+</pre>
+<h2>Description</h2>
+<p>IntSrv_Int_attach() and IntSrv_Int_detach() provide the API
+support for the interrupt architecture of the "Subbus64" bus. All
+boards on this bus share a common interrupt line. To determine
+which board asserted an interrupt, intserv reads from the
+interrupt acknowledge address. Each board is dynamically assigned
+one of the 8 acknowledge lines, and will assert that line during
+interrupt acknowledge if an interrupt is pending.
+</p>
+<p>IntSrv_Int_attach() configures the card at the specified address
+and associates the Proxy with its interrupt. CardID is a string
+which uniquely identifies the card which is being configured.
+If the requesting process dies without detaching the interrupt
+and is then restarted, intserv will detect that a request for the
+same card has been received and figure out what the problem is.
+</p>
+<p>IntSrv_Int_detach() disables the card's interrupt.
+</p>
+<p>IntSrv_IRQ_attach() attaches a proxy to the specified IRQ. This
+allows a non-privileged process to service interrupts indirectly.
+</p>
+<p>IntSrv_IRQ_detach() detaches the proxy from the specified IRQ.
+</p>
+<h2>Returns</h2>
+<p>Zero on success.
+</p>
+<h2>See Also</h2>
+<p><A HREF="http://www.arp.harvard.edu/eng/das/manuals/idx64/idx64.html#SBIF">Indexer 64
+Implementation</A>
+</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/intserv.c">/usr/local/src/nortlib/intserv.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

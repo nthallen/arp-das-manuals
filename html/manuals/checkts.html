@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>checkts: Test of log file integrity</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h2>checkts: Test of Log File Integrity</h2>
+
+<h3>Invocation:</h3>
+
+<dl>
+<dt><code>checkts dir [dir ...]</code></dt>
+<dd>dir is the name of a run directory containing tm.dac and
+   log directories, <i>e.g.:</i> <code>checkts 020509.1</code>
+</dd>
+</dl>
+
+<h3>Description</h3>
+
+<p>checkts analyzes the raw telemetry data in the specified
+directories. It reports the contents of the tm.dac
+file, and then checks the basic integrity of the raw
+log files by verifying that the timestamp records in
+each file make sense. If a timestamp represents a
+negative time jump or an exceedingly long skip forward,
+it is reported as an 'Unlikely timestamp'. In our
+experience, these situations usually arise due to log
+file corruption, and the simple solution is to remove
+or rename the questionable files. [It is possible that
+some useful data could be extracted from these files if
+they are only 'partly' corrupted, but usually it is not
+worth the effort. By renaming rather than removing, you
+reserve the option of digging deeper if that level of
+effort is deemed worthwhile.]
+</p><br>
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Thu May 22 14:44:01 2003</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2003 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

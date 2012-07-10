@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>TMCALGO R1: Algorithm Compiler</TITLE>
+</HEAD>
+<BODY>
+<H1>TMCALGO R1: Algorithm Compiler</H1>
+
+<P>Note: this document does not refer to the latest version of
+the TMCALGO language. Please refer to <A HREF="tmcalgo.html">TMCALGO R2</A>
+for the latest documentation.
+
+<H2>Contents</H2>
+<PRE>    <A HREF="#P0.0">0.0</A>: Invocation
+    <A HREF="#PA.0">A.0</A>: Syntax
+      <A HREF="#PA.1">A.1</A>: Grammar
+      <A HREF="#PA.2">A.2</A>: Lexical Syntax
+</PRE>
+<H2><A NAME="P0.0">0.0</A>: Invocation</H2>
+<PRE>    tmcalgo [options] [files]
+            -k             Keep output file (.c) even on error
+            -o &lt;filename&gt;  Send .tmc output to named file
+            -v             Produce Debug Messages
+            -q             Show this help message
+            -w             Give error return on warnings
+            -C &lt;node&gt;      Look for command server on specified node
+</PRE>
+<H2><A NAME="PA.0">A.0</A>: Syntax</H2>
+
+Following is a list of rules for interpreting the
+<A HREF="#PA.1">TMCALGO Input Grammar</A> specification followed
+by the TMCALGO Input Grammar
+specification itself. Don't confuse these rules with the rules
+for interpreting a TMCALGO program, which is what the grammar
+defines. Since we're using a grammar to define a program which
+is used to define other grammars, there is a heavy dose of
+self-referentiation. If you lose your bearings, get outside
+and walk fast enough to double your heartrate for at least 20
+minutes.<P>
+
+<UL>
+<LI>Items typed in <TT>TYPEWRITER</TT> font (uppercase) represent
+keywords which would be entered explicitly in a TMCALGO program.
+
+<LI>An item typed in lowercase is a non-terminal. The grammar
+recursively defines how non-terminals can be expanded. For
+example, the non-terminal <A HREF="#rules">rules</A> can be
+expanded by zero or more <A HREF="#rule">rule</A> non-terminals,
+and so on. Each line beginning with an indented colon (:) marks
+a possible expansion of the non-terminal being defined. Within
+an one of these expansions, each reference to a non-terminal is
+a link to that non-terminal's definition.
+
+<LI>Items bracketed by angle brackets (e.g.
+&lt;INTEGER&gt;) are lexical tokens. Their syntax should be implicit in
+their names.
+
+<LI>I have used brackets ([]) to signify optional items. I use the
+notation [ item ... ] to indicate that an optional item may be
+repreated indefinitely. The colon (:)
+at the beginning of a line identifies a non-terminal expansion
+(right-hand-side).
+Literal punctuation is enclosed in single quotes ('*').
+</UL>
+
+<H2><A NAME="PA.1">A.1</A>: TMCALGO Input Grammar</H2>
+<PRE>  <A NAME="program">program</A>
+    : [ <A HREF="#prog-item">prog-item</A> ... ]
+  <A NAME="prog-item">prog-item</A>
+    : <A HREF="#TMC-STATEMENT">&lt;TMC-STATEMENT&gt;</A>
+    : STATE <A HREF="#NAME">&lt;NAME&gt;</A> '{' <A HREF="#untimed-commands">untimed-commands</A> <A HREF="#timed-commands">timed-commands</A> '}'
+    : PARTITION
+  <A NAME="untimed-commands">untimed-commands</A>
+    : [ <A HREF="#TMC-STATEMENT">&lt;TMC-STATEMENT&gt;</A> ... ]
+  <A NAME="timed-commands">timed-commands</A>
+    : [ [ [ '+' ] <A HREF="#time">time</A> ] <A HREF="#command">command</A> ... ]
+  <A NAME="time">time</A>
+    : <A HREF="#INTEGER">&lt;INTEGER&gt;</A> [ ':' <A HREF="#INTEGER">&lt;INTEGER&gt;</A> ... ]
+  <A NAME="command">command</A>
+    : <A HREF="#TEXT-COMMAND">&lt;TEXT-COMMAND&gt;</A>
+    : <A HREF="#TMC-STATEMENT">&lt;TMC-STATEMENT&gt;</A>
+</PRE>
+
+<H2><A NAME="PA.2">A.2</A>: TMCALGO Lexical Syntax</H2>
+
+<DL>
+<DT><A NAME="TEXT-COMMAND">&lt;TEXT-COMMAND&gt;</A>
+<DD>A text command is a written instrument command prefixed by a right
+angle-bracket (&gt;). The syntax must match that of the command
+client/server pair. For example:
+<PRE>              &gt; Lamp On
+</PRE>
+
+<DT><A NAME="TMC-STATEMENT">&lt;TMC-STATEMENT&gt;</A>
+<DD>As you might guess, a TMC statement bracketed
+by, well, brackets ([ ]). The syntax is not checked until TMC gets it.
+For example:
+<PRE>              [ validate lamp_is_on; ]
+</PRE>
+<DT><A NAME="INTEGER">&lt;INTEGER&gt;</A>
+<DD>An integer consists of one or more digits.
+<DT><A NAME="NAME">&lt;NAME&gt;</A>
+<DD>A name is a unique C-style symbol (begins with a letter and
+consists of letters, numbers and/or underscore characters) used
+to identify the state.
+</DL>
+<PRE>
+<HR>
+Return to <A HREF="index.html">Manuals Guide</A>
+(c)1995 <A HREF="mailto:allen@huarp.harvard.edu">Norton T. Allen</A>
+</PRE>
+</BODY>
+</HTML>

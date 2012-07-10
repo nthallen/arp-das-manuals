@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<HTML>
+  <HEAD>
+	<TITLE>ARP Hardware and Hardware Diagnostics Guide</TITLE>
+  </HEAD>
+  <BODY>
+<H1>ARP Hardware and Hardware Diagnostics Guide</H1>
+<H2>Contents</H2>
+<PRE>	<A HREF="#P1.0">1.0: Hardware</A>
+	  <A HREF="#P1.1">1.1: System Controller</A>
+	  <A HREF="#P1.2">1.2: ICC Backplane</A>
+	  <A HREF="#P1.3">1.3: Timerbd</A>
+	  <A HREF="#P1.4">1.4: A/D</A>
+	  <A HREF="#P1.5">1.5: D/A</A>
+	  <A HREF="#P1.6">1.6: Digio</A>
+	  <A HREF="#P1.7">1.7: Counters</A>
+	  <A HREF="#P1.8">1.8: Indexer</A>
+	  <A HREF="#P1.9">1.9: Ozone Board</A>
+	<A HREF="#P2.0">2.0: Diagnostics</A>
+	  <A HREF="#P2.1">2.1: General Guidelines</A>
+	  <A HREF="#P2.2">2.2: SYSCON</A>
+	  <A HREF="#P2.3">2.3: SCDEBUG</A>
+	  <A HREF="#P2.4">2.4: BCKPLN</A>
+	  <A HREF="#P2.5">2.5: CARD</A>
+	  <A HREF="#P2.6">2.6: DIGITAL2</A>
+	  <A HREF="#P2.7">2.7: TMRTEST</A>
+	  <A HREF="#P2.8">2.8: DTOATEST</A>
+	  <A HREF="#P2.9">2.9: INDXDIAG</A>
+</PRE>
+
+<H2><A NAME="P1.0">1.0: Hardware</A></H2>
+
+For each board type, I would like to provide the following information:
+	
+<PRE>
+	What is the function of the board?
+	What are the salient performance figures?
+	What are the different configuration options?
+	  What are the important addresses?
+	  What are the jumper options?
+	  Are mods required to the board? Where are they specified?
+	What diagnostics are available?
+</PRE>
+
+<H3><A NAME="P1.1">1.1: System Controller</A></H3>
+
+The System Controller, in its various revisions, provides
+the interface between the ISA bus of an instrument's computer
+and the "Subbus" for connection to the Interface Card Cage (ICC)
+and other in-house electronics.<P>
+
+Documentation currently available for the System Controllers
+consists of schematics (offline) and the
+<A HREF="../manuals/subbus.html">Subbus Cable Definition</A><P>
+
+The diagnostic utilities which pertain to the System Controllers
+are <A HREF="#P2.2">syscon</A>, <A HREF="#P2.3">scdebug</A>,
+and <A HREF="#P2.4">bckpln</A>.
+
+<H3><A NAME="P1.2">1.2: ICC Backplane</A></H3>
+<H3><A NAME="P1.3">1.3: Timerbd</A></H3>
+<H3><A NAME="P1.4">1.4: A/D</A></H3>
+<H3><A NAME="P1.5">1.5: D/A</A></H3>
+<H3><A NAME="P1.6">1.6: Digio</A></H3>
+<H3><A NAME="P1.7">1.7: Counters</A></H3>
+<H3><A NAME="P1.8">1.8: Indexer</A></H3>
+<H3><A NAME="P1.9">1.9: Ozone Board</A></H3>
+
+<H2><A NAME="P2.0">2.0: Diagnostics</A></H2>
+
+For each diagnostic utility, I would like to answer the following 
+questions:
+
+<PRE>
+	What hardware does it address?
+	What kind of problems can it identify?
+	Under what conditions can the utility be run?
+	  While TM is running?
+	  With the instrument connected?
+	  With cards installed in the ICC?
+	If a problem is identified, what then?
+	  For example, if SYSCON fails, scdebug might well be the next step.
+</PRE>
+
+<H3><A NAME="P2.1">2.1: General Guidelines</A></H3>
+
+By way of introduction, there are some common features of the diagnostic 
+packages discussed here. With one or two exceptions, these diagnostics are 
+designed to be run stand-alone. That is, they should not be run while data 
+acquisition is underway. Some of the diagnostics require that any 
+instrumentation be disconnected from the cards under test or that cards be 
+removed from the ICC. Please make sure that you understand the rules for 
+the diagnostic you plan to run before invoking it.<P>
+
+Our user-level data acquisition operations allow you to issue a simple 
+command to cause data acquisition to begin on a node which is (possibly)
+different from your GSE. This is generally not the case with the 
+diagnostics. While they can be run over the network, they must execute on 
+the node connected to the hardware. There are several ways to accomplish 
+this in QNX. If the flight node is 20, any of the following commands will 
+cause <TT>card</TT> to be executed on node 20:<P>
+
+<PRE>
+	//20 card
+	on -n 20 card
+	onnode 20 card
+</PRE>
+
+You may also wish to start a shell on the flight node so all subsequent 
+commands will be invoked on that node:<P>
+
+<PRE>
+	on -n 20 sh
+</PRE>
+I will briefly summarize each of the existing diagnostics with a more 
+detailed description to follow.
+
+<H3><A NAME="P2.2">2.2: SYSCON</A></H3>
+
+<TT>syscon</TT>
+tests each function of the System Controller board. As the first 
+link in the path to the instrument, this is always a good place to start. 
+This diagnostic doesn't help much if problems are reported, in which case 
+you will probably need to advance to
+<TT>scdebug</TT>.
+
+<H3><A NAME="P2.3">2.3: SCDEBUG</A></H3>
+<TT>scdebug</TT>
+is very much an interactive diagnostic. It performs a number of tests on 
+the System Controller and attempts to identify particular problem areas. 
+When a problem is uncovered,
+<TT>scdebug</TT>
+loops, continuously performing an action appropriate to facilitate hardware 
+diagnosis of the problem. For example, if data is not being read back 
+correctly from one of the latches,
+<TT>scdebug</TT>
+will repeatedly write and read the problem data so the bit values can be 
+traced throughout the board.<P>
+
+<H3><A NAME="P2.4">2.4: BCKPLN</A></H3>
+If
+<TT>syscon</TT>
+passes,
+<TT>bckpln</TT>
+is the next place to look.
+<TT>bckpln</TT>
+allows you to manipulate all of the computer-controlled signals on the 
+subbus cable and the ICC backplane. It includes configuration options to 
+allow it to be used with no more test equipment than a volt meter but
+includes functionality to obtain more detailed data if a scope is 
+available.<P>
+
+<H3><A NAME="P2.5">2.5: CARD</A></H3>
+<TT>card</TT>
+is the one diagnostic that can safely be run during data acquisition. 
+Except for the "subbus debug" mode, it is a totally passive diagnostic, 
+simply reading data values from A/D boards. At a quick glance,
+<TT>card</TT>
+can tell you whether your A/D boards are behaving properly. It is also 
+useful for verifying raw data values when reading converted values off of a 
+telemetry screen.<P>
+
+<H3><A NAME="P2.6">2.6: DIGITAL2</A></H3>
+<TT>digital2</TT> is similar to <TT>bckpln</TT> and <TT>scdebug</TT>
+in that it provides low-level control over all the digital command lines on 
+all of the digital command boards. It should definitely be run with the 
+instrument disconnected, for obvious reasons. With a digio board in the 
+ICC, it is an excellent end-to-end 
+diagnostic since it can write to latches on both sides of the data bus and 
+read back the values. If it passes its initialization successfully, you can 
+be assured the datapath to the ICC is sound.<P>
+
+<H3><A NAME="P2.7">2.7: TMRTEST</A></H3>
+<TT>tmrtest</TT>
+provides a crude test of the functionality of the timer board (formerly 
+known as the "System Board"). This is a pass/fail test, and is of little 
+use in diagnosing a malfunctioning board. It does work effectively to 
+disable the use of timers whose interrupts are not working.<P>
+
+<H3><A NAME="P2.8">2.8: DTOATEST</A></H3>
+This diagnostic provides enough controls to fully exercise D/A converters. 
+Tests for linearity, full scale calibration, slew rate and hysteresis are 
+all possible.<P>
+
+<H3><A NAME="P2.9">2.9: INDXDIAG</A></H3>
+This is a low-level diagnostic for the indexer boards along the lines of 
+<TT>scdebug.</TT>
+For a higher-level workout, we have a complete data acquisition setup which 
+provides all the high-level commands with a realtime display.<P>
+
+(c)1995 Norton T. Allen
+</BODY>
+</HTML>

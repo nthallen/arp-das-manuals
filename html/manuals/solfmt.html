@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Solenoid Cycle Definitions v3.0</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<H1>Solenoid Cycle Definitions v3.0</H1>
+
+<H2>Contents</H2>
+<UL>
+<LI><A HREF="#Introduction">Introduction</A>
+<LI><A HREF="#Tutorial">Tutorial</A>
+<LI><A HREF="#Reference">Reference</A>
+<LI><A HREF="#Syntax">.sol File Syntax</A>
+<LI><A HREF="#SFTFMT">.sft File Format</A>
+</UL>
+
+<H2><a id=Introduction>Introduction</A></H2>
+
+Solenoid Cycles are specified in a text file.  The format of this file is
+designed to be simple yet flexible, providing the experimenter with all the
+standard capabilities for solenoid control in a self documenting style.  The
+solenoid file allows the definition of any number of modes of operation at
+possibly different time resolutions.
+
+<H2><a id="Tutorial">Tutorial</A></H2>
+
+To illustrate the use of the solenoid format, I will define a cycle to drive
+two solenoids in a four second cycle with a resolution of 1/4 second. 
+First, we must define the two solenoids.  I will call them A and B.
+<PRE>
+        solenoid A 22 23 14
+        solenoid B 24 25 15
+</PRE>
+The first line defines A to be a solenoid and specifies that command 22
+will open A, 23 will close it, and status bit 14 will report its state. 
+Similarly, the second line associates B with commands 24 and 25 and
+status bit 15.<P>
+
+Next, we specify the time resolution we want:
+<PRE>
+        resolution = 1/4
+</PRE>
+Now we are ready to specify the solenoid cycles:
+<PRE>
+        mode 0 {
+          A: OOOO:OO__:____:__OO
+          B: ____:_OOO:____:____
+        }
+</PRE>
+This command defines the actual solenoid positions for mode 0.  The character
+`O' represents an open solenoid valve and the character `_'
+represents a closed valve. Solenoid A starts out open and remains open
+for one and a half seconds, then stays closed for two seconds, when it
+reopens.  B starts closed and opens 1/4 of a second before A
+closes, and then stays open for only 3/4 of a second.  The length of the
+cycle is implicit in this definition.
+
+The format of the mode command is fairly flexible.  If all the information
+doesn't fit on one line, it may be continued on another line simply by
+beginning the new line with the solenoid name and a colon.  This continuation
+does not have to appear immediately after its predecessor, since the name
+makes it clear to which sequence the data belongs.  Hence, we could add
+another four seconds to this mode with the command:
+
+<PRE>
+        mode 0 {
+          A: OOOO:OO__:____:__OO
+          B: ____:_OOO:____:____
+
+          A: OOOO:OO__:___O:_O_O
+          B: ____:_OOO:OOO_:O_O_
+        }
+</PRE>
+
+It is also possible to change the characters which designate open and closed
+valves by using the commands:
+<PRE>
+        open = '&lt;open character&gt;'
+        close = '&lt;close character&gt;'
+</PRE>
+
+The solenoids we have used so far are commanded by two strobed commands.
+In practice, these don't have to be solenoids at all, but any device
+which is commanded with two strobed commands. Although solenoids are
+a very common application, soldrv has been used to command heaters
+and other devices as well.
+
+Sometimes, however, cycling of devices which aren't controlled
+by strobed commands is desired. Soldrv has two additional features
+to support more complicated devices: set points and proxies.
+
+Analog set points are defined using the DtoA command. For example:
+<PRE>
+        DtoA C 0E10 { L:50 M:1000 H:4000 }
+</PRE>
+defines an analog control named `C' using the D/A channel at address
+0E10 which has three values designated `L', `M' and `H'. When a particular
+set point is specified, the corresponding value is written out to the
+channel's address. These set points can be used in a mode just like `O' and `_'
+for solenoids:
+<PRE>
+        mode 1 {
+          C: LLLL:LLMM:MHHM:MMLL
+          C: LLLL:LLMM:HMML:MLML
+        }
+</PRE>
+
+Proxies provide the most general control capability by allowing soldrv
+to communicate with other control programs. The syntax for proxy
+definitions is similar to that for DtoA definitions:
+<PRE>
+        Proxy D { L:3 M:4 H:7 }
+</PRE>
+The numbers associated with each state are proxy ID numbers. These
+must be unique for all proxy states in the file and must match the
+proxy IDs used by the associated control programs. At runtime, the
+associated control program contacts soldrv to register a proxy
+using the ID number (e.g. "Here's a proxy for ID 3"). Until
+the proxy is registered, cycling a proxy element will do nothing.
+Once the proxy is registered, a change in state specified in the
+mode definition (Changing from say `L' to `M') will cause soldrv
+to trigger the proxy associated with the new state.<P>
+
+Proxies are used on the ER-2 OH experiment to drive the laser on and
+off line. The laser is actually controlled by the indexer control
+program. That program must register the appropriate proxies with
+soldrv before the laser can be cycled.<P>
+
+There is one other significant character on a cycle definition line.
+This is the "switch character" which is permanently defined as the
+caret (^).  The switch character is used to identify good points
+for mode changes.  By carefully placing switch characters within your
+solenoid cycles, you can guarantee that each cycle will run to completion
+before an alternate mode is selected.<P>
+
+You may add any other characters as desired to make the
+text more readable.  In the above examples, I used colons to designate whole
+seconds. The main limitation on the mode specification is that the cycles
+specified for each of the solenoids must be of the same 
+length.<P>
+
+Solenoids which are not being cycled may be set to defined positions by use
+of the initialize command.  If at the beginning of Mode 0 above we typed:
+<PRE>
+        initialize A:O
+</PRE>
+solenoid A would be initialized to an open position whenever Mode 0 was
+selected.<P>
+
+There are an arbitrary number of possible modes.  Each mode consists of
+initializations and/or cycle definitions.  An undefined mode performs neither
+initializations nor cycles.  Conversely, a mode that does neither is
+considered undefined.  A mode with no cycle defined performs any specified
+initializations and then waits for another mode to be selected.  Hence,
+initializations may be considered the "d.c. component" of a mode
+definition.<P>
+
+In addition to initializations and cycle definition lines, a mode may
+contain the command:
+<PRE>
+        select &lt;MODE-NUMBER&gt;
+</PRE>
+where &lt;MODE-NUMBER&gt; is the number of the desired mode.  When the cycling program
+reaches this command, it will select the new mode as if that mode had been
+selected from the command line or a flight algorithm.  The select
+command must be the last command in a mode.  A mode that ends with this
+command does not actually cycle, but rather executes its instructions once
+and then selects the new mode.
+
+<H2><a id="Reference">Reference</A></H2>
+
+<DL>
+<DT><CODE>solenoid &lt;solenoid name&gt; &lt;open&gt; &lt;close&gt;
+ &lt;status&gt;</CODE>
+
+<DD>This command identifies a solenoid by giving it a name and 
+defining the discrete commands which will open and close it and 
+the status bit which will report its current position.  &lt;
+open&gt; and &lt;close&gt; are the respective discrete command 
+numbers.  &lt;status&gt; is the status bit number, usually a 
+non-negative integer less than 32.
+
+<DT><CODE>DtoA &lt;DtoA name&gt; &lt;address&gt; { &lt;Set 
+Points&gt; }</CODE>
+
+<DD>DtoA defines a digital to analog converter for set point 
+selection.  Like the solenoids, each D/A channel is given a name 
+and the subbus address is specified.  Unlike the solenoids, the 
+D/A channels may have more than two states.  Each entry within 
+the curly braces defines a single set point by specifying a 
+character and a value (C:&lt;value&gt;).  The value is an 
+unsigned decimal integer within the range of the D/A converter.  
+The set point characters defined with this statement are local to 
+a particular D/A channel and may be reused in other D/A channels 
+as desired.
+
+<DT><CODE>Proxy &lt;Proxy name&gt; { &lt;Set Points&gt; }</CODE>
+
+<DD>Proxy defines a device which is controlled through proxies. 
+Each state of the device has a proxy ID associated with it. When 
+a state is specified, the associated proxy is triggered. Proxy 
+IDs must be less then 256. (see <A HREF="#Tutorial">Tutorial</A> 
+for an example.)
+
+<DT><CODE>open = '&lt;open character&gt;'</CODE>
+<DT><CODE>close = '&lt;close character&gt;'</CODE>
+
+<DD>These two commands define the characters which are used in all the solenoid
+mode definitions to indicate opened and closed solenoids.  The default
+character for open is `O' and for closed is `_'.
+
+<DT><CODE>status_bytes { &lt;addresses&gt; }</CODE>
+
+<DD>This command allows for the specification of the addresses of 
+the status bytes. The addresses are hexadecimal integers.  The 
+default addresses are 408, 40A, 411, and 413 which correspond to 
+the status input ports on the digital input board used on the 
+<STRONG>ER-2 ClO</STRONG> and <STRONG>ABLE-3A</STRONG> 
+experiments.  These are not the addresses used on 
+<STRONG>ABLE-3B</STRONG> which uses the new digio board.
+<STRONG>Any functionality associated with this command is 
+purely imaginary. The syntax is maintained for compatibility 
+alone.</STRONG>
+
+<DT><CODE>resolution =  &lt;number&gt;/&lt;number&gt;</CODE>
+
+<DD>Resolution defines the time quantum for the following modes 
+in fractions of a second.
+
+<DT><CODE>mode &lt;number&gt; { &lt;mode defs&gt; }</CODE>
+<DT><CODE>routine &lt;routine name&gt; { &lt;valving defs&gt; }</CODE>
+
+<DD>Mode and routine define the actual solenoid cycles which will 
+be executable. The numbers associated with a mode are the numbers 
+which will actually be used to invoke a particular mode long 
+after all the mnemonics have been stripped away.  Routines are a 
+simple form of subroutine useful in mode definitions. Solfmt 
+produces an in-line compilation of routines within modes and does 
+not allow for any nesting of routines or recursion.
+
+<DT><CODE>select &lt;mode number&gt;</CODE>
+
+<DD>This command is used within a mode or routine to indicate 
+that soldrv should switch immediately to the indicated mode.  
+This is useful for calibration modes which do not need to cycle, 
+but can automatically switch over to the operational mode upon 
+completion.
+
+</DL>
+
+<H2><a id=Syntax>Solenoid File Syntax</A></H2>
+
+This section precisely defines the syntax of the solenoid 
+file.<P>
+
+The solenoid file consists of any number of commands:
+<PRE>
+    <a id="commands">commands</A>
+      : [ <A HREF="#command">command</A> ... ]
+
+    <a id="command">command</A>
+      : solenoid &lt;SOL-NAME&gt; &lt;NUMBER&gt; &lt;NUMBER&gt; &lt;NUMBER&gt;
+      : DtoA &lt;SET-NAME&gt; &lt;ADDRESS&gt; { <A HREF="#Set-Point">Set-Point</A> [ <A HREF="#Set-Point">Set-Point</A> ... ] }
+      : Proxy &lt;SET-NAME&gt; { <A HREF="#Set-Point">Set-Point</A> [ <A HREF="#Set-Point">Set-Point</A> ... ] }
+      : open = '&lt;open-character&gt;'
+      : close = '&lt;close-character&gt;'
+      : status_bytes { [ &lt;ADDRESS&gt; ... ] }
+      : resolution =  &lt;NUMBER&gt;/&lt;NUMBER&gt;
+      : mode &lt;MODE-NUMBER&gt; { <A HREF="#mode-defs">mode-defs</A> }
+      : routine &lt;routine-name&gt; { <A HREF="#routine-defs">routine-defs</A> }
+
+    <a id="mode-defs">mode-defs</A>
+      :  <A HREF="#null">null</A>
+      :  &lt;routine-name&gt; <A HREF="#mode-defs">mode-defs</A>
+      :  <A HREF="#valving-def">valving-def</A> <A HREF="#mode-defs">mode-defs</A>
+      :  select &lt;MODE-NUMBER&gt;
+
+    <a id="routine-defs">routine-defs</A>
+      :  <A HREF="#null">null</A>
+      :  <A HREF="#valving-def">valving-def</A> <A HREF="#routine-defs">routine-defs</A>
+      :  select &lt;MODE-NUMBER&gt;
+
+    <a id="valving-def">valving-def</A>
+      :  initialize &lt;SOL-NAME&gt; : <A HREF="#solenoid-character">solenoid-character</A>
+      :  initialize &lt;SET-NAME&gt; : <A HREF="#set-character">set-character</A>
+      :  &lt;SOL-NAME&gt; : [ <A HREF="#solenoid-character">solenoid-character</A> ... ]
+      :  &lt;SET-NAME&gt; : [ <A HREF="#set-character">set-character</A> ... ]
+
+    <a id="solenoid-character">solenoid-character</A>
+      : &lt;open-character&gt;
+      : &lt;close-character&gt;
+      : &lt;switch-character&gt;
+      : &lt;fill-character&gt;
+
+    <a id="set-character">set-character</A>
+      : &lt;set-point-character&gt;
+      : &lt;switch-character&gt;
+      : &lt;fill-character&gt;
+
+    <a id="Set-Point">Set-Point</A>
+      : &lt;set-point-character&gt; : &lt;NUMBER&gt;
+
+</PRE>
+<H2><a id=SFTFMT>.sft File Format</A></H2>
+
+A .sft file is the output of the solfmt program.  It may be
+thought of as a sequence of structures defined as follows:
+<PRE>
+        int version;
+        char command_set;
+        int n_solenoids;
+        struct {
+          int open_cmd;
+          int close_cmd;
+          int status_addr;
+          int status_mask;
+        } solenoids[n_solenoids];
+        int n_set_points;
+        struct {
+          int address;
+          int value;
+        } set_points[n_set_points];
+        int n_proxies;
+        unsigned char proxy_ids[n_proxies];
+        int n_modes;
+        int mode_indices[n_modes];
+        int n_bytes;
+        char mode_codes[n_bytes];
+</PRE>
+
+<CODE>version</CODE> specifies the version of both the solfmt 
+program and the solenoid driver program in BCD.  Version 2.0 is 
+designated by the hex value 0200.  If the solenoid driver program 
+reads in a .sft file and finds that the version number is 
+different, an error should be reported. An exception might be 
+that between version 2.0 and 3.0 the <CODE>n_proxies</CODE> was 
+added. Soldrv V3.0 should probably recognize V2.0 programs, 
+simply setting <CODE>n_proxies</CODE> to 0.<P>
+
+<CODE>n_solenoids</CODE> is the total number of solenoids that 
+have been defined.<P>
+
+For each defined solenoid, the <CODE>open_cmd</CODE>, 
+<CODE>close_cmd</CODE>, <CODE>status_addr</CODE>, and 
+<CODE>status_mask</CODE> are recorded.  The <CODE>open_cmd</CODE> 
+and <CODE>close_cmd</CODE> are the numbers for the discrete 
+commands that open and close the solenoid.  The associated status 
+bit may be found by anding the <CODE>status_mask</CODE> with the 
+contents of subbus address <CODE>status_addr</CODE>.<P>
+
+<CODE>n_set_points</CODE> is the total number of set points which 
+have been defined.  Each set point is defined by a subbus address 
+and the value that should be written out to that address.<P>
+
+<CODE>n_proxies</CODE> is the total number of proxies defined. 
+<CODE>proxy_ids</CODE> contain the IDs for the proxies.<P>
+
+<CODE>n_modes</CODE> is the maximum mode number defined plus one. 
+<CODE>mode_indices</CODE> is an array of pointers into the 
+mode_codes array indicating where the program for that mode 
+begins.<P>
+
+<CODE>n_bytes</CODE> determines the length of the 
+<CODE>mode_codes</CODE> array.  The <CODE>mode_codes</CODE> array 
+itself is a simple compiled code for operating the solenoid 
+cycles.  There are five command codes defined as follows:<P>
+
+<CODE>SOL_STROBES</CODE> 0: The following byte is the number of a
+discrete command to be executed.<P>
+
+<CODE>SOL_WAIT</CODE> 1: Wait for a significant event triggered by the timer
+(which has already been programmed.)<P>
+
+<CODE>SOL_SET_TIME</CODE> 2: The next two bytes are a count to be 
+written to the timer.  The timer should be programmed using mode 
+three (square wave.)<P>
+
+<CODE>SOL_GOTO</CODE> 3: The next two bytes are the index of the 
+next instruction.<P>
+
+<CODE>SOL_END_MODE</CODE> 4: No action should be taken until a 
+new mode is selected.  Equivalent to a Halt instruction.<P>
+
+<CODE>SOL_WAITS</CODE> 5: Wait for <I>n</I> significant events, 
+where <I>n</I> is the value of the next byte.<P>
+
+<CODE>SOL_SELECT</CODE> 6: Select mode number <I>n</I>, where 
+<I>n</I> is the value of the next byte.<P>
+
+<CODE>SOL_MSWOK</CODE> 7: Indicates that a mode switch is 
+allowable. If a mode switch is pending, it will occur at this 
+point.<P>
+
+<CODE>SOL_DTOA</CODE> 8:  The following byte is a set point 
+index. The corresponding value should be written out to the 
+corresponding address.<P>
+
+<CODE>SOL_PROXY</CODE> 9: The following byte is a proxy index. 
+The index is <STRONG>not</STRONG> the proxy ID, but rather the 
+index into the array defined in the .SFT file. If the appropriate 
+proxy has been registered, it should be triggered.<P>
+
+<CODE>SOL_MULT_STROBES</CODE> 10: The remainder of this record 
+matches the format for the SCDC multi-strobe command, allowing 
+simultaneous switching of solenoids.<P>
+
+Throughout the .sft file, all integers are stored as two bytes with the
+least significant byte stored first.<P>
+<HR>
+Revised September 10, 1992 for V3.0<br>
+Reformated for HTML, January 1996<br>
+Return to <A HREF="index.html">Manuals Guide</A>
+<br>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Fri May  7 15:14:06 2004</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2004 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

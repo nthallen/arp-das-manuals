@@ -1,0 +1,249 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>tmcalgo V2R1: Chapter 4</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img name="daqlogo" src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map" border="0">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10, 11, 91, 35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91, 6, 246, 43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30, 47, 273, 79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h2>TMCALGO V2R1: Algorithm Compiler</h2>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td><a href="tma_2.html">Chap. 2</a></td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td>Chap. 4</td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<table><tr><td>
+<h3><a name="P4.0">4.0</a>: Common Strategies</h3>
+<div class="contents">
+<ul>
+<li><a href="#P4.1">4.1</a>: First Partition</li>
+<li><a href="#P4.2">4.2</a>: Keying off of Altitude</li>
+<li><a href="#P4.3">4.3</a>: Using Software Status</li>
+</ul>
+</div>
+</td></tr></table>
+
+<p>Over the years, a few time-tested strategies for organizing
+instrument algorithms have emerged. These are not the only
+approaches that will work, of course, but they can give you
+a good start.</p>
+
+<p>To begin with, it is worth pointing out that TMCALGO
+is a programming language, and many design principles that
+apply to other languages apply to it as well:</p>
+
+<ul>
+<li>Keep your organization simple</li>
+<li>Separate control of unrelated subsystems into separate
+	partitions.</li>
+<li>Avoid indiscriminate interference in other partitions'
+	operations.</li>
+<li>Clearly identify and document how one partition can
+	affect another.</li>
+</ul>
+
+<p>One of the best resources for strategies is the
+<a href="http://www.arp.harvard.edu/eng/systems/toc.html">source code
+of existing instruments</a>. None of these represent a perfect
+solution, and some older code may employ conventions we have since
+moved away from, but they are a good place to start.</p>
+
+<p>And of course one additional resource worth mentioning is
+the author, who is more than happy to talk about your algorithms
+until you can't stand it anymore.</p>
+
+<h3><a name="P4.1">4.1</a>: First Partition</h3>
+
+<img src="tma_hs5.gif" width=338 height=66 hspace=10 border=0
+ alt="State Diagram" align="right">
+
+<p>We have traditionally used the first partition of an
+algorithm to outline the full course of data taking
+for a run from initialization through shutdown. A minimal
+implementation of this would have three states,
+<b>Initialize</b>, <b>Record</b>, and <b>Shutdown</b>.
+Record might well loop through some standard procedures until
+conditions for advancing to Shutdown are recognized.</p>
+
+<br clear="right">
+<img src="tma_hs6.gif" width=338 height=130 hspace=10 border=0
+ alt="State Diagram" align="right">
+
+<p>The record state can also be broken up into two or more states to perform
+particular types of operations. Doing so can allow certain procedures to
+be executed only under particular circumstances.</p>
+
+<br clear="right">
+
+<img src="tma_hs7.gif" width=471 height=194 hspace=10 border=0
+ alt="State Diagram" align="right" vspace=8>
+<p>In this example, Record3 is only executed at high altitude:</p>
+<br clear="right">
+
+<p>Most instruments of any complexity require some additional elaboration.
+For flight instruments, the major transitions may be keyed off of
+<a href="#P4.2">changes in altitude</a> and may require additional states
+to allow for the possibility of aborted landings or other false triggers.
+Lab instruments may run unattended from start to finish, or they may
+choose to use the <a href="#P4.3">software status</a> techniques to
+provide keyboard control of the algorithm.</p>
+
+<h3><a name="P4.2">4.2</a>: Keying off of Altitude</h3>
+
+<p>When the Anderson Group first ventured from balloons onto
+an airplane and lost ability to manually control the instrument
+during flight, we had to rely on the pilot to signal the instrument
+through a cockpit switch, indicating when the plane was taking off
+or preparing to land. We soon discovered that the pilots hate to
+have that level of responsibility for instrument operation. They
+are extremely busy during takeoff and landing and would much
+prefer to be flying the plane than punching buttons for instruments.
+Needless to say, this was one of the first motivations for giving
+algorithms a flexible way to access to the instrument data and take
+actions accordingly.</p>
+
+<p>Since planes go up at the beginning of a flight and come down
+at the end, using altitude, or pressure, as an indication of where
+we are in a flight works pretty well. I have included an
+<a href="tma_alt.html">example</a> of code we have used on the
+Chlorine Nitrate instrument (which is also nearly identical to
+the corresponding code on half a dozen other instruments.)</p>
+
+<p>There are two goals inherent in this design:</p>
+<ol><li>Clearly
+and globally define three altitude regions, ON_GROUND, BELOW_CLOUDS,
+and ABOVE_CLOUDS that other partitions (notably <a href="#P4.1">partition
+1</a>) can use to make decisions.</li>
+<li>Provide a method for
+emulating altitude changes in order to test other parts of the
+algorithm while on the ground.</li></ol>
+
+<p>The reason for having three altitude regions rather than two is
+to allow instruments to start warming up as early as possible without
+necessarily exposing the flows to dangerous water or ice particles
+in the clouds. Instruments generally start their initializations when
+they detect that the plane has left the ground, but don't advance to
+full data-taking until the plane is safely &quot;above the clouds&quot;.
+On the downward leg, tripping into BELOW_CLOUDS indicates impending
+landing, allowing the instrument time for an orderly shutdown. The
+algorithm does not advance to a full shutdown and quit until it detects
+that the plane has gotten as low as ON_GROUND, allowing for a return
+to data-taking if the plane climbs again.</p>
+
+<p>The altitude emulation is accomplished via the use of
+<a href="#P4.3">software status data</a> which can be set from the keyboard
+interface. By issuing a keyboard command, this partition will advance to the
+next altitude state. Other partitions which key off of these altitude states
+(rather than looking directly at the pressure) will make decisions as if the
+plane were in the air.</p>
+
+<p>It is worth noting that while this approach is useful for testing <i>other</i>
+partitions, it is in no way adequate for testing this partition. At least once
+before flying a new instrument, this portion of the algorithm should be tested
+by pumping on the pressure sensor to make sure that it properly detects changes
+in pressure and that the algorithm does in fact perform the appropriate
+transitions.</p>
+
+<h3><a name="P4.3">4.3</a>: Using Software Status</h3>
+
+<p>Software status is telemetry data that does not represent physical
+properties that have been read via sensors but rather quantities that
+have been set manually via software. This is useful for manually
+adjusting setpoints for systems which are controlled by an algorithm,
+for identifying regions of interest to data analysis software, and
+for providing a means of communication between the operator and the
+algorithm.</p>
+
+<p>The subject of how to get software data into the telemetry stream
+is outside the scope of this document. Many examples exist in the
+<a href="http://www.arp.harvard.edu/eng/systems/toc.html">instrument
+source code</a>, and a definitive example should be included in one
+of the <a href="../guides/">guides</a>.</p>
+
+<p>The remainder of this section is concerned with using a purely
+arbitrary software status word which can be set to discrete values
+from the keyboard. A command such as &quot;Set Software Status 7&quot;
+can be used to assign a value to the variable, or more mnemonic commands
+can be provided which are associated with specific values.</p>
+
+<p>We have tried tying individual bits of a software status word to
+particular functions, but have found this ultimately inadequate since
+the number of bits available is relatively small compared with the number
+of discrete values vailable. We have found it more effective to use
+specific values of a software status variable to signal state transitions
+which are recorded in the algorithm. For example, the value '7' might
+signal the algorithm to enable a particular option, and the value '8' could
+disable the option. The algorithm uses a local (non-TM) variable to hold
+that option's state, and once the transition has been recognized, the
+software status word need no longer be concerned with it.</p>
+
+<p>In this approach, a software status value of zero represents &quot;no
+operation&quot;, and every recognized operation is responsible for resetting
+the software status once the specified operation has been recorded. I
+have provided a minimal <a href="tma_swstat.html">example</a>, taken from
+the Total Water and Ozone instrument. Using this as a starting point,
+you can add all sorts of interactive controls to your experiment. You
+will need to:</p>
+
+<ul>
+<li>Add a new case for each value you wish to recognize, including
+the code necessary to record the command.</li>
+<li>Make sure to terminate each case with a 'break' command unless
+you intentionally want the procedure to fall through to the next case.</li>
+<li>If a particular case is going to be handled in another part of the
+algorithm, it is a good practice to list that case without any code
+above the 'case 0:' line. This helps to document the fact that that
+particular value is being used somewhere.</li>
+</ul>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td><a href="tma_2.html">Chap. 2</a></td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td>Chap. 4</td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a>.
+Written by
+<a href="mailto:allen@huarp.harvard.edu">Norton T. Allen</a>
+</p>
+
+
+<br>
+<hr noshade color="#000000">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+  <td>last updated: Thu Jan  2 10:51:57 2003</td>
+  <td align="right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</A></td>
+</tr>
+<tr>
+<td colspan="2"><font size="-2">
+Copyright 2002 by the President and Fellows of Harvard College
+</font></td>
+</tr>
+</table>
+</body>
+</html>

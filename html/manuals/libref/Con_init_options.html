@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>Con_init_options</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>Con_init_options</h1>
+<h2>Synopsis</h2>
+<pre>
+    
+    #include "nl_cons.h"
+    void Con_init_options(int argcc, char **argvv);
+    
+</pre>
+<h2>Description</h2>
+<p>  Con_init_options() processes the command line arguments for the
+  Nortlib Console Functions. The two arguments supported are 'A'
+  and 'a'. Both take an argument which is the name of the console
+  device to open. By default, the first console is that
+  associated with the standard output, but it can be redefined by
+  use of the 'A' option. The 'a' option defines the second and
+  all subsequent consoles. If any device argument is '-', that
+  console is not opened and subsequent output to that index will
+  be supressed.<P>
+</p>
+<p>  After each console is opened, an attempt is made
+  to contact getcon to release the console. The 'g' option
+  supresses this release request for consoles appearing later in
+  the command line. This might be appropriate for short-lived
+  programs such as scrpaint (if it used nl_cons) where it is
+  desirable for getcon to keep the console open.<P>
+</p>
+<p>  At present, these functions support only QNX consoles. At some
+  point in the future, they may be switched over to use terminfo
+  and hence support arbitrary terminal types.
+</p>
+<h2>Returns</h2>
+<p>  Nothing.
+</p>
+<h2>See Also</h2>
+<p>  <a href="subject.html#sub5">Nortlib Console Functions</a>.</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/coninit.c">/usr/local/src/nortlib/coninit.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

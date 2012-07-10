@@ -1,0 +1,11 @@
+/* abc.tmc a simple example */
+
+TM typedef unsigned short Ct16 {
+  collect x = x - x/100 + rand()/100;
+}
+
+TM 1 Hz Ct16 C1;
+TM 1 Hz Ct16 C2;
+
+TM 0 Hz unsigned short MFCtr;
+TM 0 Hz unsigned short Synch;

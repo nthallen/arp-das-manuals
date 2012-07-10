@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>memo_shutdown</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>memo_shutdown</h1>
+<h2>Synopsis</h2>
+<pre>
+    #include "nortlib.h"
+    int memo_shutdown( nid_t node );
+    
+</pre>
+<h2>Description</h2>
+<p>  memo_shutdown() requests that the instance of memo for the
+  current Experiment running on the specified node terminate.
+</p>
+<h2>Returns</h2>
+<p>  On success, memo_shutdown() returns a non-zero value. On
+  failure, it will observe the <a href="nl_response.html">nl_response</a> codes, but it will  not take any action higher then 2 (Error). In other words,
+  memo_shutdown() will always return. On error, a message may be
+  issued via <a href="nl_error.html">nl_error</a>(), depending on the value of  <a href="nl_response.html">nl_response</a>, and a zero value will be returned.</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/memo.c">/usr/local/src/nortlib/memo.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

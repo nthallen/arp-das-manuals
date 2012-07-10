@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>Col_set_proxy</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>Col_set_proxy</h1>
+<h2>Synopsis</h2>
+<pre>
+    
+    #include "collect.h"
+    pid_t Col_set_proxy(unsigned char id, unsigned char msg);
+    
+</pre>
+<h2>Description</h2>
+<p>  <P>Col_set_proxy() provides a mechanism for synchronizing a
+  process with data collection, which is often useful for
+  low-level control functions such as scanning. This function
+  creates a one-byte-long proxy message and passes it to
+  collection to be trigger at an agreed-upon rate. The actual
+  triggering of the proxy must be explicitly coded into the
+  collection process, but there is an established TMC syntax to
+  facilitate the registration process.</P>
+</p>
+<p>  <P>id is a magic number agreed-upon between the process and
+  collection for identifying which proxy is designated. msg is
+  the one-byte contents of the proxy which will be created.</P>
+</p>
+<p>  <P>On termination, <a href="Col_reset_proxy.html">Col_reset_proxy</a>() may be called to provide an  orderly shutdown.</P>
+</p>
+<h2>Returns</h2>
+<p>  <P>Col_set_proxy() returns the proxy's pid if successful.
+  Otherwise it returns -1 unless <a href="nl_response.html">nl_response</a> indicates a fatal  response.</P>
+</p>
+<h2>See Also</h2>
+<p>  <a href="subject.html#sub3">Data Collection</a> functions, <a href="Col_reset_proxy.html">Col_reset_proxy</a>().</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/colsprx.c">/usr/local/src/nortlib/colsprx.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

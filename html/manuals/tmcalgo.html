@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>tmcalgo V2R1: Algorithm Compiler</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img name="daqlogo" src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map" border="0">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10, 11, 91, 35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91, 6, 246, 43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30, 47, 273, 79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h2>TMCALGO V2R1: Algorithm Compiler</h2>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td>Chap. 1</td> <td><a href="tma_2.html">Chap. 2</a></td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<table>
+<tr>
+<td><h3>Contents:</h3></td></tr>
+<tr><td>
+<table class="contents"><tr>
+<td valign="TOP">
+<ul class="tight">
+<li><a href="#P0.0">0.0</a>: Introduction</li>
+<li><a href="#P1.0">1.0</a>: Invocation</li>
+<li><a href="tma_2.html">2.0</a>: Writing Algorithms</li>
+<li><a href="tma_3.html">3.0</a>: Compiling and Running Algorithms</li>
+</ul></td><td valign="TOP"><ul class="tight">
+<li><a href="tma_4.html">4.0</a>: Common Strategies</li>
+<li><a href="tma_5.html">5.0</a>: Debugging Algorithms</li>
+<li><a href="tma_6.html">6.0</a>: Reference</li>
+<li><a href="tma_app.html#PA.0">A.0</a>: Syntax</li>
+</ul></td></tr></table>
+</td></tr></table>
+
+<h3><a name="P0.0">0.0</a>: Introduction</h3>
+
+<p>In the ARP Data Acquisition Architecture, TMCALGO is the tool
+that closes the gap between data collection and process control.
+It provides a concise language to monitor and manipulate data,
+make decisions and issue commands. As such, it is the focus of
+most of the development and many of the ongoing changes in an
+experiment.</p>
+
+<p>TMCALGO is built upon the groundwork laid by
+<a href="tmc.html">TMC</a> and <a href="cmdgen.html">CMDGEN</a>.
+The algorithm is compiled to TMC code, and instrument commands
+are specified using the same syntax as is used for interactive
+commands. Integration of the algorithm into the software
+architecture is entirely via QNX messages, allowing the algorithm
+to run either locally on the experiment's computer or remotely on
+a GSE computer.</p>
+
+<p>Algorithms can take advantage of the architecture's ability to
+replay logged data, allowing for detailed analysis and debugging.
+This can also be used to verify algorithm changes against
+previously logged data, to help guarantee that normal operations
+will not be altered.</p>
+
+<h3><a name="P1.0">1.0</a>: Invocation</h3>
+<pre>    tmcalgo [options] [files]
+            -k             Keep output file (.c) even on error
+            -o &lt;filename&gt;  Send .tmc output to named file
+            -v             Produce Debug Messages
+            -q             Show this help message
+            -w             Give error return on warnings
+            -C &lt;node&gt;      Look for command server on specified node
+            -D &lt;filename&gt;  Write DOT specification to named file
+</pre>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td>Chap. 1</td> <td><a href="tma_2.html">Chap. 2</a></td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a>.
+Written by
+<a href="mailto:allen@huarp.harvard.edu">Norton T. Allen</a></p>
+
+<br>
+<hr noshade color="#000000">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+  <td>last updated: Thu Jan  2 10:56:38 2003</td>
+  <td align="right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</A></td>
+</tr>
+<tr>
+<td colspan="2"><font size="-2">
+Copyright 2002 by the President and Fellows of Harvard College
+</font></td>
+</tr>
+</table>
+</body>
+</html>

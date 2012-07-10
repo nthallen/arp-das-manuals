@@ -1,0 +1,10 @@
+memo -y -e abc.log &
+namewait memo
+abccol -c0 -vy -n1 &
+namewait -g dg
+ringtap -c0 -vy &
+stty -echo; read j; stty +echo
+startdbr quit
+while namewait -t 1 -g dg 2>/dev/null; do : ; done
+memo -k0 -v
+while namewait -t 1 memo 2>/dev/null; do : ; done

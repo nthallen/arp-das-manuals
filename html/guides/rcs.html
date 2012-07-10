@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD W# HTML 3.2//EN">
+<HTML>
+<HEAD>
+  <TITLE>Introduction to Revision Control</TITLE>
+  <META NAME="AUTHOR" CONTENT="Norton Allen">
+</HEAD>
+<BODY>
+<H1>Introduction to Revision Control</H1>
+
+<P>Revision control is a means of recording incremental steps in the
+development of software or other text-based documents. By using
+revision control, it becomes possible to undo changes that have
+been made if the changes prove to be untenable. It can also provide
+a means to limit who can modify particular files as well as to
+identify who made a particular change.</P>
+
+<P>This is potentially very useful in the development of
+instrument software where there are multiple developers who may
+be working in physically removed locations. Up until the present,
+we have operated in an environment where control of the source
+code was maintained entirely by word-of-mouth and not enforced by
+the operating system. The individuals working on an instrument
+would agree on who should be working on a particular file at a
+particular time. As it happens, that approach was largely
+successful, but there was little in the way of record keeping. If
+any source code was checked in, it was usually by Norton, and
+there was no record of who actually editted the software.</P>
+
+<P>As part of an effort to provide somewhat more comprehensive
+documentation of the software for instruments, I would like to
+promote the use of revision control. The implications are as
+follows:
+
+<UL>
+<LI>By default, you will not have write permissions on any source
+files. In order to obtain write permission, you will have to
+obtain a lock on the current revision of the file using the
+<A HREF="/usr/help/product/qnx423/utils/co.html">co</A> utility.
+If a lock is currently held by another user, your lock request
+will be denied, and you will be told who currently has the file
+locked. You then need to <I>talk</I> to that person in order to
+arbitrate control of the file.<HR>
+
+<LI>After you make your changes and test them, you should check
+in your changes and unlock the file using the
+<A HREF="/usr/help/product/qnx423/utils/ci.html">ci</A> utility.
+Among other things, you can specify the current <B>state</B> of
+the file with the <B>-s</B> option.<HR>
+
+<LI>If you create a new source file (such as a .edf file), you
+should check it in at your earliest convenience, making sure to
+provide a useful description for the file.
+</UL>
+
+<H2>See Also:</H2>
+<P>Some other references are:
+<ul>
+<li><tt><a href="/usr/help/product/qnx423/utils/ci.html">ci</a></tt> utility (Check in RCS revisions)</li>
+<li><tt><a href="/usr/help/product/qnx423/utils/co.html">co</a></tt> utility (Check out RCS revisions)</li>
+<li><tt><a href="/usr/help/product/qnx423/utils/date.html">date</a></tt> utility (Display or set date and time)</li>
+<li><tt><a href="/usr/help/product/qnx423/utils/ident.html">ident</a></tt> utility (Identify files)</li>
+<li><tt><a href="/usr/help/product/qnx423/utils/rcs.html">rcs</a></tt> utility (Change RCS file attributes)</li>
+<li><tt><a href="/usr/help/product/qnx423/utils/rcsdiff.html">rcsdiff</a></tt> utility (Compare RCS revisions)</li>
+<li><tt><a href="/usr/help/product/qnx423/utils/rcsmerge.html">rcsmerge</a></tt> utility (Merge RCS revisions)</li>
+<li><tt><a href="/usr/help/product/qnx423/utils/rlog.html">rlog</a></tt> utility (Print RCS log messages)</li>
+<li> Walter F. Tichy, "RCS  &#151;  A System for Version Control," <cite>Software &#151; Practice 
+     &amp; Experience</cite> 15, 7, July 1985</li>
+<li> Don Bolinger &amp; Tan Bronson, <cite>Applying RCS &amp; SCCS</cite>,
+     O'Reilly &amp; Associates, 1995</li>
+</ul>
+
+<HR>
+<P>Return to <A HREF="index.html">Guides Index Page</A><BR>
+(c)1998 <A HREF="mailto:allen@huarp.harvard.edu">Norton T. Allen</A><P>
+</BODY>
+</HTML>

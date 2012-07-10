@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>srvr_runHasBegun</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>srvr_runHasBegun</h1>
+<h2>Synopsis</h2>
+<pre>
+      #include "runnum.h"
+      int srvr_runHasBegun( void );
+      void srvr_BeginRun( unsigned short runnum, run_params *rp );
+</pre>
+<h2>Description</h2>
+  Each instrument's command server needs to supply these two
+  functions. They are closely related to the functions defined
+  in status.h except these don't take arguments. It is the
+  responsibility of these functions to call the ones in status.h
+  with the appropriate [instrument-specific] arguments.
+</p>
+<p>  srvr_BeginRun() receives a copy of the run_params structure,
+  allowing it to take arbitrary action based on the contents.
+  At present, this structure does not include the run type
+  (Kinetics, ProductStudy, etc.), but that information probably
+  should be embedded in the specified algorithm code.
+<h2>Returns</h2>
+  srvr_runHasBegun() returns non-zero if a run is current
+  executing. srvr_BeginRun() returns void.
+<h2>See Also</h2>
+  <a href="subject.html#sub18">HPF Command Server Routines</a>.<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/runwrite.c">/usr/local/src/nortlib/runwrite.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>cache_init</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>cache_init</h1>
+<h2>Synopsis</h2>
+<pre>
+    #include "da_cache.h"
+    
+    void cache_init( nid_t node );
+    int cache_write( unsigned short addr, unsigned short value );
+    int cache_writev( unsigned short a, unsigned short n_bytes,
+                      char *data );
+    int cache_lwrite( unsigned short addr, unsigned long value );
+    int cache_fwrite( unsigned short addr, float value );
+    unsigned short cache_read( unsigned short addr );
+    unsigned short cache_readv( unsigned short a, unsigned short l,
+                                char *data );
+    unsigned long cache_lread( unsigned short addr );
+    float cache_fread( unsigned short addr );
+    int cache_quit( void );
+    
+</pre>
+<h2>Description</h2>
+<p>These routines provide access to the da_cache driver.
+cache_init() identifies the node on which the da_cache driver is
+located. If cache_init() is not called, the driver will be sought
+on the local node.
+</p>
+<p>cache_*write*() sets the value at the specified address(es). If
+the address is within the hardware address range specified when
+the driver was started, the value is masked with CACHE_HW_MASK
+and then written out to the subbus address. If there is no
+acknowledge from the hardware, the cached value is or-ed with
+CACHE_NACK_MASK, which can be checked on read. The l and f
+versions call cache_writev() with appropriate arguments.
+</p>
+<p>cache_*read*() reads the stored value for the specified address. It
+does not touch hardware, even for addresses within the hardware
+range. The l and f versions call cache_readv() with appropriate
+arguments.
+</p>
+<p>cache_quit() sends a quit request to a resident cache driver.
+</p>
+<p>All of these functions use the standard nortlib client/server
+routines, which means their behaviour can by modified by setting
+<a href="nl_response.html">nl_response</a>, but the default response is set to "warn", soyou'll need to check your return codes.
+</p>
+<h2>Returns</h2>
+<p>cache_*write*(), cache_readv() and cache_quit() return the
+following status codes defined in da_cache.h:
+</p>
+<p><UL>
+<LI>CACHE_E_OK: Success
+<LI>CACHE_E_UNKN: Invalid Command Type
+<LI>CACHE_E_OOR: Invalid Address
+<LI>CACHE_E_NACK: No acknowledge
+<LI>CACHE_E_NOCACHE: Driver not found
+</UL>
+</p>
+<p>cache_*read() returns the value associated with the specified
+address. If the address is invalid, ~0 is returned. Values for
+hardware addresses will include acknowledge information in the
+CACHE_NACK_MASK bit. It is fairly easy to confuse the invalid
+return values with data values, particularly for the l and f
+versions.
+</p>
+<h2>See Also</h2>
+<p><A HREF="../da_cache.html">da_cache</A> driver.
+</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/cache.c">/usr/local/src/nortlib/cache.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>new_memory</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>new_memory</h1>
+<h2>Synopsis</h2>
+<pre>
+    #include "nortlib.h"
+    void *new_memory(size_t size);
+    void nl_free_memory(void *p);
+    
+</pre>
+<h2>Description</h2>
+<p>  new_memory() is a thin cover for malloc() that guarantees
+  a non-NULL return. If memory allocation fails, new_memory()
+  will terminate the program by calling <a href="nl_error.html">nl_error</a>(3).</p>
+<h2>Returns</h2>
+<p>  Returns a newly allocated copy of the argument string.
+  If memory allocation fails, the program will terminate
+  via <a href="nl_error.html">nl_error</a>(3).</p>
+<p>  new_memory() uses the same name as a function in the memlib
+  library which provides more sophisticated memory allocation
+  strategies, including hooks for garbage collection or a limited
+  form of virtual memory.
+</p>
+<p>  nl_free_memory() is an extremely thin cover for free().
+</p>
+<h2>See Also</h2>
+<p>  <a href="nl_response.html">nl_response</a>, <a href="nrtl_strdup.html">nl_strdup</a>().<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/newmem.c">/usr/local/src/nortlib/newmem.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

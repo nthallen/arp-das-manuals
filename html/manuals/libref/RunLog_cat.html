@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>RunLog_cat</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>RunLog_cat</h1>
+<h2>Synopsis</h2>
+<pre>
+      #include "runnum.h"
+      void RunLog_cat( int runnum );
+      void RunLog_recat( void );
+</pre>
+<h2>Description</h2>
+<p>  RunLog_cat() opens the run log for the specified HPF run
+  number, then calls RunLog_recat() to send some or all of
+  the contents to the output. The run log is found in the
+  "runs" subdirectory of the current directory or the
+  directory specified by the TMLOGDIR environment variable,
+  which is set by the extract script.
+</p>
+<p>  RunLog_recat() requires that RunLog_cat() be called first
+  to open a specific run log. It will then read lines from the
+  log, outputting each via <a href="drext_init.html">dr_printf</a>() until it reaches EOF or  a line starting with '-'.
+</p>
+<h2>Returns</h2>
+<p>  Nothing.
+<h2>See Also</h2>
+  <a href="subject.html#sub11">HPF datarecvext</a> functions, <a href="subject.html#sub17">HPF Support Routines</a>.<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/runcat.c">/usr/local/src/nortlib/runcat.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

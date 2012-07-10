@@ -1,0 +1,323 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>Thompson Stack Driver C Interface</TITLE>
+</HEAD>
+<BODY>
+<H1>Thompson Stack Driver C Interface</H1>
+<H2><A NAME="tt_dac_enbl">tt_dac_enbl</A>()</H2>
+<H3>Synopsis:</H3>
+<PRE>
+    #include "ttdriver.h"
+
+    unsigned short tt_dac_enbl( unsigned short safe );
+</PRE>
+
+<H3>Description:</H3>
+
+Ray Dunn's D/A board supports default "safe" values for each
+analog output channel. On power up, each channel outputs a safe 
+value which is selected by adjusting a potentiometer on the 
+board. Once all the channels have been <A 
+HREF="#tt_dac_out">set</A>, the programmed outputs can be enabled 
+by calling
+
+<PRE>
+     tt_dac_enbl( 0 );
+</PRE>
+
+The outputs can be returned to the "safe" levels by calling
+
+<PRE>
+     tt_dac_enbl( 1 );
+</PRE>
+
+<H3>Returns:</H3>
+
+Zero.
+
+<H3>See Also:</H3>
+
+<A HREF="#tt_init">tt_init</A>(),
+<A HREF="#tt_dac_in">tt_dac_in</A>(), and
+<A HREF="#tt_dac_out">tt_dac_out</A>().
+
+<H2><A NAME="tt_dac_in">tt_dac_in</A>()</H2>
+<H3>Synopsis:</H3>
+<PRE>
+    #include "ttdriver.h"
+
+    unsigned short tt_dac_in( unsigned short channel );
+</PRE>
+
+<H3>Description:</H3>
+
+This is a purely software function to report what value was
+most recently written to the specified D/A channel. Since the
+board does not have a readback function, this is provided via
+an array in software.
+
+<H3>Returns:</H3>
+
+The latest value written to the specified channel or 0xFFFF if the
+channel number is out of range.
+
+<H3>See Also:</H3>
+
+<A HREF="#tt_init">tt_init</A>(),
+<A HREF="#tt_dac_in">tt_dac_in</A>(), and
+<A HREF="#tt_dac_out">tt_dac_out</A>().
+
+<H2><A NAME="tt_dac_out">tt_dac_out</A>()</H2>
+
+<H3>Synopsis:</H3>
+<PRE>
+    #include "ttdriver.h"
+
+    unsigned short tt_dac_out( unsigned short channel, unsigned short value );
+</PRE>
+
+<H3>Description:</H3>
+
+Writes the specified value to the specified D/A channel.
+
+<H3>Returns:</H3>
+
+Zero on success. 0xFFFF if the channel number is out of range.
+
+<H3>See Also:</H3>
+
+<A HREF="#tt_init">tt_init</A>(),
+<A HREF="#tt_dac_in">tt_dac_in</A>(), and
+<A HREF="#tt_dac_out">tt_dac_out</A>().
+
+<H2><A NAME="tt_gc_reset">tt_gc_reset</A>()</H2>
+
+<H3>Synopsis:</H3>
+<PRE>
+    #include "ttdriver.h"
+
+    unsigned short tt_gc_reset( void );
+</PRE>
+
+<H3>Description:</H3>
+
+Resets the GC counter card.
+
+<H3>Returns:</H3>
+
+Zero on success, 0xFFFF if the GC counter board failed to respond 
+within the timeout period.
+
+<H3>See Also:</H3>
+
+<A HREF="#tt_init">tt_init</A>(),
+<A HREF="#tt_gc_read">tt_gc_read</A>(), and
+<A HREF="#tt_gc_chan">tt_gc_chan</A>().
+
+<H2><A NAME="tt_gc_byte">tt_gc_byte</A>()</H2>
+
+<H3>Synopsis:</H3>
+<PRE>
+    #include "ttdriver.h"
+
+    unsigned short tt_gc_byte( void );
+</PRE>
+
+<H3>Description:</H3>
+
+This is the lowest-level interface to the GC counter board, and 
+proved to be somehow too time-consuming, which it hasn't proven 
+to be.<P>
+
+This function reads one byte of data from the GC counter board 
+and returns it. In order to make sense out of the returned 
+values, one must understand the GC board's protocol.
+
+<H3>Returns:</H3>
+
+The value read from the GC board or 0xFFFF if the GC board has 
+not been reset or if it has timed out since being reset.
+
+<H3>See Also:</H3>
+
+<A HREF="#tt_init">tt_init</A>(),
+<A HREF="#tt_gc_read">tt_gc_read</A>(),
+<A HREF="#tt_gc_reset">tt_gc_reset</A>(), and
+<A HREF="#tt_gc_chan">tt_gc_chan</A>().
+
+<H2><A NAME="tt_gc_read">tt_gc_read</A>()</H2>
+
+<H3>Synopsis:</H3>
+<PRE>
+    #include "ttdriver.h"
+
+    unsigned short tt_gc_read( gc_data_buf *gcbuf );
+</PRE>
+
+<H3>Description:</H3>
+
+tt_gc_read() 
+
+<H3>Returns:</H3>
+
+<H2><A NAME="tt_gc_chan">tt_gc_chan</A>()</H2>
+
+<H3>Synopsis:</H3>
+<PRE>
+    #include "ttdriver.h"
+
+    unsigned long tt_gc_chan( unsigned short chan );
+</PRE>
+
+<H3>Description:</H3>
+
+This is the preferred interface to the GC counter board from TMC. 
+This function returns the single counter value most recently read 
+for the specified counter channel. In order to read all the 
+counter data, this function must be called at the GC counter's 
+sample rate for each channel, e.g. 4 times per sample at 8 
+samples per second.<P>
+
+As with <A HREF="#tt_gc_read">tt_gc_read</A>(), the return values
+are raw values and must be converted to frequency with the 
+following formula:
+
+<PRE>
+    freq = GC_REF_FREQ / sample;
+</PRE>
+
+where GC_REF_FREQ is the board's oscillator frequency times the 
+number of counts per integration sample. In the current 
+configuration, this is 5e7 * 100.0.
+
+<H3>Returns:</H3>
+
+The latest raw counter value for the specified channel. If no 
+sample has been reported, zero is returned. If the GC board has 
+not been reset or has timed out, 0xFFFFFFFF will be returned.
+
+<H2><A NAME="tt_init">tt_init</A>()</H2>
+
+<H3>Synopsis:</H3>
+<PRE>
+    #include "ttdriver.h"
+
+    unsigned short tt_init( void );
+</PRE>
+
+<H3>Description:</H3>
+
+<H3>Returns:</H3>
+
+<H2><A NAME="tt_read_atod">tt_read_atod</A>()</H2>
+
+<H3>Synopsis:</H3>
+<PRE>
+    #include "ttdriver.h"
+
+    unsigned short tt_read_atod( unsigned short channel );
+</PRE>
+
+<H3>Description:</H3>
+
+This is the basic interface to the Analog to Digital Conversion
+board.
+
+<H3>Returns:</H3>
+
+The value read for the specified channel or 0xFFFF if the channel 
+number is out of range or the routine timed out before receiving 
+an acknowledge from the A/D board.
+
+<H2><A NAME="tt_read_digital">tt_read_digital</A>()</H2>
+
+<H3>Synopsis:</H3>
+<PRE>
+    #include "ttdriver.h"
+
+    unsigned short tt_read_digital( unsigned short dig_word );
+</PRE>
+
+<H3>Description:</H3>
+
+Reads the 8-bit value from the specified digital word. Reading 
+from the digital output words is supported in software. Note that 
+this function addresses 8 digital channels at once. Individual 
+channels can then be singled out by appropriate masking.
+
+<H3>Returns:</H3>
+
+The 8-bit word from the specified channel or 0xFFFF if the word 
+address is invalid for either an input port or an output port.
+
+<H2><A NAME="tt_write_digital">tt_write_digital</A>()</H2>
+
+<H3>Synopsis:</H3>
+<PRE>
+    #include "ttdriver.h"
+
+    unsigned short tt_write_digital( unsigned short dig_word, unsigned short value );
+</PRE>
+
+<H3>Description:</H3>
+
+Writes the specified 8-bit value to the specified digital word. 
+Note that this function addresses 8 digital channels at once. 
+Direct control of individual channels is possible via the
+<A HREF="#tt_scdc_command">tt_scdc_command</A>() function.
+
+<H3>Returns:</H3>
+
+0 on success, 0xFFFF if the word address is invalid.
+
+<H2><A NAME="tt_scdc_command">tt_scdc_command</A>()</H2>
+
+<H3>Synopsis:</H3>
+<PRE>
+    #include "ttdriver.h"
+
+    unsigned short tt_scdc_command( unsigned char cmd_no );
+</PRE>
+
+<H3>Description:</H3>
+
+This function commands a single digital output line. The cmd_no 
+argument is either the digital output channel number or the 
+channel number plus 100. If cmd_no >= 100, the corresponding 
+output line is set, otherwise it is reset.
+
+<H3>Returns:</H3>
+
+0 on success, 0xFFFF if the specified cmd_no is invalid.
+
+<H2><A NAME="tt_scdc_multcmd">tt_scdc_multcmd</A>()</H2>
+
+<H3>Synopsis:</H3>
+<PRE>
+    #include "ttdriver.h"
+
+    unsigned short tt_scdc_multcmd( unsigned char *cmds );
+</PRE>
+
+<H3>Description:</H3>
+
+This function implements the SCDC MULTCMD function, which allows 
+a list of SCDC commands to be executed simultaneously. In the 
+ttdriver implementation, the commands cannot be guaranteed to be 
+simultaneous, but they will occurr within a few microseconds of 
+each other. (On ARP hardware, the commands are actually strobed
+together.) The cmds argument points to an array of SCDC command 
+numbers ending with 0xFF.
+
+<H3>Returns:</H3>
+
+0 on success, 0xFFFF if an invalid command is encountered.<P>
+
+<PRE>
+<HR>
+Return to <A HREF="index.html">Manuals Guide</A>
+(c)1995 <A HREF="mailto:allen@huarp.harvard.edu">Norton T. Allen</A>
+</PRE>
+</BODY>
+</HTML>

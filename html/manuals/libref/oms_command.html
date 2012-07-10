@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>oms_command</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>oms_command</h1>
+<h2>Synopsis</h2>
+<pre>
+    #include "omsdrv.h"
+    int oms_init( void );
+    int oms_command( USHRT function, char *cmd, USHRT n_req, char *buf );
+    int oms_shutdown( void );
+    int oms_read(char *cmd, USHRT n_req, char *buffer );
+    int oms_write( char *cmd );
+    
+</pre>
+<h2>Description</h2>
+<p>  <P>These functions provide basic client access to omsdrv, the
+  driver for the Oregon Micro Systems PC68 Motor Controller
+  Board.
+</p>
+<p>  <P>oms_init() provides the standard client/server
+  initialization. As usual, it is optional, but calling it at
+  startup might flag an error condition sooner than if you wait
+  until the first OMS command to find out.</P>
+</p>
+<p>  <P>oms_command() is the main routine for client communication
+  with the OMS driver, omsdrv. oms_shutdown(), oms_read() and
+  oms_write() are all implemented via macros which invoke
+  oms_command(). The function codes are defined in omsdrv.h.
+  cmd is the exact command string that should be written out to
+  the PC68 board. n_req specifies the number of atomic responses
+  expected from the board, and is only applicable for read
+  requests. (If you expect results you wish to ignore, we'll need
+  to amend this rule.) buf is a buffer into which the result
+  string is written, stripped of lf-cr prefixes and suffixes. It
+  is the client's responsibility to make sense out of the string.
+  </P>
+</p>
+<p>  <P>oms_shutdown() attempts to locate a resident omsdrv and
+  request that it shut down.</P>
+</p>
+<p>  <P>oms_read() is used to issue a command to the PC68 when a
+  reply is expected. It uses all the arguments of oms_command().
+  </P>
+</p>
+<p>  <P>oms_write() is used to issue commands to the PC68 which
+  do not produce a reply.
+</p>
+<h2>Returns</h2>
+<p>  All functions return 0 on success. oms_command() returns 1 if
+  the function code is unrecognized by the server and -1 if the
+  server cannot be located or the reply does not have the correct
+  signature. The response level for this driver is 2, so most
+  errors will produce an error complaint but won't be fatal,
+  although oms_command() will abort no matter what if you pass it
+  invalid arguments.
+</p>
+<h2>See Also</h2>
+<p>  <a href="subject.html#sub10">Driver Interfaces</a>, <a href="subject.html#sub4">Startup</a> functions.</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/omsclient.c">/usr/local/src/nortlib/omsclient.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

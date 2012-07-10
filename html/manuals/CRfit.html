@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>CRfit Utilities Reference</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="Harvard University Anderson Group Website">
+<meta name="keywords" content="ARP huarp data acquisition qnx atmosphere chemistry Anderson Harvard">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h1>CRfit Utilities Reference</h1>
+
+<p><code>CRfit</code> is the somewhat outdated name of the library of Matlab routines created for analysis of data from the Anderson Group's <a href="http://www.arp.harvard.edu/atmobs/sciobj/instrument/cr.html">ICOS Instrument</a>. The 'CR' stands for 'Cavity Ringdown,' which was originally the focus of that instrument's development, and the name stuck. Many of these routines have since found much wider utility in analyzing data from newer instruments which use neither ringdown nor ICOS techniques. The main thing these measurements have in common is a <a href="icosfit.html#ICOSFileFormats">file format</a> for storing scan-oriented data from high-speed sensors.</p>
+
+<h2>Availability</h2>
+
+<p>The CRfit library is available via <a href="http://forge.abcd.harvard.edu/gf/project/arp-icos/scmcvs/?action=browse&amp;path=%2FMatlab%2FCRfit%2F">anonymous CVS</a> from the <a href="http://forge.abcd.harvard.edu/">ABCD Forge server</a>.</p>
+
+<h2>Directory Hierarchy</h2>
+
+<p>The library expects the following directory hierarchy:</p>
+<ul>
+<li><a href="#ExRoot">Experiment Root Directory</a><ul>
+  <li><a href="#RunDir">Run Directory</a><ul>
+    <li><a href="#CPCI14">'CPCI14' Directory</a></li>
+    <li>ICOSfit output directories</li>
+  </ul></li>
+</ul></li></ul>
+
+<h3><a name="ExRoot"></a>Experiment Root Directory</h3>
+<p>The experiment root directory contains all of the run directories. It may also contain various configuration files that remain relatively constant from run to run.</p>
+
+<h3><a name="RunDir"></a>Run Directories</h3>
+<p>The run directories are usually named with the YYMMDD.R format identifying the date of the run. Some plotting utilities will recognize a trailing 'F' in the directory name to indicate flight data. This is the directory you will be in when you invoke most of the CRfit functions. It contains the <code>CPCI14</code> directory and all the data and configuration files specific to this run.</p>
+
+<h3><a name="CPCI14"></a>CPCI14 Directory</h3>
+<p>The CPCI14 directory is the root of a hierarchical directory structure containing the raw data from the experiment. This directory derives its name from the data acquisition board in use when the library was created. Since then the library has been used with newer boards. Although some functions will allow you to specify a different name for this directory, the name is hard-coded in other locations. Ideally, this name could be set in a configuration file, but for now, we just live with it.</p>
+
+<h2>Minimum Requirements</h2>
+<ul>
+<li>CPCI14 hierarchy</li>
+<li>PT.mat</li>
+<li>waves.m</li>
+</ul>
+
+<p>PT.mat contains the following variables:</p>
+<dl>
+<dt>TPT</dt><dd>Unix Time (seconds since 1970)</dd>
+<dt>CellP</dt><dd>Cell Pressure in Torr</dd>
+<dt>Tavg</dt><dd>Average Cell Temperature in Kelvin</dd>
+<dt>QCLI_Wave</dt><dd>Scan Waveform index</dd>
+<dt>CPCI14</dt><dd>Scan file index</dd>
+</dl>
+
+<p><code>CellP</code> and <code>Tavg</code> need to be present, but their values are only significant in the later stages of data analysis, so placeholders or approximations can be used early on.</p>
+
+<p><code>QCLI_Wave</code> refers to the waveform and sampling definitions defined in <code>waves.m</code>. The general assumption is that data that is sampled differently probably needs to be analyzed differently, and many of the functions will enforce this requirement.</p>
+
+<p><code>CPCI14</code> is the index number of the current data file under the CPCI14 hierarchy. The indexing mechanism is described under <a href="http://www.arp.harvard.edu/eng/das/manuals/libref/subject.html#sub14">Multi-level File Routines</a>, and there are analogous Matlab routines <code>mlf_path</code> and <code>mlf_mkdir</code> in the CRfit library. It is not necessary for every CPCI14 file to have a corresponding entry in PT.mat. If the CPCI14 number skips, corresponding values for time, pressure and temperature are interpolated from the neighboring values.</p>
+
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Thu Nov 13 13:53:32 2008</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2008 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html>
+<head>
+<title>TMCALGO Altitude Example</title>
+<link rel=stylesheet type="text/css"
+      href="manual.css" title="manual">
+</head>
+<body bgcolor="White">
+<h2>TMCALGO V2R1: Algorithm Compiler</h2>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td><a href="tma_2.html">Chap. 2</a></td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<h3>Altitude Example</h3>
+
+<p>This partition was extracted verbatim from the Chlorine Nitrate
+instrument flight algorithm. It converts pressure (altitude) into
+states (ON_GROUND, BELOW_CLOUDS, ABOVE_CLOUDS). The threshold pressures
+each have two values - one for the flight up and the other for the flight down.
+This provides hysteresis and prevents bouncing.</p>
+
+<hr>
+<pre>PARTITION
+
+%{ /* Altitude definitions */
+    double P_ground_up = 500.;
+    double P_ground_dn = 550.;
+    double P_clouds_up = 280.;
+    double P_clouds_dn = 370.;
+    int using_swp = 0;
+%}
+
+# note on 960718 it was 10 min to below the clouds
+# and +7 min to above the clouds
+
+State ON_GROUND {
+    { using_swp = 0; }
+    &gt;   Set SW Status 1 to 0
+    { if ( SW1_S == 1 ) {
+        using_swp = 1;
+        validate BELOW_CLOUDS;
+    } else if (convert(SD1_P) &lt; P_ground_up)
+        validate BELOW_CLOUDS;
+    }
+}
+
+State BELOW_CLOUDS {
+    &gt;   Set SW Status 1 to 0
+
+    { if ((using_swp &amp;&amp; SW1_S == 2) ||
+          (!using_swp &amp;&amp; convert(SD1_P) &lt; P_clouds_up))
+        validate ABOVE_CLOUDS;
+      else if ((using_swp &amp;&amp; SW1_S == 4) ||
+          (!using_swp &amp;&amp; convert(SD1_P) &gt; P_ground_dn))
+        validate ON_GROUND;
+    }
+}
+
+State ABOVE_CLOUDS {
+    &gt;   Set SW Status 1 to 0
+
+    { if ( (using_swp &amp;&amp; SW1_S == 3) ||
+          (!using_swp &amp;&amp; convert(SD1_P) &gt; P_clouds_dn))
+        validate BELOW_CLOUDS;
+    }
+}
+</pre>
+
+<hr>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td><a href="tma_2.html">Chap. 2</a></td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<p>Return to <a href="index.html">Manuals Guide</a>.
+Written by
+<a href="mailto:allen@huarp.harvard.edu">Norton T. Allen</a><br>
+<font size="-2">Copyright &copy; 2001 by the President and Fellows of Harvard
+College</font>
+</p>
+
+</body>
+</html>

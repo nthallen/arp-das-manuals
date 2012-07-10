@@ -1,0 +1,11 @@
+memo -vy -e abc.log &
+namewait memo
+scrpaint -v -c0 abc
+abccol -c0 -vy -n1 &
+namewait -g dg
+lgr -v -c0 `lfctr -O` &
+stty -echo; read j; stty +echo
+startdbr quit
+while namewait -t 1 -g dg 2>/dev/null; do : ; done
+memo -k0 -v
+while namewait -t 1 memo 2>/dev/null; do : ; done

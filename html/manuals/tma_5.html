@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>tmcalgo V2R1: Chapter 5</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img name="daqlogo" src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map" border="0">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10, 11, 91, 35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91, 6, 246, 43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30, 47, 273, 79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h2>TMCALGO V2R1: Algorithm Compiler</h2>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td><a href="tma_2.html">Chap. 2</a></td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td>Chap. 5</td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<table><tr><td>
+<h3><a name="P5.0">5.0</a>: Debugging Algorithms</h3>
+<div class="contents">
+<ul>
+<li><a href="tma_5.html#P5.1">5.1</a>: Print Statements</li>
+<li><a href="tma_5.html#P5.2">5.2</a>: Playback</li>
+<li><a href="tma_5.html#P5.3">5.3</a>: Using the Debugger</li>
+</ul>
+</div></td></tr></table>
+
+<p>Debugging algorithms is much like debugging any computer
+program, and many of the same tools and techniques can be
+applied. The process is complicated by the fact that
+algorithms run in real time, so when you are watching them,
+there is no easy way to stop them to figure out what is
+going on. As we shall see, however, there are approaches
+to allow you to replay an algorithm as well as slow it down
+to aid in diagnosing its missteps.</p>
+
+<h3><a name="P5.1">5.1</a>: Print Statements</h3>
+
+<p>The simplest and most straightforward debugging tool
+in most any language is the insertion of print statements
+at crucial spots. This is particularly easy in TMCALGO
+by use of <a href="libref/nl_error.html">nl_error()</a>
+or its equivalent, msg().</p>
+
+<p>The example below uses msg() to report the value of
+a particular variable:</p>
+
+<pre>
+	State Motor_Init {
+	  +1 &gt; Motor On
+	  +3 { if ( MtrRPM &lt; 1000 ) {
+			 msg( -2, "Motor RPM is %d", MtrRPM );
+			 Validate Motor_Failed;
+		   } else Validate Motor_On;
+		 }
+	}
+</pre>
+
+<p>This might give us a little more information in the log
+than the state Motor_Failed would. The first argument to
+msg/nl_error defines the message 'level'. -2 is the first
+level of debug messages. Such messages will not be logged
+unless the algorithm is invoked with the '-l' option (which
+is usually asserted.) If we specified -3 instead, this
+message would require '-ll' to be logged, and so on.</p>
+
+<p>This approach has also been used effectively to log key
+operating parameters during a flight, allowing the operators to
+assess the basic health of the system very quickly after a flight
+just by reviewing the log file.</p>
+
+<h3><a name="P5.2">5.2</a>: Playback</h3>
+
+<p>Your algorithm has done something you don't understand.
+Now your run is over, and the data is logged. How can you
+figure out what went wrong?</p>
+
+<p>The ability to replay algorithms against flight data
+is one of the great strengths of this architecture. During
+playback, you can fast-forward to an area of interest,
+then slow down the replay while viewing the instrument
+data screens and log files. This can be more effective
+than print statements, since you can immediately view
+almost all the relevant data.</p>
+
+<p>In order to replay a run, you must first have logged
+the data and issued a <code><b>saverun</b></code> or
+<code><b>reduce</b></code> command. You will also need to
+have prepared a <a href="tma_3.html#P3.5">playback
+&quot;doit&quot; script</a>. Assuming your playback script
+is called &quot;PBdoit&quot; and your run was saved as
+&quot;010201.1&quot;, you can play it back by issuing the
+command: &quot;<code><b>PBdoit&nbsp;010201.1</b></code>&quot;.
+</p>
+
+<p>It is possible to combine playback with the printing
+techniques of the previous section by recompiling your
+algorithm. Provided you don't make changes that affect
+the procedural flow, the print statements should accurately
+reflect the data the algorithm saw when it made its
+decisions.</p>
+
+<h3><a name="P5.3">5.3</a>: Using the Debugger</h3>
+
+<p>If playback leaves you still scratching your head,
+the last resort is to run your algorithm through a
+source code debugger such as the Watcom debugger, <b>wd</b>.
+The easiest way to do this is by using
+<a href="../guides/das_user.html#P3.3">extract</a>,
+which eliminates any realtime dependence and allows you to
+run the process in question without unnecessary display
+programs.</p>
+
+<p>Before running with the debugger, you will want to
+recompile your algorithm with some debugging information.
+This will allow the debugger to display the C source code
+and variables while it is executing. To do this, you will
+first need to convince make to recompile the relevant
+C module. The most crude way to do that is to
+&quot;Make&nbsp;clean&quot;, but that will require make
+to rebuild everything, which can be pretty time consuming.
+The best approach is to identify the name of the C source for
+your algorithm and remove the corresponding object file. The
+name of the main C source file for an algorithm is usually formed
+by taking the name of the compiled algorithm and appending
+&quot;.c&quot to it. Hence the source for <code>hsimalgo</code>
+is in <code>hsimalgo.c</code>, and the object file you want
+to delete is <code>hsimalgo.o</code>.</p>
+
+<p>Once you have removed the object file, you need to
+recompile with debugging enabled. The following command
+should accomplish this for the <code>hsimalgo</code> case:</p>
+
+<pre>
+    OPTARGS=g make hsimalgo
+</pre>
+
+<p>[ It is possible that you will run into trouble compiling with
+debugging enabled if your algorithm is large. If this is the
+case, the first thing to do is to make sure you are compiling
+using large model (set by adding MODEL=l at the end of your
+.spec file). If that doesn't help - or you were already in large
+model - then you'll need to compile in 32-bit mode. At this
+point, you may need <a href="/~nort/paging/">professional
+help!</a> ]</p>
+
+<p>Assuming you have successfully compiled with debugging,
+you can now start up the debugger with the command:</p>
+
+<pre>
+    extract 010201.1 &quot;wd hsimalgo -psll&quot;
+</pre>
+
+<p>As mentioned earlier, the quotes are very important, as
+is the '-p' option. Two l's will give you more potentially
+useful output in the log file, but your application may
+make more or less debugging output desirable.</p>
+
+<p>The debugger will start up on another console. At this
+point you will want to set a breakpoint or breakpoints in
+the source file before starting to run. I find the easiest
+way to figure out where to break is to open the source file
+in an editor and search for the relevant statements. Most
+of the C-style code from your <code>.tma</code> appears
+more-or-less verbatim in the <code>.c</code> output, although
+it is all rearranged considerably. You may need to spend some
+time determining the general flow of the C program before you
+are able to do very much in the debugger. It is also possible
+that you might need debugging information for some of the
+library routines as well. [ In this case, you <i>definitely</i>
+need professional help! ].</p>
+
+<p>One final tidbit of information which will come in handy
+is how to gracefully terminate an extraction that is
+underway so you don't have to wait for it to read through an
+entire flight's data:</p>
+
+<ul>
+<li>If you are running in the debugger, clear all your
+breakpoints</li>
+<li>Go to another console and issue the command
+'<code>sin&nbsp;gn</code>' to determine the Experiment
+name registered by <code>rdr</code>. This is usually
+$Experiment.r, where $Experiment is defined in your
+Experiment.config file.</li>
+<li>Issue the command:
+<pre>
+      Experiment=&lt;exp&gt; startdbr quit
+</pre>
+</li>
+<li>Return to the debugger and issue the command to continue</li>
+<li>Your algorithm should terminate, leaving you in the
+debugger</li>
+<li>Exit from the debugger</li>
+<li>All of the extraction programs should terminate
+gracefully.</li>
+</ul>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td><a href="tma_2.html">Chap. 2</a></td>
+<td><a href="tma_3.html">Chap. 3</a></td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td>Chap. 5</td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a>.
+Written by
+<a href="mailto:allen@huarp.harvard.edu">Norton T. Allen</a>
+</p>
+
+
+<br>
+<hr noshade color="#000000">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+  <td>last updated: Thu Jan  2 10:51:59 2003</td>
+  <td align="right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</A></td>
+</tr>
+<tr>
+<td colspan="2"><font size="-2">
+Copyright 2002 by the President and Fellows of Harvard College
+</font></td>
+</tr>
+</table>
+</body>
+</html>

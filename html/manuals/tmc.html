@@ -1,0 +1,379 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>TMC: The Telemetry Compiler</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="Harvard University Anderson Group Website">
+<meta name="keywords" content="ARP huarp data acquisition qnx atmosphere chemistry Anderson Harvard">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+
+<div id="banner">
+<img name="daqlogo" src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map" border="0">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10, 11, 91, 35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91, 6, 246, 43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30, 47, 273, 79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h1>TMC: The Telemetry Compiler</h1>
+<h2>Contents</h2>
+<UL>
+<li><A HREF="#P0.0">0.0</A>: Invocation</li>
+<li><A HREF="#PA.0">A.0</A>: Syntax</li>
+<li><A HREF="#PB.0">B.0</A>: Changes</li>
+<li><A HREF="#PC.0">C.0</A>: Upgrading to 1.3</li>
+<li><a href="#PD.0">D.0</a>: Changes in 1.10 (QNX6)</li>
+</UL>
+<H2><A NAME="P0.0">0.0</A>: Invocation</H2>
+<PRE>
+    tmc [options] [files]
+        -c             Generate collection rules
+        -C             Print information on Conversions
+        -d             Print Data Definitions
+        -D filename    Create dac file
+        -i             Print Steps in compilation progress
+        -k             Keep output file (.c) even on error
+        -m             Do not generate main() function
+        -o filename    Send C output to file
+        -p             Print PCM (TM Format) Definition
+        -v             Produce very verbose output (-Cdps)
+        -V filename    Redirect verbose output to file
+        -q             Show this help message
+        -s             Print frame statistics
+        -w             Give error return on warnings
+</PRE>
+
+<H2><A NAME="PA.0">A.0</A>: Syntax</H2>
+
+<UL>
+<LI>Items typed in <TT>TYPEWRITER</TT> font (uppercase) represent
+keywords which would
+be entered explicitly in a TMC program.
+<LI>An item typed in lowercase
+is a non-terminal which is either being defined or is defined
+elsewhere in the grammar. If the non-terminal is defined elsewhere,
+the keyword is a link to its definition.
+<LI>Items bracketed by angle brackets (e.g.
+&lt;INTEGER&gt;) are lexical tokens. Their syntax should be implicit in
+their names.
+<LI>I have used brackets ([]) to signify optional items
+except in the "<A HREF="#array-decorations">array-decorations</A>"
+definition and the <A HREF="#cvtfunc">cvtfunc</A> definition
+where they represent brackets. I use the notation
+[ item ... ] to indicate that an optional item may be repreated
+indefinitely.
+</UL>
+
+<PRE>
+<A NAME="program">program</A>
+  : [ <A HREF="#progitem">progitem</A> ... ]
+
+<A NAME="progitem">progitem</A>
+  : TM <A HREF="#rate">rate</A> <A HREF="#declaration">declaration</A> ;
+  : STATE ( &lt;NAME&gt; [ , &lt;NAME&gt; ... ] );
+  : TM SYNCHRONOUS;
+  : TM SYNCHRONOUS TOLERANCE = &lt;INTEGER-CONST&gt; ;
+  : TM MAXCOLS = &lt;INTEGER-CONST&gt; ;
+  : TM &lt;STRING-LITERAL&gt; &lt;NAME&gt; &lt;INTEGER-CONST&gt; ;
+  : COLLECT &lt;NAME&gt; <A HREF="#block">block</A>
+  : COLLECT &lt;NAME&gt; = <A HREF="#expression">expression</A> ;
+  : GROUP &lt;NAME&gt; ( <A HREF="#grouplist">grouplist</A> ) <A HREF="#block">block</A>
+  : ADDRESS &lt;NAME&gt; &lt;INTEGER-CONST&gt; ;
+  : CALIBRATION ( &lt;TYPE-NAME&gt; , &lt;TYPE-NAME&gt; ) { <A HREF="#pairs">pairs</A> }
+  : <A HREF="#nontm-decl">nontm-decl</A>
+  : <A HREF="#tl-statement">tl-statement</A>
+
+<A NAME="nontm-decl">nontm-decl</A>
+  : <A HREF="#declaration">declaration</A> ;
+  : TYPEDEF <A HREF="#declaration">declaration</A> ;
+  : TM TYPEDEF <A HREF="#declaration">declaration</A> <A HREF="#tmtyperules">tmtyperules</A>
+
+<A NAME="grouplist">grouplist</A>
+  : &lt;NAME&gt; [ , &lt;NAME&gt; ... ]
+
+<A NAME="tl-statement">tl-statement</A>
+  : <A HREF="#opt-expr">opt-expr</A> ;
+  : <A HREF="#block">block</A>
+  : DO <A HREF="#statement">statement</A> WHILE ( <A HREF="#expression">expression</A> );
+  : IF ( <A HREF="#expression">expression</A> ) <A HREF="#statement">statement</A> [ ELSE <A HREF="#statement">statement</A> ]
+  : SWITCH ( <A HREF="#expression">expression</A> ) <A HREF="#statement">statement</A>
+  : WHILE ( <A HREF="#expression">expression</A> ) <A HREF="#statement">statement</A>
+  : FOR ( <A HREF="#opt-expr">opt-expr</A> ; <A HREF="#opt-expr">opt-expr</A> ; <A HREF="#opt-expr">opt-expr</A> ) <A HREF="#statement">statement</A>
+  : RETURN <A HREF="#opt-expr">opt-expr</A> ;
+  : DEPENDING ON ( <A HREF="#namelist">namelist</A> ) <A HREF="#statement">statement</A> [ ELSE <A HREF="#statement">statement</A> ]
+  : <A HREF="#validator">validator</A> &lt;NAME&gt; ;
+  : DISPLAY ( <A HREF="#constant">constant</A> , <A HREF="#constant">constant</A> , <A HREF="#constant">constant</A> , &lt;NAME&gt; ) ;
+
+<A NAME="statement">statement</A>
+  : <A HREF="#tl-statement">tl-statement</A>
+  : &lt;NAME&gt; : <A HREF="#statement">statement</A>
+  : CASE <A HREF="#expression">expression</A> : <A HREF="#statement">statement</A>
+  : DEFAULT : <A HREF="#statement">statement</A>
+
+<A NAME="validator">validator</A>
+  : VALIDATE
+  : INVALIDATE
+
+<A NAME="block">block</A>
+  : { <A HREF="#declarations">declarations</A> <A HREF="#statements">statements</A> }
+
+<A NAME="statements">statements</A>
+  : [ <A HREF="#statement">statement</A> ... ]
+
+<A NAME="namelist">namelist</A>
+  : <A HREF="#depname">depname</A>
+  : <A HREF="#namelist">namelist</A> , <A HREF="#depname">depname</A>
+  : <A HREF="#rate">rate</A>
+  : <A HREF="#namelist">namelist</A> , <A HREF="#rate">rate</A>
+
+<A NAME="depname">depname</A>
+  : &lt;NAME&gt; [ ONCE ]
+
+<A NAME="opt-expr">opt-expr</A>
+  : [ <A HREF="#expression">expression</A> ]
+
+<A NAME="expression">expression</A>
+  : <A HREF="#expr-piece">expr-piece</A>
+  : <A HREF="#expression">expression</A> <A HREF="#expr-piece">expr-piece</A>
+  : <A HREF="#expression">expression</A> ? <A HREF="#expression">expression</A> : <A HREF="#expression">expression</A>
+
+<A NAME="expr-piece">expr-piece</A>
+  : <A HREF="#constant">constant</A>
+  : <A HREF="#reference">reference</A>
+  : <A HREF="#oper-punc">oper-punc</A>
+  : ( <A HREF="#opt-expr">opt-expr</A> )
+
+<A NAME="reference">reference</A>
+  : &lt;NAME&gt;
+  : &lt;NAME&gt; . ADDRESS
+  : CONVERT ( &lt;NAME&gt; )
+  : ICONVERT ( &lt;NAME&gt; )
+  : TEXT ( &lt;NAME&gt; )
+  : &lt;NAME&gt; <A HREF="#derefs">derefs</A>
+
+<A NAME="derefs">derefs</A>
+  : <A HREF="#deref">deref</A> [ <A HREF="#deref">deref</A> ... ]
+
+<A NAME="deref">deref</A>
+  : . &lt;NAME&gt;
+  : -&gt; &lt;NAME&gt;
+
+<A NAME="oper-punc">oper-punc</A>
+  : &lt;OPER-PUNC&gt;
+  : ]
+  : [
+  : ,
+  : /
+  : =
+  : -
+  : +
+
+<A NAME="constant">constant</A>
+  : &lt;INTEGER-CONST&gt;
+  : &lt;REAL-CONST&gt;
+  : &lt;CHAR-CONST&gt;
+  : &lt;STRING-LITERAL&gt;
+
+<A NAME="tmtyperules">tmtyperules</A>
+  : ;
+  : { [ <A HREF="#tmtyperule">tmtyperule</A> ... ] }
+
+<A NAME="tmtyperule">tmtyperule</A>
+  : COLLECT &lt;NAME&gt; { <A HREF="#declarations">declarations</A> <A HREF="#statements">statements</A> }
+  : COLLECT &lt;NAME&gt; = <A HREF="#expression">expression</A> ;
+  : CONVERT &lt;TYPE-NAME&gt; [ <A HREF="#cvtfunc">cvtfunc</A> ] ;
+  : TEXT &lt;STRING-LITERAL&gt; [ <A HREF="#cvtfunc">cvtfunc</A> ] ;
+
+<A NAME="cvtfunc">cvtfunc</A>
+  : &lt;NAME&gt;()
+  : &lt;NAME&gt;[]
+  : ()
+
+<A NAME="rate">rate</A>
+  : <A HREF="#rational">rational</A> SAMPLE[S] / <A HREF="#time-unit">time-unit</A>
+  : <A HREF="#rational">rational</A> HZ
+  : <A HREF="#rational">rational</A> <A HREF="#time-unit">time-unit</A> / SAMPLE[S]
+
+<A NAME="time-unit">time-unit</A>
+  : SECOND[S]
+  : MINUTE[S]
+  : HOUR[S]
+
+<A NAME="rational">rational</A>
+  : &lt;INTEGER-CONST&gt; [ / &lt;INTEGER-CONST&gt; ]
+
+<A NAME="declarations">declarations</A>
+  : [ <A HREF="#declaration">declaration</A> ; ... ]
+
+<A NAME="declaration">declaration</A>
+  : <A HREF="#declarators">declarators</A>
+
+<A NAME="declarators">declarators</A>
+  : <A HREF="#typeparts">typeparts</A> <A HREF="#declarator">declarator</A> [ , <A HREF="#declarator">declarator</A> ... ]
+
+<A NAME="declarator">declarator</A>
+  : &lt;NAME&gt; <A HREF="#array-decorations">array-decorations</A>
+
+<A NAME="array-decorations">array-decorations</A>
+  :
+  : <A HREF="#array-decorations">array-decorations</A> [ &lt;INTEGER-CONST&gt; ]
+
+<A NAME="typeparts">typeparts</A>
+  : <A HREF="#integertypes">integertypes</A>
+  : FLOAT
+  : DOUBLE
+  : &lt;TYPE-NAME&gt;
+  : <A HREF="#struct-union">struct-union</A> { <A HREF="#declarations">declarations</A> }
+
+<A NAME="struct-union">struct-union</A>
+  : STRUCT
+  : UNION
+
+<A NAME="integertypes">integertypes</A>
+  : <A HREF="#integertype">integertype</A> [ <A HREF="#integertype">integertype</A> ... ]
+
+<A NAME="integertype">integertype</A>
+  : CHAR
+  : INT
+  : LONG
+  : SHORT
+  : SIGNED
+  : UNSIGNED
+
+<A NAME="pairs">pairs</A>
+  : <A HREF="#pair-num">pair-num</A> , <A HREF="#pair-num">pair-num</A> [ , <A HREF="#pair-num">pair-num</A> , <A HREF="#pair-num">pair-num</A> ... ]
+
+<A NAME="pair-num">pair-num</A>
+  : &lt;INTEGER-CONST&gt;
+  : &lt;REAL-CONST&gt;
+  : - <A HREF="#pair-num">pair-num</A>
+  : + <A HREF="#pair-num">pair-num</A>
+</PRE>
+
+<H2><A NAME="PB.0">B.0</A>: Changes</H2>
+<H3>Changes from V1R3 to V1R4</H3>
+
+Changes have been made to how TMC supports Calibrations and 
+conversions between types and to text.<P>
+  
+Output text format is now specified in the source type, not the 
+destination. A side effect is that we should require fewer 
+"dummy" output types. For example, in ClONO2 we have VOLTS2 and 
+VOLTS4 which both represent volts, but one with a %4.2lf format 
+and the other with a %6.4lf format. We convert AD8's to VOLTS2 
+and AD12's to VOLTS4. Now we can specify a single VOLTS type and 
+specify AD8 { convert VOLTS; text "%4.2lf"; } and AD12 { convert 
+VOLTS; text "%6.4lf"; } and it is quite reasonable to compare 
+VOLTS to VOLTS regardless of which type they originated from.<P>
+  
+Calibrations and conversions can be inherited. This allows for 
+more flexible sub-typing. For example, a sub-type can be created 
+for individual thermistors. Each thermistor will inherit the 
+generic calibration from the parent, but if a better calibration 
+is made, that can be added later. If the thermistor-specific 
+calibrations are placed in a separate file, a display program 
+which doesn't require a precise calibration could simply use the 
+generic calibration whereas an extraction program could use the 
+individual calibrations.<P>
+
+iconvert() is a new syntax for to augment and improve the 
+semantics of the convert() syntax. By and large, iconvert() 
+behaves the way the old convert() syntax did and convert() now 
+behaves the way you might have expected it to all along. 
+convert() now produces converted floating point values which are 
+scaled correctly. iconvert() produces converted integer values 
+which have been scaled to preserve the precision of fixed-point 
+formats. For example, if the output format of AD8 is "%4.2lf" and 
+x is of type AD8, convert(x) will produce VOLTS and iconvert(x) 
+will produce VOLTS*100.<P>
+
+When in doubt, use convert() and stay away from iconvert().<P>
+
+A side-effect of this change is that basic extraction into 
+spreadsheets via simple .edf definitions will now produce 
+properly scaled output (without any .1* kluges in the .edf 
+file).<P>
+  
+Support for text conversion of floating point types including 
+%e format for scientific notation. Previously any fixed-point 
+values had to be stored as integers for display, and true 
+floating-point output was virtually impossible.<P>
+  
+Support for text conversion of data using a supplied explicit 
+conversion function. An earlier release supported explicit 
+convert() and text() functions to augment the calibration 
+facility, but if you provided a convert() function, you had to 
+provide a text() function also, which was a real pain. Now TMC 
+will generate a text() function for you using your custom 
+convert().<P>
+
+<H2><A NAME="PC.0">C.0</A>: Upgrading from V1R3</H2>
+
+Check all TM typedefs for appropriate text formats. The text 
+format now belongs with the source type and reflects how the 
+data should be scaled/displayed after conversion. May be able 
+to collapse redundant destination types (VOLTS2 & VOLTS4, for 
+example)<P>
+	
+Check all instances of convert() to make sure they are 
+appropriate. Replace with iconvert() if desired.<P>
+	
+Remove any explicit scaling from .edf files where it is no 
+longer required.<P>
+
+Add the following to your .spec file:
+<PRE>
+    %%
+    TMCREV=tmcV1R4beta
+</PRE>
+(If you already have a %% line, don't add another.)
+
+<h2><a name="PD.0">D.0</a>: Changes in V1R10 (QNX6)</h2>
+
+<h3>TM &ldquo;Receive&rdquo; &lt;NAME&gt; &lt;INTEGER-CONST&gt; ;</h3>
+
+<p>The TM &ldquo;Receive&rdquo; functionality has been made a little
+easier to implement with QNX6. Each such statement causes collection to
+create a new device named /dev/huarp/TM/$Experiment/data/&lt;NAME&gt;.
+Any data written into that device is copied into the variable
+&lt;NAME&gt;.</p>
+
+<p>The INTEGER-CONST must be either 0 or 1. If it is 1, writes to the
+device are synchronized with the telemetry frame. A DG_data object named
+&lt;NAME&gt;_obj is defined, and it is the developer's responsibility to
+ensure the &lt;NAME&gt;_obj->synch() is called after the data is processed.
+A more detailed example is required, but in the mean time, you can refer
+to existing source code for the TILDE instrument for synchronized writes using blocking I/O and the idx64 driver for synchronized writes using non-blocking I/O and <code>ionotify().</code>
+</p>
+
+<h3>TM INITFUNC &lt;statement&gt;</h3>
+
+<p>Adds the specified statement to a list of statements
+executed just prior to starting operation. May be called
+multiple times.</p>
+
+
+<p>Return to <A HREF="index.html">Manuals Guide</A>.
+Written by <A HREF="mailto:allen@huarp.harvard.edu">Norton T. Allen</A>
+</p><br>
+
+<hr noshade>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+  <td>last updated: Fri Jan 28 09:16:16 2011</td>
+  <td align="right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</A></td>
+</tr>
+<tr>
+<td colspan="2"><font size="-2">
+Copyright 2008 by the President and Fellows of Harvard College
+</font></td>
+</tr>
+</table>
+</body>
+</html>

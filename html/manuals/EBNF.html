@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>Extended Backus Naur Format Summary</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="Harvard University Anderson Group Website">
+<meta name="keywords" content="ARP huarp data acquisition qnx atmosphere chemistry Anderson Harvard">
+<link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+
+<table border="0" cellpadding="0" cellspacing="0" width="600" height="100">
+
+<tr>
+<td rowspan="1" colspan="1" width="91" height="44">
+  <a href="http://www.harvard.edu/"><img name="daqlogo0" src="/img/daqlogo_1x1.png" width="91" height="44" border="0" alt="Harvard University Home Page"></a></td>
+<td width="187" height="44">
+  <a href="http://www.arp.harvard.edu/"><img name="daqlogo1" src="/img/daqlogo_1x2.png" 
+width="187" height="44" border="0" alt="Anderson Group Home Page"></a></td>
+<td rowspan="2" width="322" height="100">
+  <img name="daqlogo2" src="/img/daqlogo_1x3.png" width="322" height="100" border="0"></td>
+</tr>
+
+<tr>
+<td colspan="2" width="278" height="56">
+  <a href="http://www.arp.harvard.edu/eng/das/"><img name="daqlogo3"
+    src="/img/daqlogo_2x1.png"
+    width="278" height="56" border="0"
+    alt="Data Acquisition Software Home Page"></a></td>
+</tr>
+
+</table>
+<br>
+<h3>Extended Backus Naur Form (EBNF)</h3>
+
+<table width="640"><tr><td>
+<p>Many of our computer mini-language grammars are defined using Extended
+Backus Naur Form (EBNF) as defined by the
+<a href="http://eli-project.sourceforge.net/elionline4.4/syntax_1.html">
+Eli Compiler Construction System</a>. Such a grammar consists of
+several productions, and each production consists of a symbol, a
+colon, and the sequence that can replace that symbol. The symbol
+on the left hand side of a production is called a nonterminal,
+since it gets replaced in the production by a sequence of other
+symbols. There are also terminal symbols that represent simple
+strings of characters that are recognized by the lexical
+analyzer such as integers, identifiers (variable names) or literals,
+which are explicit character strings that are matched exactly
+( <i>e.g.</i> operators like '+' or keywords like 'else' ).</p>
+
+<p>In our web documentation of these grammars, nonterminal and terminal symbols on the
+right hand side of a production are shown with a link to their
+production or definition. Literals (keywords) are shown as words without a
+link or as a quoted string of characters. ( <i>e.g.</i> ';' ).</p>
+
+<p>Within a production there are various special characters:</p>
+
+<dl>
+<dt>.</dt>
+<dd>A period marks the end of a production.</dd>
+<dt>/</dt>
+<dd>A slash indicates alternation: the production
+may use either the sequence before or after the slash.
+Multiple options can be combined by a series of slash-separated
+sequences.</dd>
+<dt>()</dt>
+<dd>Parentheses can be used to group a sequence of symbols when
+applying other grammar constructs.</dd>
+<dt>*</dt>
+<dd>An asterisk denotes that the preceding symbol or
+parenthesized expression may occur zero or more times.</dd>
+<dt>+</dt>
+<dd>A plus denotes that the preceding symbol or parenthesized
+epxression may occur one or more times.</dd>
+<dt>[]</dt>
+<dd>A symbol or sequence of symbols inside square brackets
+represents an optional element that may be present or
+omitted.</dd>
+</dl>
+
+<p>For more information on EBNF, Compiler Design or Eli,
+please contact
+<a href="http://www.arp.harvard.edu/people/nort/">Norton</a>
+or visit the <a href="http://eli-project.sourceforge.net/elionline4.4/index.html">Eli
+Web Site</a>.</p>
+</td></tr></table><br>
+<br>
+
+<hr noshade color="#000000">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+  <td>last updated: Tue Feb  6 14:21:19 2007</td>
+  <td align="right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</A></td>
+</tr>
+<tr>
+<td colspan="2"><font size="-2">
+Copyright 2006 by the President and Fellows of Harvard College
+</font></td>
+</tr>
+<tr>
+  <td align="center" colspan="2" width="100%">
+   [<a href="/info/tour.html">tour</a>]
+   [<a href="/info/people.html">people</a>]
+   [<a href="/info/missions.html">missions</a>]
+   [<a href="/info/pub.html">publications</a>]
+   [<a href="/info/tech.html">technology</a>]
+   [<a href="/info/links.html">links</a>]
+   [<a href="/info/toc.html">sitemap</a>]
+  </td>
+</tr>
+</table>
+</body>
+</html>

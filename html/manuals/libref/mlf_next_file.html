@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<html>
+<head>
+<title>mlf_next_file</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+</head>
+<body>
+<h1>mlf_next_file</h1>
+<h2>Synopsis</h2>
+<pre>
+    
+      #include "mlf.h"
+      FILE *mlf_next_file( mlf_def_t *mlf );
+    
+</pre>
+<h2>Description</h2>
+<p>  Given an mlf definition, mlf_next_file() opens the next file in
+  the sequence. After calling mlf_next_file(), the path of the
+  open file is held in mlf->fpath, and the index is in
+  mlf->index. (See <a href="mlf_set_index.html">mlf_set_index</a>())</p>
+<h2>Returns</h2>
+<p>  A FILE pointer to the newly opened file or NULL if the file
+  could not be opened.
+</p>
+<h2>See Also</h2>
+<p>  <a href="subject.html#sub14">Multi-level File Routines</a>.</p>
+<h2>Source File</h2>
+<a href="FILE:/usr/local/src/nortlib/mlf.c">/usr/local/src/nortlib/mlf.c</A><BR><hr>
+<a href="title.html">Alphabetical List</a><br>
+<a href="subject.html">Subject List</a><br>
+Return to <a href="../index.html">Manuals</a> Page<br>
+<a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a><br>
+<font size="-2">Copyright 2001 by the President and Fellows of
+Harvard College</font>
+</body>
+</html>

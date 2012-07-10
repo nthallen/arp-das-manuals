@@ -1,0 +1,1387 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>ARP Data Acquisition Experiment Developer's Guide</TITLE>
+</HEAD>
+<BODY>
+<H1>ARP Data Acquisition Experiment Developer's Guide</H1>
+<H2>Contents</H2>
+<UL>
+  <LI><A HREF="#P0.0">0.0</A>: Introduction
+  <UL>
+    <LI><A HREF="#P0.1">0.1</A>: Example Sources
+  </UL>
+  <LI><A HREF="#P1.0">1.0</A>: Basic Data Collection
+  <UL>
+    <LI><A HREF="#P1.1">1.1</A>: Running the First Simulation
+  </UL>
+  <LI><A HREF="#P2.0">2.0</A>: Realtime Data Display
+  <UL>
+    <LI><A HREF="#P2.1">2.1</A>: SCRDES
+    <LI><A HREF="#P2.2">2.2</A>: Specifying Data Display to TMC
+    <LI><A HREF="#P2.3">2.3</A>: Making a Separate Display Program
+  </UL>
+  <LI><A HREF="#P3.0">3.0</A>: Creating an Interactive Command Line
+  <LI><A HREF="#P4.0">4.0</A>: Moving Toward "Flight" Configuration
+  <UL>
+    <LI><A HREF="#P4.1">4.1</A>: Experiment.config
+    <LI><A HREF="#P4.2">4.2</A>: Interact
+    <LI><A HREF="#P4.3">4.3</A>: Doit
+  </UL>
+  <LI><A HREF="#P5.0">5.0</A>: Logging Data
+  <UL>
+    <LI><A HREF="#P5.1">5.1</A>: Creating an Extraction Program
+    <LI><A HREF="#P5.2">5.2</A>: Running the Extraction
+  </UL>
+  <LI><A HREF="#PA.0">Appendix A</A>: Troubleshooting Compilations
+  <UL>
+    <LI><A HREF="#PA.1">A.1</A>: Compiler Errors
+    <LI><A HREF="#PA.2">A.2</A>: Versionitis
+    <LI><A HREF="#PA.3">A.3</A>: When All Else Fails
+  </UL>
+  <LI><A HREF="#PPS">Coming Attractions</A>
+</UL>
+
+<H2><A NAME="P0.0">0.0</A>: Introduction</H2>
+
+<CENTER>This tutorial has grown considerably out of date. I 
+intend to improve it in the coming months. In the meantime, let 
+me know if you intend to work through this, and I can let you 
+know what has changed.<P></CENTER>
+
+This guide is intended to walk you through the steps 
+necessary to acquire data and control an instrument within 
+the ARP Data Acquisition Architecture. Why you would want to 
+do this rather than use some other method is best addressed 
+in another document. The approach here is incremental, 
+allowing you to start from scratch very quickly. In practice, 
+large chunks of code are often copied wholesale from one 
+instrument's source to another. I will try to point out when 
+it is useful to look for existing code, but I hope that the 
+basic information you need will be contained within this 
+guide.<P>
+
+As an example, I will define a small instrument called the 
+"Alpha Beam Collider", called "abc" for short. The examples 
+are intended to be simple enough that you can type them in 
+quickly and actually compile them on your own system. This 
+assumes several things:
+
+<OL>
+	
+<LI> You must be running QNX. It is possible to edit and 
+compile the examples via telnet, but the display examples 
+will not work correctly if you are not on a "real" QNX 
+console.
+
+<LI> Your node has been configured to compile data 
+acquisition applications via <A HREF="../manuals/osupdate.html">osupdate</A>
+or some other means. (see <A HREF="das_sw_dev.html">das_sw_dev</A>
+for details).
+
+<LI> You have an account and can login.
+	
+</OL>
+
+Login now and create a directory for <TT>abc</TT> and a 
+<TT>src</TT> subdirectory by issuing the following commands:
+	
+<PRE>
+        mkdir abc
+        mkdir abc/src
+        cd abc/src
+</PRE>
+
+and create the files as I describe them.<P>
+	
+<H3><A NAME="P0.1">0.1</A>: Example Sources</H3>
+
+If you run into trouble, all the files described here can be 
+found in subdirectories of
+<A HREF="abc/index.html">/usr/local/lib/das_html/guides/abc</A>
+
+<H2><A NAME="P1.0">1.0</A>: Basic Data Collection</H2>
+
+The first thing you will want to define for your new 
+instrument is what data will be collected. The language we 
+will use to make these definitions is called <A 
+HREF="../manuals/tmc.html">TMC</A>. This stands for "Telemetry Compiler" 
+which only makes sense if you read the ARP Data Acquisition 
+Overview. This is a language which I designed specifically to 
+address the needs of our experimenters. You will find that I 
+like designing special-purpose languages, and that I do it 
+whenever I can. You may feel discouraged by the fact that 
+there are many little computer languages running around, but 
+I hope this is not the case. The point of these little 
+languages is to simplify the syntax you need to learn and 
+ideally to render your instrument's basic software definition 
+as a set of text files which you can read and understand. If 
+I find this is not being achieved, I will no doubt change the 
+language syntax to improve matters.<P>
+
+We will start with a simple simulation. The abc experiment will
+use two 16-bit counters which we will simulate using the following
+iterative function:
+	
+<PRE>
+        x = x - x/100 + rand()/100;
+</PRE>
+
+Each successive value of the counter will be based on the 
+previous value and a pseudo-random number. We wish the 
+counter values to be updated once per second. We will specify 
+this in a file called <TT>abc.tmc.</TT> To create the new 
+file, invoke the editor with the following command:
+
+<PRE>
+        vedit abc.tmc
+</PRE>
+
+If you haven't used it before, you will find this editor 
+to be fairly intuitive. The usual keys do pretty much what 
+you expect them to do; letters enter text into the file, 
+Enter begins a new line, Backspace deletes the last 
+character, Del deletes the character under the cursor, the 
+cursor keys move the cursor. When you are ready to save the 
+file, the simplest method is to press the "Esc" key and then 
+press "X" to exit. <TT>vedit</TT> will ask you whether to 
+save the file, to which you should type "y", and you will be 
+returned to the shell prompt.
+	
+<P> To practice entering text into the file, let's start by 
+putting a comment at the top of this file to describe what it 
+is. TMC comments look just like C comments:
+
+<PRE>
+        /* abc.tmc a simple example */
+</PRE>
+	
+There are two pieces of information required when 
+defining a telemetry data variable: the <B>type</B>, and the 
+<B>rate</B>. The type tells the compiler how much storage to 
+allocate for the variable and how to interpret values of that 
+variable. The rate specifies how often the value will be 
+updated.
+	
+
+<P> A type may be any valid C data type, but TMC provides a 
+mechanism to associate more information with a type than C 
+does. Standard C includes a <B>typedef</B> mechanism for 
+assigning a new name to a C data type. TMC has an augmented 
+typedef mechanism known as a <TT>TM typedef</TT>. This 
+performs the same function as the C typedef, but also allows 
+you to specify how variables of this new type are to be 
+collected, displayed and/or converted to other units.
+	
+
+<P> Back to abc! We need to define a type for our two 
+counters. The appropriate C data type for a 16-bit counter is 
+<TT>unsigned short.</TT> Short specifies that the counter 
+will have 16 bits, and unsigned specifies that the counters 
+don't register negative numbers (anti-photons?). If we choose 
+to name our new type <TT>Ct16,</TT> a C definition would be:
+
+<PRE>
+        typedef unsigned short Ct16;
+</PRE>
+
+(don't type that in!) We need to add to this the information about how 
+these values will be "collected." The TMC type definition which we want 
+to put into our file is:
+
+<PRE>
+        TM typedef unsigned short Ct16 {
+          /* This is a simulation */
+          collect x = x - x/100 + rand()/100;
+        }
+</PRE>
+	
+
+Note the C-style comment inside the <TT>/*</TT> and 
+<TT>*/.</TT> You can generally place these comments anywhere 
+within a <TT>.tmc</TT> file. Now we're ready to define our 
+two counters:
+
+<PRE>
+        TM 1 Hz Ct16 C1;
+        TM 1 Hz Ct16 C2;
+</PRE>
+
+<TT>TM</TT> is a keyword to alert the compiler that a 
+telemetry definition is coming, <TT>1 Hz</TT> is the rate, 
+<TT>Ct16</TT> is the type, and <TT>C1</TT> and <TT>C2</TT> 
+are the variable names.
+
+<P> TMC requires that we add the following two definitions:
+
+<PRE>
+        TM 0 Hz unsigned short MFCtr, Synch;
+</PRE>
+
+That's all we need to put into abc.tmc for now; save the file 
+now. (look back at the beginning of this example if you 
+forget how).<P>
+
+Before we can compile and run, we need two other files. 
+The first is a shell script to run our collection in a simple 
+configuration. Go back into the editor to create a new file 
+called <TT>ringshow</TT> and enter the following text:
+
+<PRE>
+        memo -y -e abc.log &amp;
+        namewait memo
+        abccol -c0 -vy -n1 &amp;
+        namewait -g dg
+        ringtap -c0 -vy &amp;
+        stty -echo; read j; stty +echo
+        startdbr quit
+        while namewait -t 1 -g dg 2&#62;/dev/null; do : ; done
+        memo -k0 -v
+        while namewait -t 1 memo 2&#62;/dev/null; do : ; done
+</PRE>
+	
+
+Now save that file. We want <TT>ringshow</TT> to be an 
+executable script, so we must issue the command
+
+<PRE>
+        chmod a+x ringshow
+</PRE>
+
+This will allow us to run the script simply by typing its 
+name.
+	
+<P> Finally, create the file <TT>abc.spec</TT> and enter:
+
+<PRE>
+        tmcbase = abc.tmc
+        abccol :
+        SCRIPT = ringshow
+        NOSUBBUS
+</PRE>
+
+This is an input file to <TT>appgen</TT>, the "Application 
+Generator". The first line says that all our telemetry data 
+is defined in <TT>abc.tmc</TT>. In larger applications, 
+several files may be required. (Many experiments define types 
+in one file, data in another, for example.) The second line 
+says we wish to create a collection application called 
+<TT>abccol</TT>, which implicitly requires the file listed in 
+tmcbase. <TT>appgen</TT> knows this application is a 
+collection application because its name ends with "col". The 
+third line is, for the moment, merely informative. It says 
+that there is another file in this directory which is a shell 
+script by the name of <TT>ringshow</TT>. <TT>NOSUBBUS</TT> 
+informs <TT>appgen</TT> that we will not be addressing the 
+ARP subbus hardware and not to build in support for it. When 
+you advance to collecting real data, you will need to remove 
+this line to obtain subbus support, but in the meantime, our 
+simulation won't work if we leave this out.
+	
+<P> With these four files in place we are ready to compile 
+and run. The first step in compilation is to run:
+
+<PRE>
+        appgen
+</PRE>
+
+(Do it now!) This reads the file <TT>abc.spec</TT> and 
+creates a file called <TT>Makefile</TT> which is a set of 
+instructions describing how to compile our applications. Now 
+we run:
+
+<PRE>
+        make
+</PRE>
+
+This reads the Makefile, then issues other commands required 
+to compile abccol. Assuming we typed everything correctly, we 
+should get no errors, and the last line of output should be 
+<TT>"promote abccol".</TT> Congratulations! Let's take a 
+minute to look around at what we've accomplished. If you type 
+<TT>ls</TT> now, you'll see that there are several more files 
+in the directory than before we compiled. Besides the files 
+we started with, there are now:
+	
+<DL>
+  <DT>tm.dac<DD>Generated by TMC. Binary encoding 
+  of basic telemetry frame dimensions for use by rdr, serin, 
+  and other general-purpose utilities.
+  <DT>abc.pcm<DD>Generated 
+  by TMC. A readable description of the frame dimensions. 
+  <DT>abccol.c<DD> Generated by TMC. C source code for abccol. 
+  <DT>abccol.o<DD> C compiler output from abccol.c. 
+  <DT>abccoloui.c<DD> Generated by <A HREF="../manuals/oui.html">OUI</A>.
+  Defines initializations for abccol.
+  <DT>abccoloui.o<DD> C compiler output from 
+  abccoloui.c.
+  <DT>abccol<DD> The finished collection 
+  application.
+</DL>
+
+<P> Take a look at <TT>abc.pcm</TT> (type: <TT>cat 
+abc.pcm</TT> ). This gives lots of interesting information 
+regarding the shape of the TM frame. The information at the 
+bottom of the file describes in gory detail where each datum 
+appears in the frame and what C construct was devised to put 
+it there and pull it back out. The four numbers in 
+parentheses represent the reporting period of the datum 
+measured in rows, the first row where the datum appears, the 
+starting column where the datum appears and the number of 
+bytes at that position it occupies.
+
+<P> <TT>abccol</TT> is a regular executable file and could be 
+"run" simply by typing its name, but it is designed to work 
+very closely with a number of other programs, so it should be 
+run as part of a script like <TT>ringshow.</TT>
+
+<P> One feature of QNX executables is that they often have 
+usage information built in which you can view by using the 
+<TT>use</TT> command:
+
+<PRE>
+        use abccol
+</PRE>
+
+( As an exercise, you might want to see if you can decipher 
+the command-line options listed in <TT>ringshow.</TT> )
+
+<P> You can also use <TT>use</TT> on most of the other 
+commands we've run, including <TT>vedit, ls</TT> or 
+<TT>cp.</TT> We didn't build any usage into <TT>ringshow,
+</TT> so <TT>use ringshow</TT> will complain.
+
+<P> If you really feel adventurous, you can also look at the 
+C output files, but I won't even begin to describe the 
+contents!
+<H3><A NAME="P1.1">1.1</A>: Running the First Simulation</H3>
+
+Now we are ready to run the simulation. Before you get too 
+excited, note that we did not make any provision for 
+displaying the data. This is usually the case for collection 
+applications, but since that's the only application we have, 
+the demo will be pretty boring. The script I have supplied, 
+<TT>ringshow,</TT> invokes a utility called <TT>ringtap</TT> 
+which will show the raw data that is being propogated on the 
+data ring. Once you issue the <TT>ringshow</TT> command, it 
+will run until you press "Enter" again (That's what all that 
+stty stuff in the script is for!). Give it a try!<P>
+
+Assuming you've run ringshow and it behaved properly, you 
+should now have another file in your directory called 
+<TT>abc.log.</TT> This is the output of the
+<b>memo</b> program, and includes messages from 
+all the programs which were invoked by ringshow. Here is the 
+complete log file from a short run:
+
+<PRE>
+        Log Date: 10/24/94
+        12:52:27: memo: task 24715: started
+        12:52:28: memo: Col: task 20486: started
+        12:52:29: memo: TAP:   TMID is ""
+        12:52:29: memo: TAP:   2 rows, 6 cols
+        12:52:29: memo: Col: Using System Timer
+        12:52:29: memo: TAP:   2 rows/minor frame
+        12:52:29: memo: TAP:   1/1 rows/sec
+        12:52:29: memo: TAP:   Synch ABB4
+        12:52:29: memo: TAP: task 19586: started
+        12:52:29: memo: TAP: DASCmd: 1 0
+        12:52:29: memo: Col: task 19586 is my ring (node 2) client
+        12:52:30: memo: TAP: Data: 1 rows
+        12:52:30: memo: TAP: MFC 0
+        12:52:30: memo: TAP:  39 00 A8 00 00 00
+        12:52:31: memo: TAP: Data: 1 rows
+        12:52:31: memo: TAP:  E8 00 0C 01 B4 AB
+        12:52:32: memo: TAP: DASCmd: 0 0
+        12:52:32: memo: Col: Terminated
+        12:52:32: memo: Col: task 20486: DG operations completed
+        12:52:32: memo: TAP: task 19586: completed
+        12:52:32: memo: TAP: task 19586: DC operations completed
+        12:52:33: memo: message queue empty and quit received
+        12:52:33: memo: task 24715: completed
+</PRE>
+
+The first line of the file lists the "Log Date". This marks 
+the beginning of a new run and defines what date the 
+subsequent times refer to. Since each new run generally 
+appends to an existing log file, the Log Date can be useful 
+in locating each run.<P>
+
+<TT>memo</TT> uses the TZ environment variable to 
+determine the local timezone. On flight systems, we usually 
+define TZ to use GMT so the memo file agrees with the 
+extracted data which is generally reported in GMT. On a lab 
+system, this may or may not be the case, but it should be 
+fairly obvious whether the times are local time or GMT.<P>
+
+Each process generally logs a startup message and a 
+termination message. The first message logged here is memo 
+itself announcing that it has started up, followed by 
+abccol's startup. Each process may specify a message header 
+string which will be output together with its log messages. 
+The default header for collection programs is "Col:". The 
+fact that memo's header is also added to the message reflects 
+the fact that these messages were logged through memo rather 
+than directly to disk by the application. It is possible to 
+change the message header for a particular application by 
+several means, but we'll address that later.<P>
+
+The header "TAP:" marks output from ringtap. When ringtap 
+starts up, the first thing it does is contact abccol and 
+obtain the basic dimensions of the TM frame, which it logs 
+for our benefit. Note that this information agrees with 
+abc.pcm.<P>
+
+Interspersed in ringtap's startup are a couple messages 
+from abccol. The first indicates that it will be using the 
+System Timer instead of the Timer Board as a time base for 
+data collection. (If we had compiled with subbus support and 
+if we were running on a system with a system controller 
+connected to an ICC and if there was a Timer Board in the ICC 
+and if we had run the timerbd application and if the Timer 
+Board was fully functional, abccol would have elected to use 
+the Timer Board for timing.) The second message acknowledges 
+that ringtap has established a connection with abccol.<P>
+
+Just prior to the beginning of the data, ringtap reports:
+
+<PRE>
+        12:52:29: memo: TAP: DASCmd: 1 0
+</PRE>
+
+DASCmds are a set of commands which can be specified with two 
+8-bit numbers. Long ago when we were flying balloons, all our 
+commands could be specified with two bytes, and this encoding 
+originated there. Several utilities still use this encoding 
+at a low level, including <b>CmdCtrl</b>, 
+<A HREF="../manuals/solfmt.html">Soldrv</A>,
+<b>SCDC</b>, and <a href="../manuals/dccc.html">DCCC</a> 
+as well as the TMC programs. This particular DASCmd is the 
+encoding for "Telemetry Start" which initiates collection.<P>
+
+Next we see:
+
+<PRE>
+        12:52:30: memo: TAP: TStamp: 783017549,0 = Mon Oct 24 12:52:29 1994
+</PRE>
+
+This indicates a time stamp has been recorded. The first 
+number is the time of the first data in seconds since 1970. 
+The second number is the minor frame counter which is matched to 
+that time. If you're not familiar with how many seconds have 
+elapsed since 1970, ringtap translates the value into a date 
+and time. The time of subsequent minor frames can be derived 
+from this time stamp. This time stamp becomes a permanent 
+part of the data stream. On any subsequent processing of the 
+data, the data will always be reported with the actual time 
+of collection.
+
+<PRE>
+        12:52:30: memo: TAP: Data: 1 rows
+        12:52:30: memo: TAP: MFC 0
+        12:52:30: memo: TAP:  39 00 A8 00 00 00
+        12:52:31: memo: TAP: Data: 1 rows
+        12:52:31: memo: TAP:  E8 00 0C 01 B4 AB
+</PRE>
+
+Data at last! We see two rows of data here which according to 
+abc.pcm is equal to one minor frame. Since we live on Intel 
+processors which are BigEndian, multi-byte data appears with 
+the least-significant byte first. Hence the two-byte Synch 
+value "ABB4" appears as "B4 AB" at the end of the second row. 
+(all data is reported here in hexadecimal.) Synch is always 
+placed at the end of the last row in each minor frame. The 
+minor frame counter, MFCtr always appears in the first row of 
+the minor frame. If there is only one row per minor frame, 
+MFCtr will appear at the beginning of the row, otherwise it 
+will appear at the end of the row as in this case. Our first 
+counter, C1, is reported in the first two bytes of each row. 
+Its first value is 0039, and its second value is 00E8. C2 
+reads 00A8 and 010C. If you run the simulation for long 
+enough, these two should end up somewhere around 4000.<P>
+
+After you hit "Enter", we get a series of messages 
+detailing an orderly shutdown:
+
+<PRE>
+        12:52:32: memo: TAP: DASCmd: 0 0
+        12:52:32: memo: Col: Terminated
+        12:52:32: memo: Col: task 20486: DG operations completed
+        12:52:32: memo: TAP: task 19586: completed
+        12:52:32: memo: TAP: task 19586: DC operations completed
+        12:52:33: memo: message queue empty and quit received
+        12:52:33: memo: task 24715: completed
+</PRE>
+
+<TT>DASCmd: 0 0</TT> is "Telemetry Quit" which not only stops 
+telemetry, but asks everyone to terminate. abccol and ringtap 
+both say they are done twice, in case you weren't listening, 
+then memo itself shuts down.<P>
+
+<H2><A NAME="P2.0">2.0</A>: Realtime Data Display</H2>
+	
+OK, that was pretty crude. Now we'd like to see those numbers 
+read out on the screen, preferrably in decimal! There are 
+four things we need to do: draw a data screen, define how our 
+data type is converted to text, create a new script, and 
+modify our .spec file.<P>
+
+<H3><A NAME="P2.1">2.1</A>: SCRDES</H3>
+	
+The tool for drawing screens is 
+<b>scrdes</b>. I will walk you through a 
+scrdes session to create a screen for displaying C1 and C2.<P>
+
+The first thing to do is to run <TT>scrdes</TT> by typing 
+"scrdes". This should bring up the basic screen with a menu 
+bar and a status box. The "FILES" menu item should be 
+highlighted. Let's name our work first: press "Enter", which 
+brings up the FILES menu, then press "Ins" and scrdes will 
+prompt you to "Enter filename:". Type "abc" and then press 
+"Enter". If you have previously created an "abc" screen and 
+want to load it now, press "Enter" again. Otherwise, press 
+"Esc" to return to the General menu.<P>
+
+Next we want to draw labels for the two data. The status 
+box indicates that we're currently configured to draw a line, 
+so press the right-arrow cursor key until the "DRAW" item is 
+highlighted, then press "Enter". This should bring up the 
+"DRAW" menu. Now press the down-arrow cursor key to highlight 
+"text" and press "Enter". This brings up the Option menu 
+which would like to know how to justify the text. Our needs 
+are simple, so just press "Enter" to select 
+left-justificatifon. Notice that the status box is updated to 
+reflect our selections. we won't be needing the main menu for 
+awhile, so press "Esc" to make it disappear. You can press 
+ctrl-G later if you want that menu back.<P>
+
+Now use the cursor keys to move the cursor where you 
+would like to put the label for C1. Now press "Home" to mark 
+the beginning of the new text field. A small diamond will 
+appear on the screen. Move the cursor to the right and notice 
+how the diamonds expand to mark the field. When you have 
+allocated enough space, (we only need two characters!) press 
+"End" to mark the end of field. Now you can type in the text: 
+"C1". If that looks good to you, press "Ins" to save the new 
+text value. If you don't like something about it, press "Del" 
+to forget it. Now repeat the process for C2.<P>
+
+The text we just drew used the "NORMAL" attribute. We use 
+attributes to specify colors on the screen. Since different 
+screens have different color capabilities, we specify the 
+attributes symbolically by function, rather than by explicit 
+colors. For example, we may draw all the lines with one 
+attribute, all the labels with another, and all the fields 
+with a third. We can assign explicit colors to each 
+attribute, but these assignments are stored separately from 
+the screen definition. This allows us to create different 
+color configurations for different screens, even after the 
+display application has been compiled.<P>
+
+Let's define a new attribute for data fields: Press 
+ctrl-A to bring up the Attributes menu, then press "Ins" to 
+create a new attribute. A box should prompt you to "Enter 
+attribute name:" to which you should reply "FIELD" and press 
+"Enter". This adds FIELD below NORMAL in the list of 
+attributes. Move the cursor down to highlight FIELD. Now 
+press "PgDn". Notice that the attribute line in the status 
+box changed color, as well as the FIELD line on the attribute 
+list. (If the whole screen changed color, you modified the 
+NORMAL attribute instead!) PgDn changes the background color 
+and PgUp changes the foreground color. In order to get back 
+to a previous color selection, you have to PgDn through all 
+the selections, 16 in all, so go slowly. I like to draw my 
+fields with a dark blue background which is just one PgDn 
+from the starting color. Once you've selected the color you 
+want, press "Enter" to select FIELD as the current attribute 
+and make the attribute menu go away.<P>
+
+To create data fields, we need to bring up the DRAW menu 
+again, which we can do directly by pressing ctrl-D. Now 
+select "field" from the menu, either by using the cursor keys 
+or by pressing "f" once or twice, then press "Enter". This 
+brings up the FIELD menu, with "create" already highlighted, 
+so press "Enter" and notice how the status box updates.<P>
+
+Creating a data field follows the same general procedure 
+as creating a text field: press "Home" to mark the starting 
+position of the field, move the cursor, then press "End" to 
+mark the end of the field.  We will want to have room for up 
+to five characters, since a 16-bit counter can count up to 
+65537, so make sure there are five little diamonds in your 
+field before you press "End". For a data field, we move 
+directly from "End" to "Ins" without entering text in the 
+field. To the prompt: "Enter field text:" we respond "C1" 
+(Enter), and to the prompt: "Enter field number:" we just 
+press "Enter" to let scrdes figure it out for itself. It 
+tells us what it figured out, and hitting any key completes 
+the transaction.<P>
+
+Now repeat the process for C2. Note that the "field text" 
+must be the TM variable name, but the label needn't be.<P>
+
+With both labels and both fields defined, we have enough 
+to work with, so let's save our work. press ctrl-S and select 
+"fld" from the Save menu. You will be prompted to confirm the 
+name of the file. If it's right, type "y" and press "Enter".<P>
+
+To leave scrdes, press "Esc". It will ask you if you 
+really want to leave; type "y" and press "Enter" and you're 
+out.<P>
+
+<H3><A NAME="P2.2">2.2</A>: Specifying Data Display to TMC</H3>
+	
+The second step I listed for specifying data display is to 
+define how our data type is converted to text. As I mentioned 
+much earlier, we define text conversion within the <TT>TM 
+typedef</TT> in <TT>abc.tmc.</TT> So far, that definition 
+looks like:
+
+<PRE>
+        TM typedef short Ct16 {
+          collect x = x - x/100 + rand()/100;
+        }
+</PRE>
+
+After the <TT>collect</TT> statement (inside the curly 
+braces), we now want to add:
+
+<PRE>
+        text "%5u";
+</PRE>
+
+This is a standard C printf format specification indicating 
+we wish to output an unsigned decimal number with up to 5 
+digits.<P>
+
+The third step is to modify the script. <TT>display</TT> 
+will be a slightly modified version of <TT>ringshow,</TT> so 
+let's copy ringshow and edit it:
+
+<PRE>
+        cp ringshow display
+</PRE>
+	
+First, we don't want memo to output onto the console, so 
+let's change the <TT>-y</TT> option to be <TT>-vy.</TT> Next, 
+we want to draw our screen before we start putting out data, 
+so add the line:
+
+<PRE>
+        scrpaint -v -c0 abc
+</PRE>
+
+just before the line with <TT>abccol.</TT> We'll leave 
+ringtap in, but we don't really want to look at its output at 
+all, so let's remove the <TT>-c0</TT> option. Now save 
+display.<P>
+
+The final step is to modify <TT>abc.spec.</TT> The second 
+line was:
+
+<PRE>
+        abccol :
+</PRE>
+
+We want this process to use the screen definition we just 
+created, so append <TT>abc.fld</TT> to that line to read:
+
+<PRE>
+        abccol : abc.fld
+</PRE>
+
+While we're here, let's add another script name; after 
+<TT>ringshow,</TT> add <TT>display.</TT><P>
+
+I said that modifying <TT>abc.spec</TT> was the final 
+step, but that is only partly true. Whenever you modify a 
+<TT>.spec</TT> file, you must run <TT>appgen</TT> again, and 
+whenever you modify any of your other source files, you must 
+run <TT>make</TT> again, or the changes will not appear in 
+your programs.
+
+<PRE>
+        appgen
+        make
+</PRE>
+
+Assuming both steps succeeded, you are ready to try out the 
+realtime display:
+
+<PRE>
+        display
+</PRE>
+
+You should be able to watch the numbers gradually climb to 
+the neighborhoood of 16000 and then remain there. Like 
+ringshow, this simulation will end when you press "Enter" 
+again.<P>
+
+(Note that we didn't have to <TT>chmod a+x display.</TT> 
+It kept those bits from when we copied ringshow.)<P>
+
+<H3><A NAME="P2.3">2.3</A>: Making a Separate Display Program</H3>
+	
+It is usually our practice to separate data display from
+the collection of data. This is especially true of "flight"
+experiments which run unattended; since there is no one to
+view the display, there is no need to waste time drawing 
+it.<P>
+	
+Three steps are required to create a separate display program.
+First, we must clean up the directory, since we are going to
+significantly alter the specification. Run:
+	
+<PRE>
+        Make clean
+</PRE>
+	
+This removes all of the files we generated with the previous
+<TT>make</TT> command. Next, we need to specify the new configuration.
+Edit <TT>abc.spec</TT> and remove <TT>abc.fld</TT> from the
+specification for <TT>abccol</TT>:
+
+<PRE>
+        abccol :
+</PRE>
+
+and add the line:
+	
+<PRE>
+        abcdisp : abc.fld
+</PRE>
+	
+Finally, we need to add the display program to the operational
+script. Edit <TT>display</TT> and replace "<TT>ringshow</TT>"
+with "<TT>abcdisp</TT>".<P>
+
+Now run <TT>appgen</TT> and <TT>make</TT>, and assuming
+everything compiles OK, run <TT>display</TT>. The result
+should be identical to the previous example. (So why bother?
+Later on, we'll learn how to run the display program on
+one node while running the collection on another.)<P>
+
+<H2><A NAME="P3.0">3.0</A>: Creating an Interactive Command Line</H2>
+	
+So far we have very little control over the behaviour of our
+simulation; it starts up immediately and quits when we hit
+"Enter". We usually want to have better interactive and/or
+algorithmic control over an instrument. Two issues contrain
+our command architecture. First, we often wish to have both
+interactive and algorithmic control at the same time. Second,
+while many commands must be executed on the node that is
+directly connected to the instrument hardware, we often wish to
+initiate those commands from one or more remote
+<A NAME="GSE">Ground Support Equipment</A> (GSE)
+nodes. The solution is the buzz-word of the nineties:
+client/server.<P>
+	
+In a client/server architecture, one command server process
+resides on the instrument node and receives command requests from
+any and all command clients. In order to provide understandable
+interfaces and readable command logs, the commands are defined
+using regular text; "Telemetry Start", for example, is often
+used to begin data acquisition. These commands are sent in
+text form to the command server which decodes them and writes
+them to the log with a time stamp.<P>
+ 
+Of course every instrument has a different set of commands,
+so the command clients and server must be compiled separately for each
+instrument. I have developed a language called
+<a href="../manuals/cmdgen.html">cmdgen</a> to help define an
+instrument's command set (are you
+surprised?) The input syntax is a modified BNF format similar to
+that used by <TT>yacc</TT>. It allows for hierarchical command
+definitions accompanied by arbitrary C code to execute the commands.
+The grammar is restricted somewhat by the requirement that the
+resulting parsers be thoroughly interactive. To those in the
+compiler-design business, this means that the grammar cannot use
+look-ahead to resolve ambiguities, since that would require
+waiting for the next command, which may not be forthcoming in
+an interactive environment.<P>
+	
+To get us started, there is a common root command definition
+located in <TT>/usr/local/lib/src/root.cmd</TT> which has a
+basic set of commands suitable for all instruments. We can build
+this command set into our simulation in two steps. First, we
+must modify <TT>abc.spec</TT> to add the following line:
+	
+<PRE>
+        cmdbase = /usr/local/lib/src/root.cmd
+</PRE>
+	
+right after the "tmcbase" line.	Next we need to modify the
+<TT>display</TT> script as follows:<P>
+	
+<OL>
+  <LI>Remove the "<TT>-n1</TT>" option from <TT>abccol</TT>
+  <LI>Remove the two lines beginning with <TT>stty</TT> and
+	<TT>startdbr</TT>
+  <LI>Replace those lines with the following:
+</OL>
+	
+<PRE>
+        abcsrvr -c0 -vy &amp;
+        namewait cmdinterp
+        abcclt -c0 -vy
+</PRE>
+	
+Now run <TT>appgen</TT> and <TT>make</TT> and you will be
+ready to try the new interface by running "<TT>display</TT>".
+This time, the simulation won't begin right away (that was
+the <TT>-n1</TT> option). Instead, you must issue the
+command "<TT>Telemetry Start</TT>". When you are done,
+you can shut down the simulation by issuing the command
+"<TT>Quit</TT>". The commands provided in this basic
+command set are:<P>
+	
+<DL>
+  <DT>Telemetry Start
+  <DD>Begins Data Acquisition
+  <DT>Telemetry End
+  <DD>Suspends Data Acquisition (without shutting down)
+  <DT>Telemetry Logging Suspend
+  <DD>Suspends logging (if any) of TM data to disk
+  <DT>Telemetry Logging Resume
+  <DD>Resumes logging (if any) of TM data to disk (these two
+    are no-ops if the <TT>lgr</TT> isn't running)
+  <DT>Telemetry Clear Errors
+  <DD>Included for historic reasons, but currently a no-op
+  <DT>Log &lt;text&gt;
+  <DD>Logs whatever text follows in the command log.
+  <DT>IOMODE &lt;number&gt;
+  <DD>Modifies how the keyboard client behaves.
+  <DT>Quit
+  <DD>Stops Data Acquisition and shuts down all processes
+</DL>
+
+<H2><A NAME="P4.0">4.0</A>: Moving Toward "Flight" Configuration</H2>
+	
+Up to this point, we have been operating in a rather crude fashion.
+For starters, we have run all of our simulations in our <TT>src</TT>
+directory and all out of a single script. This is not criminal
+for a small simulation, but it presents a number of problems
+in normal operations. The <TT>src</TT> directories become quite
+cluttered with the source files and all the intermediate files
+which are needed to generate the executables. It is useful to
+run in a directory that contains exactly what you need and not too
+much more. Furthermore, flight computers often have limited
+disk capacity, and it is wasteful to store the source and
+intermediate files there when only the executables are
+required.<P>
+
+By the same argument, it is useful to limit the use of other
+flight-computer resources. For a variety of reasons, the
+computers attached to instruments are often significantly
+less powerful than other computers in your lab. For example,
+many of our flight computers use 80286 microprocessors, and
+almost none has more than 4MB of RAM. In addition, flight
+computers rarely have keyboards or displays attached.<P>
+	
+Under these limitations, it makes sense to limit the work of 
+the flight computer to those tasks directly required to 
+collect data and control the instrument. Using the 
+client/server architectures, it is possible to offload all 
+realtime data display, graphics and interactive control to 
+separate nodes.<P>
+	
+There are three steps required to bring our existing
+simulation up to basic flight configuration. First,
+we must create an experiment configuration file called
+<A HREF="../manuals/exconfig.html">Experiment.config</A>. Next,
+we need to divide our existing display script into two
+separate scripts called <TT>interact</TT> and <TT>doit</TT>.
+Finally, we need to modify our specification file to
+reflect these changes.<P>
+	
+<H3><A NAME="P4.1">4.1</A>: Experiment.config</H3>
+	
+The <TT>Experiment.config</TT> file is actually a shell script
+which defines key features
+of an instrument's configuration by defining shell variables.
+Every experiment configuration must define the variables
+"Experiment" and "HomeDir". Experiment is set to a short string
+which will uniquely identify your instrument from any others
+running on the same QNX network. HomeDir is set to the name
+of the directory in which you want to run, but it must not
+contain the directory's node prefix (e.g. //2. The rationale
+here is that I expect an instrument to have a home directory on
+the flight computer and another home directory on the
+<A HREF="#GSE">GSE</A>
+computer.)<P>
+
+Create a new file named <TT>Experiment.config</TT> and enter
+definitions for Experiment and HomeDir. In my example, I
+defined:
+	
+<PRE>
+        Experiment=abc
+        HomeDir=/home/nort/abc
+</PRE>
+	
+Note that since you probably don't have write permission in
+my directory, you should specify a different directory!<P>
+	
+In a full flight configuration, the node number of the
+flight node can be determined via the QNX name registration
+mechanisms, but this requires the node to be configured
+by the system administrator to be dedicated to data acquisition.
+For ad-hoc experiments and simulations, we can add a definition
+such as the following:
+	
+<PRE>
+        FlightNode=2
+</PRE>
+	
+In this case, the node you specify will be the node on which
+the simulation will be run. It can be any node reachable from
+your node, including your node itself, but whatever node
+you choose must have a copy of the HomeDir.<P>
+	
+That is all that needs to be in this file for now. For a more
+complete description of <TT>Experiment.config</TT> options,
+refer to the <A HREF="../manuals/exconfig.html">Experiment.config Reference
+Manual</A>.<P>
+
+<H3><A NAME="P4.2">4.2</A>: Interact</H3>
+	
+In a standard flight configuration, we need at least two
+different scripts to run an instrument interactively. On
+the flight computer, we need an "<TT>interact</TT>" script,
+and on the <A HREF="#GSE">GSE</A> computer, we need a
+"<TT>doit</TT>" script. (When operating autonomously,
+a single "<TT>runfile.dflt</TT>" script is used.)<P>
+	
+The <TT>interact</TT> script is charged with starting up
+all the direct data acquisition and instrument control
+processes. These processes are designed to communicate
+with each other and must therefore be started in a
+carefully prescribe order. For our simulation, this is:
+	
+<PRE>
+        # interact script for abc simulation
+        memo -vy -e abc.log &amp;
+        namewait memo
+        abccol -c0 -vy &amp;
+        namewait -g dg
+        bfr -c0 -vy &amp;
+        abcsrvr -c0 -vy &amp;
+</PRE>
+
+There are several important features to note here. To
+begin with, any line ending with an ampersand (&amp;)
+indicates that the specified process is supposed to
+run in the "background", which simply means that the
+script should continue without waiting for the process
+to complete. That is how we manage to get a number of
+programs running simultaneously. Unfortunately, this
+can get a little sticky on startup since <TT>abccol</TT>
+needs to be able to talk to <TT>memo</TT>, and since
+the script doesn't wait after starting <TT>memo</TT>, it
+may not be ready for <TT>abccol</TT>.<P>
+	
+To solve this sort of problem, we developed the <TT>namewait</TT>
+utility. Its purpose is
+to wait until the specified process has registered its
+designated name with the operating system. The second command
+in our script is going to wait until <TT>memo</TT> has
+finished its initialization before allowing the script to
+continue on to start <TT>abccol</TT>. (Note that the
+<TT>namewait</TT> commands do *not* run in the background)
+Similarly, <TT>bfr</TT> requires that <TT>abccol</TT>
+be initialized, so another <TT>namewait</TT> command is
+used. Note that the name passed to <TT>namewait</TT> is
+not always the same as the name of the process.<P>
+	
+Another thing to note is that we have added another
+program to the list. <TT>bfr</TT> is our data buffer
+program, which allows slower-speed data clients to
+tap into the data stream without adversely affecting
+the collection timing. Data clients running on other
+nodes are assumed to be slower due to network latencies,
+and so should always use the <TT>bfr</TT> to access
+the data ring.<P>
+
+<H3><A NAME="P4.3">4.3</A>: Doit</H3>
+
+<H2><A NAME="P5.0">5.0</A>: Logging Data</H2>
+
+We now have a data simulation, but we haven't done anything 
+with the data; after the data has disappeared from the 
+screen, we have no record of it and no way to analyze it.<P>
+
+The first step toward data analysis is logging the 
+collected data to disk. Let's edit <TT>display</TT> again and 
+replace the <TT>ringtap</TT> line with:
+
+<PRE>
+        lgr -v -c0 `lfctr -O` &amp;
+</PRE>
+
+(Note: those quotes are single back-quotes, not apostrophes!)<P>
+
+Now run <TT>display</TT> again. There should be no 
+obvious difference in behaviour, but after you end the run, 
+you should discover that there is a new subdirectory called 
+<TT>log0000</TT> containing one or more files with the same 
+sort of name. Unless you ran the simulation for quite awhile, 
+there will only be one log file. Look at <TT>abc.pcm</TT> 
+again; under "Effective Frame Dimensions" it reports the 
+total throughput as 48 bits/sec. Since each byte is 8 bits, 
+that's 6 bytes/sec. <TT>lgr</TT> generally advances to 
+another log file when it has more than 10240 bytes of data. 
+At 6 bytes/sec, that's 28 minutes/file. This is a very useful 
+calculation, since it can help you predict how much disk 
+space you will need in order to log data for a run or a 
+flight.<P>
+
+<H3><A NAME="P5.1">5.1</A>: Creating an Extraction Program</H3>
+	
+OK, we've got log files, but this still isn't terribly useful 
+to an experimenter; the log files contain raw data in that 
+inscrutable format we glimpsed with <TT>ringshow.</TT><P>
+
+The simplest way to get that data into a usable format is 
+to create a program which extracts the desired data into a 
+<TT>SNAFU </TT> spreadsheet. <TT>SNAFU</TT> is an ARP data 
+analysis utility originally written to support the first 
+Antarctic ER-2 campaign out of Punta Arenas. Its main 
+advantages over other programs available at the time was the 
+ability to handle arbitrarily large data sets, as well as 
+custom code for deciphering solenoid cycles, our standard 
+mode of operation. These spreadsheets are not spreadsheets in 
+the now-current meaning of the word, but that's what SNAFU 
+calls them, so bear with me!<P>
+
+To create an extraction program, create the file 
+<TT>abc.edf</TT> with the following contents:
+
+<PRE>
+        spreadsheet abc 3
+          1 C1 %5.0lf
+          2 C2 %5.0lf
+</PRE>
+
+The first line defines a new spreadsheet which will be named 
+<TT>abc.sps</TT> and contain 3 columns of data. In an 
+.edf-generated extraction, column 0 always contains Time. The 
+second line asks that counter C1 be placed in column 1 and be 
+displayed with the C/SNAFU format <TT>%5.0lf.</TT> This 
+results in a width of 5 with no decimal places, which is 
+appropriate for the integer values. (See the SNAFU Manual for 
+a detailed description of formats) Counter C2 will be placed 
+in column 2. Note that since the columns are numbered from 0, 
+there is no column 3.<P>
+
+It is possible to define additional spreadsheets within 
+the same <TT>.edf</TT> file simplying by adding additional 
+<TT>spreadsheet</TT> statements. If you wish to create a 
+spreadsheet with extra columns for additional calculations, 
+you can do so simply by specifying a greater width.<P>
+
+Having created the <TT>.edf,</TT> we must again modify 
+<TT>abc.spec.</TT> Add a new line after the <TT>abccol</TT> 
+line:
+
+<PRE>
+        abcext : abc.edf
+</PRE>
+
+Then run <TT>appgen</TT> and <TT>make</TT> again. You should 
+now have an extraction program named <TT>abcext.</TT> Try 
+running <TT>use</TT> on this:
+
+<PRE>
+        use abcext
+</PRE>
+
+Note that the spreadsheet definitions are listed at the end 
+of the usage. This is a convenience for identifying 
+extractions after they have been compiled.<P>
+
+<H3><A NAME="P5.2">5.2</A>: Running the Extraction</H3>
+	
+Assuming your log files are still around, the first step to 
+extracting data is to save the logged data into a "run". 
+Execute:
+
+<PRE>
+        saverun
+</PRE>
+
+<TT>saverun</TT> will tell you that it is creating a new 
+directory and copy a number of things into that directory. 
+The name of the directory is today's date followed by a run 
+number.<P>
+
+To extract data from this run, execute:
+
+<PRE>
+        extract 941026.1 abcext
+</PRE>
+
+replacing <TT>941026.1</TT> with the name of the directory 
+<TT>saverun</TT> created. You should now have a file named 
+<TT>abc.sps.</TT> To view the contents of this file, you need 
+to run
+
+<PRE>
+        snafu
+</PRE>
+
+and issue the command
+
+<PRE>
+        sedit abc
+</PRE>
+
+Do you see data? There is much you can do with your data now 
+that it is in SNAFU, including get it out of SNAFU. Refer to 
+the SNAFU Manual for details on running SNAFU and the 
+utilities available for importing data to and exporting data 
+from SNAFU. To get out of SNAFU now, issue the commands:
+
+<PRE>
+        file
+        quit
+</PRE>
+
+<H2><A NAME="PA.0">Appendix A</A>: Troubleshooting Compilations</H2>
+
+One of my key goals in this entire development is to allow 
+the specification of software for a complete instrument with 
+very simple syntax without unnecessarily limiting 
+flexibility. By compiling simple languages to C, it is easy 
+to supply hooks to arbitrarily complex algorithms. However, a 
+drawback is that for even simple applications, all the code 
+must eventually pass through the C compiler, and simple typos 
+can generate bewildering error messages. I will try to 
+outline some of the more common problems and suggest some 
+approaches to tracking down other problems.<P>
+
+<H3><A NAME="PA.1">A.1</A>: Compiler Errors</H3>
+	
+In a perfect world, compilers tell you exactly what your 
+problems are and fix them for you. In reality, reporting 
+errors is rather difficult. The compiler cannot guess what 
+you are trying to do, and as a result the error messages are 
+often vague or misleading. All that aside, the error messages 
+are your best hope for tracking down your problems, so take a 
+close look at them.<P>
+
+The first challenge is to determine where you were in the 
+whole compilation process when the error occurred. In most 
+cases, the error message will tell you the file name and the 
+line number within that file where the error occurred. (Hint: 
+if there are multiple errors, concentrate on the first error 
+first; subsequent errors are often side-effects of the 
+initial problem. Also, if the error is in a C file ( 
+<TT>.c</TT> extension) then the error messages will have been 
+copied to a file with the extension <TT>.err.</TT> You may 
+need to look in this file to locate that first error, since 
+it may have scrolled off the screen.) This file may be one of 
+your source files or it may be an intermediate file generated 
+by an earlier compilation step.<P>
+
+You may be reluctant to even look inside one of these 
+intermediate files--they are in general huge and because they 
+are generated by programs, they aren't terribly readable--but 
+don't be! Generally errors in intermediate files are the 
+direct result of errors in code passed through from the 
+original source file. Since the automatically generated code 
+is formulaic, it is unlikely that it will suddenly be wrong, 
+but patches of the original source are often included in the 
+intermediate files verbatim and not fully checked until the 
+intermediate file is compiled.<P>
+
+Hence, whether the error is in your original source or an 
+intermediate file, your first step should be to go look at 
+the file and line where the first error occurred to see if 
+you can identify the error. Suppose the compiler spit out the 
+following lucid prose:
+
+<PRE>
+        abc.tmc 5: Error: syntax error
+        Error Level 2
+</PRE>
+
+This informs you that the compiler choked on something at 
+line 5 in the file <TT>abc.tmc.</TT> The quickest way to get 
+to this line is to enter the command:
+
+<PRE>
+        vedit -5 abc.tmc
+</PRE>
+
+which will open the file and position the cursor at line 5. 
+Do you see the problem? If this file is your original source 
+file, you can fix the problem on the spot and then try to 
+<TT>make</TT> again. If it is an intermediate file, you need 
+to do a little more detective work; even if you can see the 
+problem, fixing it in an intermediate file will provide only 
+a temporary fix, since it will break the next time the 
+original source is compiled. You must trace the error back to 
+the original source and fix it there before continuing. In 
+most cases, you will probably recognize the code from a 
+source file you created. If you don't recognize it, you will 
+have to figure out what source files contributed to this 
+intermediate file.<P>
+
+Suppose you encountered an error in <TT>abcext.c.</TT> 
+This is an intermediate file, so we need to track back. To 
+see what files contributed to the generation of this file, 
+issue the command:
+
+<PRE>
+        grep ^abcext.c Makefile
+</PRE>
+
+This might produce the output:
+
+<PRE>
+        abcext.c : abc.tmc abcext.tmc
+</PRE>
+
+That tells you that <TT>abc.tmc</TT> and <TT>abcext.tmc</TT> 
+were the input files which produced <TT>abcext.c.</TT> 
+<TT>abc.tmc</TT> may be original source, but 
+<TT>abcext.tmc</TT> is itself an intermediate file:
+
+<PRE>
+        $ grep ^abcext.tmc Makefile
+        abcext.tmc : abc.edf
+</PRE>
+
+<TT>abc.edf</TT> is an original source file, so we see that 
+the original source for <TT>abcext.c</TT> consists of 
+<TT>abc.tmc</TT> and <TT>abc.edf.</TT> Often many more files 
+are involed, but with a little practice, you should be able 
+to figure out pretty quickly which file is likely to hold the 
+offending code.<P>
+
+<H3><A NAME="PA.2">A.2</A>: Versionitis</H3>
+	
+Versionitis occurs when you attempt to combine a new program, 
+module or subroutine with an older program module or 
+subroutine with which it is no longer compatible. There are 
+many possible causes for this. One is that your hard-working 
+software developers have provided newer versions of some 
+files which aren't backward compatible. In the ARP, you would 
+receive those files during an <TT>osupdate</TT> and you 
+should be informed by them of any potential 
+incompatibilities. However, the transparency of the QNX 
+network can sometimes catch you; if you compile on a 
+different node than usual, even if you are in the correct 
+directory, you may be using different versions of software if 
+the two nodes aren't both up to date.<P>
+
+Another possible source of versionitis is caused when 
+your Makefile doesn't include all the proper definitions for 
+your applications. This might happen if you have created a 
+new source file and either haven't entered it into your 
+<TT>.spec</TT> file or haven't run <TT>appgen</TT> after 
+modifying the <TT>.spec</TT> file. In either case, your 
+program may or may not compile, but will not include the code 
+in the new source file.<P>
+
+In general, the symptoms of versionitis include:<P>
+
+<UL>
+  <LI>Program compiles but doesn't include new features
+  <LI>"... is an undefined reference" errors on compilation
+  <LI>"No prototype found for ..." errors on compilation
+  <LI>"Unable to open ..." errors on compilation
+  <LI>Program which used to compile now fails
+</UL>
+
+These types of errors can also arise as a result of 
+typos, so you may wish to pursue the direct approach of 
+tracking down the errors as listed, but if something that 
+compiled before stops compiling you might suspect 
+versionitis.<P>
+
+The best approach to resolving versionitis is to start 
+over with only your source files and your <TT>.spec</TT> file 
+and recompile everything. <TT>appgen</TT> and <TT>make</TT> 
+provide several features to help you do this.<P>
+
+A good place to start is by running
+
+<PRE>
+        Make unlisted
+</PRE>
+
+(Note the capital 'M'. If you don't have a Makefile, you'll 
+have to run <TT>appgen</TT> first!) This will print out the 
+names of any files in your directory which appgen doesn't 
+know about. These may be old versions of programs, temporary 
+files or whatever. <TT>appgen</TT> categorizes every file as 
+either a source file, an object (intermediate) file or a 
+target file. The objects and targets are files which can be 
+automatically generated from the source files, and as such 
+don't need to be backed up and can be deleted safely. 
+Ideally, you won't see any files listed, but if you see any 
+source files listed, that is a big clue that you haven't 
+entered them into your <TT>.spec</TT> or haven't run 
+<TT>appgen.</TT><P>
+
+If all your files are accounted for, the next step is to 
+back up and recompile everything from the source. Issue the 
+command:
+
+<PRE>
+        Make clean
+</PRE>
+
+This will delete all your "object" and "target" files. For 
+extra measure:
+
+<PRE>
+        rm Makefile
+</PRE>
+
+This will guarantee that a new Makefile will be created that 
+accurately reflects the contents of the <TT>.spec</TT> file. 
+Now <TT>make</TT> again.<P>
+
+<H3><A NAME="PA.3">A.3</A>: When All Else Fails</H3>
+	
+The obvious solution to compilation troubles is to ask your 
+resident software gurus. Before you do, however, take the 
+time to record the exact symptoms and/or error messages which 
+are giving you trouble. If you report "I was trying to 
+compile and I got an error," there isn't much anyone can do 
+for you. The more you can relate about the problem the 
+quicker it can be resolved.<P>
+
+<H2><A NAME="PPS">Coming Attractions</A></H2>
+
+As this series continues, I expect to address the following 
+issues:<P>
+
+<UL>
+  <LI>Backing Up Your Instrument's Specifications
+  <LI>Adding a Software Status Byte
+  <LI>Making a Separate Display Program
+  <LI>Dressing up the Screen with Lines and Attributes
+  <LI>Converting Raw Data to Other Units
+  <LI>Guide to Writing Scripts
+  <LI>Creating a Command Algorithm with TMCALGO
+  <LI>Issues when Collecting from ARP Hardware
+  <LI>Addressing 8-bit A/Ds
+  <LI>Addressing 12-bit A/Ds
+  <LI>Addressing Digital Inputs
+  <LI>Addressing the Indexer
+  <LI>Issues Commanding ARP Hardware
+  <LI>Commanding D/A Outputs
+  <LI>SCDC & DCCC for Commanding Digital Outputs
+  <LI>Commanding the Indexer
+  <LI>Creating a SOLDRV Cycle
+  <LI>Data Analysis Methods
+  <LI>Realtime Cycle Calculations
+  <LI>Averages, Filters and Delays
+</UL>
+
+(c)1995 Norton T. Allen
+  </BODY>
+</HTML>

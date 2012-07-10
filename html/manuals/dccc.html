@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>DCCC Format Definition</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h2>DCCC Format Definition</h2>
+
+<p>DCCC stands for <b>Digital Command Card Controller</b>. DCCC
+provides the lowest-level control of digital I/O boards on
+Anderson Group experiments. The existence of this driver goes
+all the way back to the SC-1 computer on the LOH Gondola.</p>
+
+<p>DCCC reads its configuration from a configuration file
+which is specified on the command line. The configuration
+file syntax is as follows:</p>
+
+<pre>
+    config
+      : <a href="#config_defs">config_defs</a> <a href="#port_defs">port_defs</a> <a href="#command_defs">command_defs</a> 
+    <a id="config_defs">config_defs</a> 
+      : &lt;N_CONFIG_DEFS&gt; <a href="#config_def">config_def</a> ...
+    <a id="config_def">config_def</a> 
+      : &lt;ADDRESS&gt; ',' &lt;VALUE&gt;
+    <a id="port_defs">port_defs</a> 
+      : &lt;N_PORT_DEFS&gt; <a href="#port_def">port_def</a> ...
+    <a id="port_def">port_def</a> 
+      : &lt;ADDRESS&gt; ',' &lt;VALUE&gt;
+    <a id="command_defs">command_defs</a> 
+      : &lt;N_COMMAND_DEFS&gt; <a href="#command_def">command_def</a> ...
+    <a id="command_def">command_def</a> 
+      : <a href="#type">type</a> ',' &lt;PORT&gt; ',' &lt;MASK&gt;
+    <a id="type">type</a> 
+      : 'SPARE'
+      : 'STEP'
+      : 'STRB'
+      : 'SELECT'
+      : 'SET'
+</pre>
+
+<p>The config_defs are simply a series of address-value pairs
+which are written out in sequence. The port_defs are also
+address-value pairs and they are also written out during
+initialization, but they also implicitly define the addresses
+associated with each port number, starting with port number zero.
+</p>
+
+<p>The command_defs implicitly associate specific actions with
+unique command numbers, starting with command number zero. Each
+command has a command type, a port number and a mask. The effect
+of the commands are as follows:</p>
+
+<dl>
+<dt><b>SPARE:</b></dt>
+<dd>SPARE commands do nothing and will return an error to the
+caller.</dd>
+
+<dt><b>STEP:</b></dt>
+<dd>a STEP command produces a pulse by setting the masked bits of
+the port high then low with no defined delay. (This was used on
+the SC-1 to drive stepper motors, but has not been used since the
+advent of the indexer boards.)</dd>
+
+<dt><b>STRB:</b></dt>
+<dd>STRB commands also produce a pulse on the masked command
+line, but the pulse brackets a pulse on the global command
+strobe line. STRB commands are issued via the call
+<code>send_dascmd( DCT_SCDC, n, 0 );</code> where <code>n</code>
+is the command index.</dd>
+
+<dt><b>SET:</b></dt>
+<dd>SET commands require an additional value argument. If the
+value is non-zero, the masked bits are set. If the value is
+zero, the masked bits are cleared. Client applications
+can use the <a href="libref/DigSelect.html">DigSelect</a>()
+function to issue commands of this type.</dd>
+
+<dt><b>SELECT:</b></dt>
+<dd>SELECT is similar to SET in that it requires a value
+argument, but it uses the masked value argument to set the
+masked bits. This is useful when the mask specifies more
+than one bit, and you wish to control the bits
+independently. Client applications use the
+<a href="libref/DigSelect.html">DigSelect</a>()
+function to issue commands of this type.</dd>
+</dl>
+
+<p>In other dccc/scdc compatible applications (specifically the
+DMM32 driver), an UNSTRB command type has been added which has
+the same functionality as SELECT except the value is stored in
+the driver, allowing the caller to use the simpler send_dascmd()
+function instead of using DigSelect().</p>
+
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Fri May  7 15:14:06 2004</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2004 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

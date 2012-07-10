@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Getarc Manual</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+<style type="text/css">
+  table.contents td { vertical-align: top }
+</style>
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h2>Getarc Manual</h2>
+<h3>Contents:</h3>
+<table class="contents"><tr>
+<td>
+<ul class="tight">
+<li><a href="#P0.0">0.0</a>: Introduction</li>
+<li><a href="#P1.0">1.0</a>: Invocation</li>
+<li><a href="#P2.0">2.0</a>: getarc.rc</li>
+</ul></td><td><ul class="tight">
+<li><a href="#P3.0">3.0</a>: getarc.cfg</li>
+<li><a href="#P4.0">4.0</a>: Scripts</li>
+</ul></td></tr></table>
+
+<h3><a id="P0.0">Introduction</a></h3>
+
+<p>Getarc is a monolithic perl program for gathering
+data from multiple instruments and combining them
+into a single archive with a common time base.
+The original data must be stored in a format consistent
+with the
+<a href="http://cloud1.arc.nasa.gov/solve/archiv/archive.tutorial.html">
+Format Specification for Data Exchange</a>, created by
+Steven Gaines and Stephen Hipskind of NASA Ames Research
+Center. The output is generated as a MATLAB .mat file.</p>
+
+<p>Getarc was designed with the following goals in mind:</p>
+
+<ul>
+<li>Once configured, must be able to run on a scheduled
+basis with little or no supervision.</li>
+<li>Must be tolerant of benign changes in source archive
+format, including slight variations in variable naming and
+changes in the order of variables within each file.</li>
+</ul>
+
+<p>The first goal is key, because one of the times when getarc is
+most useful is during a mission when no one has time to futz
+with keeping an archive up-to-date. Getarc can check for updates
+autonomously several times a day, download exactly those files
+which have changed, update the archive and mail out notification
+to a mailing list identifying which files have been updated.</p>
+
+<p>The second goal is related to the first, since without it, any
+such benign change would require significant intervention. The fact
+is, these sorts of changes do occur on a regular basis, but the
+file format contains sufficient documentation to allow a
+well-designed utility to compensate for them.</p>
+
+<h3><a id="P1.0">1.0:</a> Invocation</h3>
+<table class="contents"><tr>
+<td>getarc [date ...]</td></tr></table>
+
+<p>The date arguments are optional. The default is to process
+all dates present in the FTP or localhost archive. Date arguments
+may include wildcards.</p>
+
+<p>getarc reads the files <a href="#P2.0">getarc.rc</a> and
+<a href="#P3.0">getarc.cfg</a> in the current directory to
+determine how to proceed.</p>
+
+<h3><a id="P2.0">2.0:</a> getarc.rc</h3>
+
+<table class="contents"><tr>
+<td>
+<ul class="tight">
+<li><a href="#Server">Server</a> <b>host dir TZ</b></li>
+<li><a href="#Project">Project</a> <b>user password</b></li>
+<li><a href="#FileExt">FileExt</a> <b>Ext</b></li>
+<li><a href="#Subject">Subject</a> <b>Text</b></li>
+<li><a href="#Notify">Notify</a> <b>list</b></li>
+<li><a href="#VNotify">VNotify</a> <b>list</b></li>
+</ul></td><td><ul class="tight">
+<li><a href="#MatURL">MatURL</a> <b>URL</b></li>
+<li><a href="#MatDir">MatDir</a> <b>dir</b></li>
+<li><a href="#LogDir">LogDir</a> <b>dir</b></li>
+<li><a href="#Summarize">Summarize</a> <b>dir</b></li>
+<li><a href="#AcceptIf">AcceptIf</a> <b>expr</b></li>
+</ul></td><td><ul class="tight">
+<li><a href="#Delta">Delta</a> <b>value</b></li>
+<li><a href="#Translate">Translate</a> <b>script</b></li>
+<li><a href="#Compress">Compress</a></li>
+<li><a href="#Verbose">Verbose</a> <b>level</b></li>
+<li><a href="#Debug">Debug</a> <b>level</b></li>
+</ul></td></tr></table>
+
+<dl>
+<dt><a id="Server">Server</a></dt>
+
+<dd>The Server statement specifies where the archived exchange
+files for the individual instruments are to be found. <b>host</b>
+is the hostname of an FTP server or 'localhost' if the original
+archives are stored on the local filesystem. <b>dir</b> indicates
+which directory on the server or localhost contains the archives.
+<b>TZ</b> is the timezone string indicating how times are
+reported when an FTP 'dir' is performed or a local 'ls -l'.</dd>
+
+<dt><a id="Project">Project</a></dt>
+
+<dd>The Project statement defines the username and password to
+be used when accessing FTP hosts. (I used 'Project' rather than
+'user' because the NASA archives tend to be stored by project
+rather than usernames.)</dd>
+
+<dt><a id="FileExt">FileExt</a> <b>Ext</b></dt>
+<dd>Ext is the file extension for the source archives.</dd>
+
+<dt><a id="Subject">Subject</a> <b>Text</b></dt>
+<dd>Text is used on the subject line of e-mail announcing
+results of a getarc run.</dd>
+
+<dt><a id="Notify">Notify</a> <b>list</b></dt>
+<dd>List of receipients for e-mail notification of updates
+to the archive.</dd>
+
+<dt><a id="VNotify">VNotify</a> <b>list</b></dt>
+<dd>List of receipients for e-mail notification of any
+errors during a run.</dd>
+
+<dt><a id="MatURL">MatURL</a> <b>URL</b></dt>
+<dd>URL where archive summary information generated by
+getarcsum can be found. This URL will be included in
+e-mail to the <a href="#Notify">Notify</a> list and
+should be specified in conjunction with the
+<a href="#Summarize">Summarize</a> statement.</dd>
+
+<dt><a id="MatDir">MatDir</a> <b>directory</b></dt>
+<dd>The specified directory is used for storing the
+final Matlab archives. This is useful for keeping the
+main directory clean and/or placing the final archives within
+the domain of a web server.</dd>
+
+<dt><a id="LogDir">LogDir</a> <b>directory</b></dt>
+<dd>The specified directory is used for storing persistent
+log information including the log files and the main
+.sps files. This is useful for keeping the main directory clean
+and/or offloading some volume to another disk. The contents of
+this directory can be regenerated from the source files, so
+this could be located on a volume that is not backed up.</dd>
+
+<dt><a id="Summarize">Summarize</a> <b>dir</b></dt>
+<dd>Indicates that getarcsum should be run with the
+specified argument.</dd>
+
+<dt><a id="AcceptIf">AcceptIf</a> <b>expr</b></dt>
+<dd>Defines a perl expression to be evaluated in order
+to decide whether or not to generate an archive for a
+specific date. An example is:
+<code>AcceptIf $Files{&quot;O3$Date&quot;}</code>
+</dd>
+
+<dt><a id="Delta">Delta</a> <b>value</b></dt>
+<dd>Value is used as the delta when using SNAFU
+to merge data from the source files into the final
+archive. Bins in the final archive are centered on
+the reported time and include the average of points
++/- delta seconds from that time. Hence this is
+roughly equivalent to specifying a bin size of 2*delta.</dd>
+
+<dt><a id="Translate">Translate</a> <b>script</b></dt>
+<dd>Specifies a script to be evaluated to translate
+a source file into the standard exchange file format.
+This is necessary, for example, when processing data from
+missions predating the format specification. The specified
+script is actually charged with defining a subroutine
+called 'Translate' which will be invoked with a single
+argument, $Filename, which is the filename to be translated.
+This function should then read from getarc::srcdir$Filename
+and write the translated result to getarc::cache$Filename.</dd>
+
+<dt><a id="Compress">Compress</a></dt>
+<dd>If specified, indicates that source files, spreadsheets
+and log files should be compressed after use.</dd>
+
+<dt><a id="Verbose">Verbose</a> <b>level</b></dt>
+<dd>Verbosity levels are bitmapped:
+  <ul><li>1: Dump configuration info</li>
+	<li>2: Dump directory info</li>
+	<li>4: Print progress messages</li></ul></dd>
+
+<dt><a id="Debug">Debug</a> <b>level</b></dt>
+<dd>Debug levels are also bitmapped:
+  <ul><li>1: save temp files and source files</li>
+	<li>2: save .sps files</li>
+	<li>4: save source files</li></ul></dd>
+</dl>
+
+<h3><a id="P3.0">3.0:</a> getarc.cfg</h3>
+
+<p>getarc.cfg is the file in which the individual instruments
+and variables are defined. It consists of one or more instrument
+definitions. Each instrument definition consists of a header
+line followed by zero or more data definition or SCRIPT
+lines. Comment lines beginning with '#' can appear at any
+point in the file.</p>
+
+<p>An <b>instrument header line</b> begins with two non-space
+characters at the left margin optionally followed by a space
+and a descriptive title for the instrument. <i>e.g.:</i></p>
+
+<pre>    TW Harvard Total Water</pre>
+
+<p>A <b>data definition line</b> begins with one or more
+spaces, then a variable name, a colon (':'), and then
+a pattern that should match the variable's description in
+the source file. The pattern is matched using perl regular
+expressions. This means that if you want to match special
+characters such as parentheses, you need to escape them with
+a backslash: <i>e.g.:</i></p>
+
+<pre>      TW: Total Water \(ppmv\)</pre>
+
+<p>If the experimenter tends to forget case, you can use
+character classes to match all the likely alternates:</p>
+
+<pre>      TW: [Tt]otal [Ww]ater \(ppmv\)</pre>
+
+<p>[Note that these data definition lines all start with
+spaces!]</p>
+
+<p>There are many more features of perl regular expressions.
+Ask your local perl guru for more information.</p>
+
+<h3><a id="P4.0">4.0:</a> Scripts</h3>
+
+<p>A script line is listed along with the data definitions
+for an instrument. Like a data definition, it begins with
+spaces, then the keyword 'SCRIPT'. The remainder of the line
+is treated as perl code that should be evaluated whenever
+this instrument's source files need to be processed.</p>
+
+<pre>      SCRIPT { require "PT.pl"; Process_PT( $Date, $InstDef{$Inst}, \%ArcCol, $Delta, $Instday, $Filename ); }</pre>
+
+<p>Scripts are given total responsibility for the processing
+of a given instrument's source file. That is to say, when you
+specify a script, getarc will no longer attempt to locate your
+variables in the source file or merge data from the source file
+into the archive. This is because some scripts may need to make
+changes before merging while others may need to make changes
+after.</p>
+
+<p>Scripts can make use of several handy getarc variables
+and subroutines, but not all of the getarc variables a script
+might want access to are global. You must make up for that by
+making sure that your SCRIPT line passes all the variables you
+need.</p>
+
+<p>Writing getarc scripts requires considerable knowledge of
+the getarc internals, none of which are well-documented.
+Your best bet is to talk to your local getarc guru to see
+the best way to begin and refer to examples of scripts
+currently in use.</p>
+
+<p>Some of the getarc variables and functions which will
+be useful within a script:</p>
+
+<dl>
+<dt>$getarc::cache$Filename</dt>
+<dd>Source exchange file (possibly after
+<a href="#Translate">Translation</a>)</dd>
+<dt>$getarc::LogDir$Date.sps</dt>
+<dd>Output spreadsheet</dd>
+<dt>MatchCols()</dt>
+<dd>Matches variable definitions from getarc.cfg with the
+headers in the source file.</dd>
+<dt>LogMsg()</dt>
+<dd>Writes status to the verbose log. Calls should be
+sensitive to $getarc::verbose.</dd>
+<dt>conexec()</dt>
+<dd>Invoke a specified command on a console. This is required
+for SNAFU and other SNAFU-like utilities that must run on a
+console.</dd>
+<dt>Merge()</dt>
+<dd>Handy routine to invoke SNAFU merge.</dd>
+</dl>
+
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a>.
+Written by
+<a href="mailto:allen@huarp.harvard.edu">Norton T. Allen</a><br>
+</p>
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Mon Apr 14 12:37:29 2003</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2003 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

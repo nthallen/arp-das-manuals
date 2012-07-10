@@ -1,0 +1,315 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>tmcalgo V2R1: Chapter 3</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img name="daqlogo" src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map" border="0">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10, 11, 91, 35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91, 6, 246, 43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30, 47, 273, 79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h2>TMCALGO V2R1: Algorithm Compiler</h2>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td><a href="tma_2.html">Chap. 2</a></td>
+<td>Chap. 3</td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<h3><a name="P3.0">3.0</a>: Compiling and Running Algorithms</h3>
+
+<table><tr><td width="35%">
+<table class="contents"><tr><td>
+<ul>
+<li><a href="#P3.1">3.1</a>: <code>.spec</code> File Specification</li>
+<li><a href="#P3.2">3.2</a>: Interact/Runfile Specification</li>
+<li><a href="#P3.3">3.3</a>: Doit Specification</li>
+<li><a href="#P3.4">3.4</a>: Dual-node Configuration</li>
+<li><a href="#P3.5">3.5</a>: Playback Configuration</li>
+<li><a href="#P3.6">3.6</a>: Extraction</li>
+</ul></td></tr></table>
+</td>
+<td width="600" align="center">
+<table><tr><td width="300">
+<p>In order to compile and run an algorithm, several steps need to
+be taken in other source files. The rules for compilation need to
+be enterred in the <a href="#P3.1">.spec file</a>, and the algorithm
+needs to be invoked, either from the <a href="#P3.2">interact</a>
+script, the <a href="#P3.3">doit</a> script, or <a href="#P3.4">both</a>.
+</p></td></tr></table>
+</td></tr></table>
+
+<h3><a name="P3.1">3.1</a>: .spec File Specification</h3>
+
+<p>The .spec file defines how the algorithm is compiled,
+including what other files must be included. The .spec file
+is processed by <a href="appgen.html">appgen</a> to create
+a standard <code>Makefile</code> which can in turn be
+processed by <code>make</code> to compile any or all of
+an instrument's software.</p>
+
+<p>Algorithm executables have names that end in &quot;algo&quot;. Appgen
+uses the name as one clue in determining what functionality to include.
+[Other suffixes will work as well, but their use is discouraged
+unless necessary as such use may break in future versions of appgen.
+At present, suffixes &quot;disp&quot; and &quot;ext&quot; will work,
+but certain other suffixes which have special meaning to appgen will
+not.]</p>
+
+<p>A minimal specification line for an algorithm defines the name
+of the executable and the source file:</p>
+
+<pre>    hsimalgo : hsim.tma
+</pre>
+
+<p>If the algorithm is split into more than one <code>.tma</code> file,
+they should all be listed in the appropriate order. If the algorithm
+depends on variables defined in <code>.tmc</code> files (other than those
+in TMCBASE), those files should also be listed -- before the <code>.tma</code>
+files.</p>
+
+<p>If you need to compile your algorithm with a version of TMCALGO other
+than the current default version, you can specify the version at the
+end of your <code>.spec</code> file after the line consisting of the
+string '%%':</p>
+
+<pre>
+hsimalgo : hsim.tma
+...
+%%
+...
+TMAREV=tmcalgoV2R1
+...
+</pre>
+
+<p>What should be obvious as well is that command definitions,
+specified via CMDBASE, are required in order to compile an
+algorithm. TMCALGO will launch the command server in order to
+verify the experiment-specific syntax of commands. Again,
+it is possible to circumvent this behaviour at a low level,
+but the point of <code>.tma</code> algorithms is to combine
+telemetry data with commands.</p>
+
+<p>As always, you must run <a href="appgen.html">appgen</a> after
+editting your <code>.spec</code> file. Thereafter you should be
+able to issue a '<code>make</code>' or '<code>make&nbsp;hsimalgo</code>'
+to compile your algorithm.</p> 
+
+<h3><a name="P3.2">3.2</a>: Interact/Runfile Specification</h3>
+
+<p>For most experiments, it makes sense to run the algorithm
+out of the &quot;flight&quot; script, <code>interact</code> or
+<code>runfile.*</code>. (but see also <a href="#P3.4">dual-node
+configuration</a>) The recommended command line and options
+include:</p>
+
+<pre>
+    Launch - hsimalgo -vyl -c0 -C0 -b0 -i1
+</pre>
+
+<p>Launch is a shell function which starts processes in the
+background and optionally waits for them to register a name.
+The '-' after Launch indicates that the algo will not be
+registering a name, so there is no need to wait. 'hsimalgo'
+is the name of our algorithm.</p>
+
+<p>'-vyl' is a shorthand for the
+three separate options, '-v', '-y' and '-l':</p>
+
+<ul>
+<li><b>-v</b> suppresses
+diagnostic output to the screen (we'll be sending the
+diagnostics to the message log).</li>
+<li><b>-y</b>
+suppresses msg()'s
+automatic <code><b>errno</b></code> analysis on log messages, which can be helpful,
+but is often misleading.</li>
+<li><b>-l</b>
+requests the first level of
+debug logging, which includes a message each time a new state
+is entered. Adding additional '-l' options increases the
+logging level, logging each command as it is sent to
+the server, etc.</li>
+</ul>
+
+<p><b>-c0</b>, <b>-C0</b> and <b>-b0</b> tell the algorithm on
+which node to locate the message logger, the command server
+and the DRing buffer respectively. '0' means the current node,
+which is appropriate when running out of a flight script.</p>
+
+<p><b>-i1</b> tells the algorithm to ask bfr to deliver one
+row of data at a time. This is important in realtime processing,
+since otherwise, the buffer is likely to save up rows of data
+and deliver them in larger blocks. This would clearly have
+a detrimental effect on carefully-timed procedures, since
+the algorithm would be making decisions and issuing commands
+based on older data.</p>
+
+<p>There are a number of other command line options available
+to algorithms (and it is even possible to add your own!). You
+can examine all the options by issuing the command 'use hsimalgo'
+(replacing hsimalgo with the name of your own algorithm!). We'll
+use some of them in other configurations.</p>
+
+<h3><a name="P3.3">3.3</a>: Doit Specification</h3>
+
+<p>Under certain circumstances, it may be simpler to run the algorithm
+out of the GSE 'doit' script. This may be true if you wish to switch
+between two or more algorithms by invoking different doit scripts, for
+example.</p>
+
+<p>To run an algorithm out of a doit script, we simply add a line
+to the '.doit' source file:</p>
+
+<pre>
+    algorithm hsimalgo -l
+</pre>
+
+<p>In general, the mkdoit2 compiler will take care of all the
+standard command line options, including the code required to
+identify the data acquisition node for the -b and -C options,
+but you are still in control of the logging level via the
+'-l' flag.</p>
+
+<p>In laboratory settings this may be reasonable, particularly
+where the same node is used for GSE and data acquisition. For flight
+instruments, this approach is strongly discouraged, since it does not
+exercise the instrument in a flight configuration. A recommended
+alternative for selecting alternate algorithms is to use the .doit
+command <a href="mkdoit2.html#P3.0"><code><b>batchfile</b></code></a>
+to select a different flight script.</p>
+
+<p>Another problem with running the algorithm out of the doit script
+is that it ties the GSE more closely to the instrument; if you
+<code><b>exit</b></code> from the GSE, the algorithm is terminated;
+if you start up another GSE on another node, another copy of the
+algorithm is started and two copies of each command will be issued.</p>
+
+<h3><a name="P3.4">3.4</a>: Dual-node Configuration</h3>
+
+<p>The downside to running the algorithm on the flight node is that
+you don't get all the cool diagnostic information on your GSE
+data screen. The simple solution to this problem is to run the
+algorithm in both places: in the flight script to control the
+instrument and in the doit script to display status information.
+The critical distinction here is that the copy that runs out of
+the doit script must not issue any commands. This is accomplished
+by use of the <code><b>-p</b></code> option for 'playback':</p>
+
+<pre>
+    algorithm hsimalgo -p
+</pre>
+
+<p>In addition to suppressing any commands, mkdoit2 will suppress
+all diagnostic messages from the local algorithm to avoid cluttering
+the log file with duplicates. (This is done by omitting the -c option
+on the command line.)</p>
+
+<p>The configuration in the flight script remains the same as
+specified in <a href="#P3.2">Section 3.2</a>.</p>
+
+<p>This approach has some caveats as well. Fundamentally, The local
+algorithm and the flight algorithm are not guaranteed to be
+synchronized. This has the following implications:</p>
+
+<ul>
+<li>If both copies see exactly the same data from
+the very start of the run, they will track reliably</li>
+<li>If you exit from your GSE and later restart without
+restarting the instrument, you local algorithm will be
+out of synch with the flight algorithm.</li>
+<li>If you start up other GSEs after the instrument
+has been operating for a period of time, the new GSEs
+will be out of synch with the flight algorithm.</li>
+<li>If your algorithm has 'synchronization points',
+it is possible to get these latecomers in line, but
+an algorithm would have to be carefully designed to
+accomplish this goal.</li>
+</ul>
+
+<p>The effect of de-synchronization is that commands
+displayed locally will not be the same as the commands
+which are actually being executed on the flight node.
+This can lead to considerable confusion if you aren't
+aware of the possibility. When in doubt, refer to the
+instrument log file, which records the commands that
+are actually being executed.</p>
+
+<h3><a name="P3.5">3.5</a>: Playback Configuration</h3>
+
+<p>It can be very useful to run an algorithm in playback mode,
+particularly when trying to diagnose instrument misbehaviour.
+Specification of the algorithm in a
+<a href="mkdoit2.html#P2.2.1">playback <code>.doit</code></a>
+file is basically identical to the dual-node configuration
+except that you will probably want to add a '-ll' option to
+have the playback algorithm log the commands it <i>would</i>
+execute if it had control:</p>
+
+<pre>
+    algorithm hsimalgo -p -ll
+</pre>
+
+<h3><a name="P3.6">3.6</a>: Extraction</h3>
+
+<p>You can also replay flight algorithms against logged data using
+<a href="../guides/das_user.html#P3.3">extract</a>. As with playback,
+it is important to pass the '-p' option, and '-ll' is probably required
+if you hope to get useful information in the log. (Of course you might
+be running your algorithm for other side effects...)</p>
+
+<p>Note that when specifying command line arguments to an algorithm
+for extract, you must enclose the algorithm and its arguments in
+quotes:</p>
+
+<pre>
+    extract 010130.1 &quot;hsimalgo -pll&quot;
+</pre>
+
+<table border="1" cellpadding="2" align="CENTER" class="navbar">
+<tr>
+<td><a href="tmcalgo.html">Chap. 1</a></td>
+<td><a href="tma_2.html">Chap. 2</a></td>
+<td>Chap. 3</td>
+<td><a href="tma_4.html">Chap. 4</a></td>
+<td><a href="tma_5.html">Chap. 5</a></td>
+<td><a href="tma_6.html">Chap. 6</a></td>
+<td><a href="tma_app.html">App</a></td>
+</tr></table>
+
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a>.
+Written by
+<a href="mailto:allen@huarp.harvard.edu">Norton T. Allen</a>
+</p>
+
+
+<br>
+<hr noshade color="#000000">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+  <td>last updated: Thu Jan  2 10:51:54 2003</td>
+  <td align="right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</A></td>
+</tr>
+<tr>
+<td colspan="2"><font size="-2">
+Copyright 2002 by the President and Fellows of Harvard College
+</font></td>
+</tr>
+</table>
+</body>
+</html>

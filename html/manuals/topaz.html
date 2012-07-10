@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+<TITLE>Topaz Laser QNX4 Driver Specification</TITLE>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</HEAD>
+<BODY>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<H1>Topaz Laser QNX4 Driver Specification</H1>
+The Topaz Laser Driver is intended to provide command control and 
+telemetry interfaces to the Spectra Physics Topaz Series Laser 
+System via an RS232 connection. It will interface to standard ARP 
+data acquisition modules including Memo, CmdCtrl, Command 
+Servers and TMC Data Collection.<P>
+
+When first invoked, the driver will register with Memo and with 
+CmdCtrl, if present, requesting that the Quit command be 
+forwarded. It will also attempt to establish a connection with 
+the collection program for data reporting. Failure to establish a 
+connection with CmdCtrl or Collection need not be fatal, although 
+the data-reporting functions will be useless without the 
+Collection connection.<P>
+
+It will then attempt to establish communications with the laser 
+system. When communications are first established, the driver 
+will query the laser system and report the contents of the EEPROM 
+to Memo. It will also query the status history and output status 
+codes starting with the latest Boot.<P>
+
+With the initialization complete, the driver will register it's 
+name (topaz) with the operating system, signaling other 
+processes that the initialization was successful and advertising 
+the command services to the command server.<P>
+
+At this point, the driver enters server mode where it waits in a 
+Receive() loop, waiting for incoming requests. The driver will 
+handle the following messages:<P>
+<DL>
+<DT>Command Requests from Command Server
+<DD>Supported commands include setting the diode current and the 
+diode temperature and turning the diodes on or off.
+<DT>Quit message from CmdCtrl (or topaz -q)
+<DD>Causes the driver to terminate gracefully
+<DT>Proxy from collection
+<DD>Signals the driver to request the data set from the laser 
+system and report it to collection.
+<DT>Proxy from serial port
+<DD>Signals the driver to read characters from the serial port, 
+presumably to collect a response from a data request.
+</DL>
+
+The data to be report to telemetry include:
+<UL>
+<LI>Diode 1 Current
+<LI>Diode 2 Current
+<LI>Diode 1 Temperature
+<LI>Diode 2 Temperature
+<LI>Status History array (16 bytes)
+<LI>Diode 1 Operating Hours
+<LI>Diode 2 Operating Hours
+</UL>
+
+Any or all of this data may be reported in telemetry. The rate at 
+which the data is collected and/or reported is entirely 
+determined by the TMC program.<P>
+
+When reading the data set, the data read from the laser system 
+will be checked for sanity. If any characters appear to be 
+missing or mis-formatted, the entire record will be rejected. A 
+fixed number of rejected records may be written to the memo log 
+in an ASCII format to facilitate debugging. A count of rejected 
+records will be maintained and reported to Memo on termination.<P>
+
+Whenever the data set is collected, the status history array is 
+compared to the previously recorded array and any new status 
+codes are output to Memo.<P>
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Unknown</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2012 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

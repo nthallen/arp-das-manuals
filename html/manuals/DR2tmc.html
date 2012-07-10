@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>DR2tmc Manual</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h2>DR2tmc</h2>
+<h3>A compiler for HPF datarecvext programs</h3>
+
+<p>DR2tmc is yet another compiler which takes a file of type
+&quot;.DR&quot; and translates it into a &quot;.tmc&quot; file.
+Its purpose is to simplify the generation of datarecvext
+programs, making it easier to implement changes in the data
+stream.</p>
+
+<p>DR2tmc is now fully supported by
+<a href="appgen.html">appgen</a>. To create a datarecvext
+program, list your <b>.DR</b> file as one of the source
+files in your <b>.spec</b> file. You must also supply
+a version of <b>status.h</b> defining the functions (or
+macros):</p>
+<ul>
+<li>runHasBegun()</li>
+<li>runHasEnded()</li>
+<li>runWasAborted()</li>
+</ul>
+
+<h2>Syntax</h2>
+
+<p>Each line of the input file may include on of the following
+elements:</p>
+<ul>
+<li><a href="#comment">#</a> Comment</li>
+<li><a href="#header">[!%] header line</a></li>
+<li><a href="#Status">Status</a> &lt;<a href="#TMVarName">TMVarName</a>&gt;</li>
+<li><a href="#RunNum">RunNum</a> &lt;<a href="#TMVarName">TMVarName</a>&gt;</li>
+<li><a href="#FormatSuffix">FormatSuffix</a> &lt;string&gt;</li>
+<li><a href="#Var">Var</a> &lt;<a href="#TMVarName">TMVarName</a>&gt; &lt;<a href="#PSkey">PSkey</a>&gt;* &lt;<a href="#Format">Format</a>&gt;?</li>
+</ul>
+
+<dl>
+<dt><a id="comment"><b># Comment</b></a></dt>
+<dd>Any line beginning with the &quot;#&quot; character is
+considered a comment and will be ignored. &quot;#&quot;
+characters appearing later in the line may be part of the
+syntax, so should not be used for comments.</dd>
+<dt><a id="header"><b>[!%] header line</b></a></dt>
+<dd>Any line in which the first non-space character is an
+exclamation point or a percent sign will be
+passed through as is in the header of each run. Note that
+leading spaces are significant to dataRecv, so the syntax
+should be checked carefully.</dd>
+<dt><a id="Status"><b>Status</b></a> &lt;<a href="#TMVarName">TMVarName</a>&gt;</dt>
+<dd>Specifies the name of the TM variable which holds
+the RUNFLAG and ABORTFLAG bits. The default name is
+&quot;RunStat&quot;.</dd>
+<dt><a id="RunNum"><b>RunNum</b></a> &lt;<a href="#TMVarName">TMVarName</a>&gt;</dt>
+<dd>Specifies the name of the TM variable which holds
+the current run number. The default name is
+&quot;RunNum&quot;.</dd>
+<dt><a id="FormatSuffix"><b>FormatSuffix</b></a> &lt;string&gt;</dt>
+<dd>Redefines the string that should be appended to each
+format string specified in a Var statement. The default
+string is &quot;FormatData&quot;.</dd>
+<dt><a id="Var"><b>Var</b></a> &lt;<a href="#TMVarName">TMVarName</a>&gt; &lt;<a href="#PSkey">PSkey</a>&gt;* &lt;<a href="#Format">Format</a>&gt;?</dt>
+<dd>Defines a variable to be extracted. The arguments allow you
+to control how the variable is output and what information about
+it is passed on to PSPlot.</dd>
+
+<dt><a id="TMVarName">&lt;<b>TMVarName</b>&gt;</a></dt>
+<dd>A telemetry variable name defined elsewhere in the TMC
+definitions for this experiment.</dd>
+<dt><a id="PSkey">&lt;<b>PSkey</b>&gt;</a></dt>
+<dd>PSkeys define either an <i>alias</i> or a <i>format
+string</i> for the specified TM Variable. There can be 0 or more
+PSkeys with each variable definition. Each PSkey consists of
+one of the control characters '-', '+' or '#' followed
+immediately by a string without any intervening spaces. The keys
+mean:
+<ul>
+<li><b>-</b>&lt;name&gt;: Replace the TM variable name with this
+alias in the PSplot header.</li>
+<li><b>+</b>&lt;name&gt;: List this alias in addition to the TM
+variable name in the PSplot header.</li>
+<li><b>#</b>&lt;string&gt;: Specify this PSplot format string for
+this variable. The actual format string is formed by combining
+this string with the <a href="#FormatSuffix">FormatSuffix</a>.
+The default format if none is specified is &quot;#raw&quot;.</li>
+</ul>
+</dd>
+<dt><a id="Format">&lt;<b>Format</b>&gt;</a></dt>
+<dd><p>Format is an optional definition that gives you direct
+control over how the variable is converted from raw data
+to text. A Format specification consists of a printf-style
+format code followed by a conversion function which is to be
+called with the TM variable as an argument. The default format
+code is &quot;%s&quot; and the default conversion function is
+&quot;text&quot; (but note that these are specified
+<i>without</i> the quotes!).</p>
+<p>The conversion function is applied to the TM variable
+in a very naive fashion, similar to how it is handled in
+.edf files. Namely, the string you specify is followed
+immediately in the output by the TM variable name in
+parentheses. As such, this &quot;function&quot; need not be a
+function at all:</p>
+<pre>Var MFCtr %u 1*</pre>
+<p>This will use the %u format on the raw value of the MFCtr
+variable. Many simple conversions can be handled this way.</p>
+</dd>
+</dl>
+
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr>
+  <td>last updated: Fri May  7 15:14:06 2004</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td>
+</tr>
+<tr>
+<td colspan="2" style="font-size: smaller">
+Copyright 2004 by the President and Fellows of Harvard College
+</td>
+</tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Table: Screen Layout Language</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h1>TABLE: Data Screen Formatting Compiler</h1>
+
+<h2>Contents</h2>
+
+<ul>
+<li><a href="#intro">Introduction</a>
+<li><a href="#tables">Tables</a>
+ <ul>
+ <li><a href="#words">Words</a>
+ <li><a href="#datum">Data Fields</a>
+ </ul>
+<li><a href="#HBoxes">HBoxes</a>
+<li><a href="#Rules">Lines and Boxes</a>
+<li><a href="#Named">Named Tables</a>
+<li><a href="#Just">Justification</a>
+<li><a href="#Attrs">Attributes</a>
+<li><a href="#Overlay">Overlay</a>
+<li><a href="#Gule">Glue</a>
+<li><a href="#Appendix">Appendix</a>
+<ul>
+  <li><a href="#Grammar">Grammar</a>
+  <li><a href="#Syntax">Syntax</a>
+  <ul>
+	<li><a href="#Comments">Comments</a>
+  </ul>
+  <li><a href="#keywords">Keywords</a>
+</ul>
+</ul>
+
+<h2><a id="intro">Introduction</a></h2>
+
+Table is a tool for generating .fld files which can be used by
+the <a href="../index.html">ARP Data Acquisition System</a> to
+display realtime data in text formats on a QNX console. Table
+provides an alternative to either using scrdes or editting .fld
+files by hand with a text editor.
+
+<P>Data screens are often made up of multiple small subtables,
+each grouping together related data items. When developing a
+screen layout, the size of each subtable is often not known early
+on. As a result, the relative positioning of the tables on the
+screen cannot be determined until the smaller tables are defined.
+With Table, you can define each subtable separately, then combine
+them in a variety of ways, viewing the results in order to
+determine the optimal organization.
+
+<P>Table supports the organization of data into columns and
+allows the use of attributes and the PC line-drawing characters
+to help annotate your tables. The syntax of table is
+designed to provide the most common formatting options with the
+simplest syntax possible.
+
+<P>Table source code is stored in a file with the extension
+".tbl". <a href="appgen.html">Appgen</a> will generate commands to
+translate this file into a ".fld" file using the table compiler.
+
+<P>For the purposes of getting familiar with table, you can run
+the table compiler yourself by hand; if you place your table
+source code in a file named <Code>test.tbl</Code>, you can
+generate <Code>test.fld</Code> with the command:
+
+<pre>
+        table test.tbl >test.fld
+</pre>
+
+You can then view the results using scrpaint:
+
+<pre>
+        scrpaint test.fld
+</pre>
+
+You may wish to use scrdes to create a configuration file
+test.cfg with suitable color attributes for the generated screen
+also.
+
+<h2><a id="tables">Tables</a></h2>
+
+Tables are the basic element of a table definition. Here is a
+simple table definition:
+<pre>
+        { "Text on line 1";
+          Line2: ;
+          "Line 3"
+        }
+</pre>
+
+Some things to notice are:
+<ul>
+<li>Tables are enclosed in curly braces ({}).
+<li>Rows within a table are separated by semicolons (;).
+<li>"Words" may be enclosed in quotes or not.
+</ul>
+
+<h2><a id="words">Words</a></h2>
+
+In order to use a word without quotes, it must begin with a
+letter or one of the characters '_', '%' or ':' and contain only
+these characters or numbers. It must also not match one of the
+table <a href="#keywords">keywords</a>.
+
+<P>When more than one word appears on a line, table arranges the
+output into columns:
+<pre>
+        { Col1: Col2;
+           A     B;
+           C     D;
+        }
+</pre>
+
+Multiple words can be treated as a single word by enclosing
+the words in quotation marks (""). A single word by itself on a
+line of a table is not treated as part of the first column; it
+essentially spans all the columns. This is useful for adding
+titles to a table:
+
+<pre>
+        { "Table with Columns";
+           A   B   C   D   E;
+           F   G   H   I   J;
+        }
+</pre>
+
+<h3><a id="datum">Data Fields</a></h3>
+
+In addition to titles and labels, a data screen layout must
+specify where the actual data will appear. Data fields are
+specified with the syntax:
+
+<blockquote>
+        <code>(<i>mnemonic</i>[,<i>width</i>[,<i>height</i>]])</code>
+</blockquote>
+
+where <i>mnemonic</i> is the name of the datum,
+<i>width</i> is the width in characters and <i>height</i> is
+the height in rows. Width and height are optional and default to
+5 characters wide and 1 row high:
+
+<pre>
+        { "Lamp Module";
+          A_UVV: (A_UVV,5) V;
+          A_IRV: (A_IRV,5) V;
+          A_LMT: (A_LMT,6) C;
+        }
+</pre>
+
+When data fields are arranged in a column, they are
+right-justified within the column. Labels are left-justified
+within columns. It is possible to alter this justification scheme
+by several means for special cases, but this seems to be the
+"right thing" in most cases.
+
+<h2><a id="HBoxes">HBoxes</a></h2>
+
+Tables are handy for listing items vertically and in columns.
+HBoxes provide a means for arranging items horizontally. Compared
+to tables, HBoxes are pretty simple: items within an HBox are
+separated by semicolons and arranged horizontally on output. No
+additional spacing is provided, as is the case with columns.
+
+<pre>
+        HBox { anti; dis; establishment; arianism }
+</pre>
+
+<h2><a id="Rules">Lines and Boxes</a></h2>
+
+Lines can be added to a table with the following symbols:
+<ul>
+<li>'-':  Single horizontal line
+<li>'=':  Double horizontal line
+<li>'|':  Single vertical line
+<li>'||': Double vertical line
+</ul>
+
+<P>The following table will have dividing lines above, below and
+between the A and B sections:
+
+<pre>
+        { -;
+          A_UVV: (A_UVV,5);
+          A_IRV: (A_IRV,5);
+          -;
+          B_UVV: (B_UVV,5);
+          B_IRV: (B_IRV,5);
+          -;
+        }
+</pre>
+
+To form an enclosing box, you must nest a table inside an HBox
+(or vice versa):
+
+<pre>
+        HBox {
+          |;
+          { -;
+            A_UVV: (A_UVV,5);
+            -;
+          };
+          |;
+        }
+</pre>
+
+The line-drawing symbols may have a '+' symbol before and/or
+after it to indicate that the line should be extended to connect
+to neighboring lines. A '+' before or after a horizontal line
+symbol extends the line to the left or right, respectively. A '+'
+before or after a vertical line symbol extends the line up or
+down.
+
+<P>In the previous example, the box would not actually be closed.
+The horizontal lines in the nested table need to be extended to
+meet the enclosing vertical lines. This is accomplished by
+replacing the '-' symbols with the string '+-+'.
+
+<h2><a id="Named">Named Tables</a></h2>
+
+A valid table definition contains a single top-level table
+definition which may include nested tables and HBoxes. Building
+several subtables and HBoxes into a bigger table can become
+rather unwieldy, particularly when you are trying to rearrange
+the subtables. Some amount of modularity can be achieved through
+the use of named tables.
+
+<P>A named table is a table which is defined before the main
+table definition which has a name associated with it:
+
+<pre>
+        LampA {
+          HBox{ +-; "Lamp A"; -+; };
+          A_UVV: (A_UVV,5);
+          A_IRV: (A_IRV,5);
+        }
+</pre>
+
+The named table can then be referenced within other tables by
+enclosing the table's name in square brackets ([]):
+
+<pre>
+        { HBox { |; [LampA]; |; [LampB]; | } }
+</pre>
+
+<h2><a id="Just">Justification</a></h2>
+
+By default, labels and titles are left-justified and data
+fields are right-justified. The '&gt;' and '&lt;' symbols can be
+used to alter this. '&gt;' before a word serves to "push" the
+word to the right. '&lt;' after a word serves to push it to the
+left. With both, the word is centered:
+
+<pre>
+        { &gt;"Lamp A"&lt;;
+          A_UVV: (A_UVV,5);
+        }
+</pre>
+
+Note that the horizontal line-drawing characters have the same
+effect, except that the space is filled with a line. In most
+cases you will want to use one or the other, not both.
+
+<h2><a id="Attrs">Attributes</a></h2>
+
+Attributes are used to specify the color of different elements
+of the screen display. Within the .fld file format, and hence
+within table itself, you don't actually assign a color to an
+item, but rather a color code, which is a small integer. Later,
+each small integer is mapped to a particular color combination.
+The specific colors are recorded in a .cfg file, which can be
+generated by the scrdes utility. Multiple .cfg files can be used
+with the same .fld file in order to create different color
+combinations. This is useful when a data screen may be viewed
+either on a color display or on a monochrome display, for
+example. I often use a special .cfg file which highlights the
+data field locations when I am designing a screen.
+
+<P>By default, text uses attribute value 4 ("LABEL"), data fields
+use attribute value 2 ("FIELD") and line-drawing characters use
+attribute value 1 ("BOX"). The keyword "Title:" switches the
+current text attribute to 5 ("TITLE"), and the keyword "Header:"
+switches the attribute to 3 ("HEADER"). You can also switch to an
+explicit attribute number, n, by specifying "Attr n".
+
+<P>The new attribute value remains in effect until another
+attribute is specified or until the end of the current table row
+or the current HBox.
+
+<h2><a id="Overlay">Overlay</a></h2>
+
+Under certain restricted circumstances, it is useful to
+specify that more than one data field appear at a single
+location. The Overlay construct allows this:
+
+<pre>
+        Overlay { (%TMA:Flightalgo:1,0+1,2) (%TMA:Labalgo:1,0+1,2) }
+</pre>
+
+This is useful in the case where only one of the data fields will
+be used at a time. In the example, only one of Flightalgo or
+Labalgo will be used at a time, so the status information can be
+located in the same position.
+
+<h2><a id="Gule">Glue</a></h2>
+
+Glue allows for more explicit control over spacing in certain
+circumstances. Based on TeX's glue concept, glue dimensions can
+be specified with two components, known as space and stretch.
+Space is the normal number of spaces or rows the item requires,
+while stretch is a scaling factor indicating by what proportion
+the item should grow if there is space available. When laying out
+a table, all the space and stretch components are added together. If
+more space is available than required by the sum of the space
+components, the remaining space is divided up proportionally
+among the items based on their stretch components. (For more
+information, see Knuth, "The TeXBook").
+
+<P>Glue dimensions are specified either as a single integer, if
+there is no stretch component, or as two integers separated by a
+'+' symbol, e.g. 3+1, indicating 3 spaces plus 1 stretch.
+
+<P>You may use glue dimensions when specifying the width or
+height of data fields. You can also insert glue explicitly into a
+table or HBox by using either the HGlue or VGlue commands. VGlue
+is used in the example below to center the data vertically within
+the available space.
+
+<pre>
+        { VGlue 0+1;
+          -;
+          Center: (data,3);
+          -;
+          VGlue 0+1;
+        }
+</pre>
+
+<h2><a id="Appendix">Appendix</a></h2>
+
+<h3><a id="Grammar"></a><a href="#Program">Grammar</a></h3>
+
+This grammar is specified using Extended Backus Naur Form (EBNF)
+as used by the Eli Compiler Construction System. Each statement
+describes a "production". The item to the left of the colon is a
+non-terminal symbol. Its instance on the right hand side of any
+production can be replaced by symbols matching the right hand
+side of any of its production rules. Literal text
+which appears in a program is specified as a single-quoted string
+( 'Table' ). An optional item is enclosed in square brackets ( [
+'Table' ] ). An asterisk (*) following an item indicates that it
+may occur zero or more times. A plus symbol (+) following an item
+indicates that it may occur one or more times. The slash
+character (/) is used to indicate that the production can use one
+of two or more alternatives. For example, in the definition:
+
+<pre>
+             Glue : <a href="#HGlue">HGlue</a> / <a href="#VGlue">VGlue</a> .
+</pre>
+
+Glue can be either HGlue or VGlue (not both). Productions are
+terminated by a period (.).<P>
+
+<hr>
+
+<pre>
+<a id=Program>Program</a> : <a href="#NamedTable">NamedTable</a>* <a href="#Table">Table</a> .
+
+<a id=NamedTable>NamedTable</a> : <a href="#BareWord">BareWord</a> <a href="#Table">Table</a> .
+
+<a id=Table>Table</a> : [ 'Table' ] '{' <a href="#TableDefs">TableDefs</a> '}' .
+<a id=TableDefs>TableDefs</a> : / <a href="#TDunterminated">TDunterminated</a> [ ';' ] .
+<a id=TDunterminated>TDunterminated</a> : <a href="#VField">VField</a> / <a href="#TDunterminated">TDunterminated</a> ';' <a href="#VField">VField</a> .
+
+<a id=HBox>HBox</a> : 'HBox' '{' <a href="#HBFields">HBFields</a> '}' .
+<a id=HBFields>HBFields</a> : / <a href="#HBunterminated">HBunterminated</a> [ ';' ] .
+<a id=HBunterminated>HBunterminated</a> : <a href="#HField">HField</a> / <a href="#HBunterminated">HBunterminated</a> ';' <a href="#HField">HField</a> .
+
+<a id=VField>VField</a> : <a href="#GAField">GAField</a> / <a href="#Columns">Columns</a> .
+<a id=CField>CField</a> : <a href="#GAField">GAField</a> .
+<a id=HField>HField</a> : <a href="#GAField">GAField</a> .
+<a id=Columns>Columns</a> : <a href="#CField">CField</a> <a href="#CField">CField</a>+ .
+<a id=GAField>GAField</a> : [ <a href="#Attr">Attr</a> ] <a href="#GField">GField</a> .
+<a id=Attr>Attr</a> :
+	'Title:' /
+	'Header:' /
+	'Attr' <a href="#Integer">Integer</a> .
+<a id=GField>GField</a> :
+	<a href="#Table">Table</a> /
+	<a href="#HBox">HBox</a> /
+	<a href="#TableRef">TableRef</a> /
+	<a href="#Align">Align</a> /
+	<a href="#HWord">HWord</a> /
+	<a href="#Datum">Datum</a> /
+	<a href="#Rule">Rule</a> /
+	<a href="#Overlay">Overlay</a> /
+	<a href="#Glue">Glue</a> .
+
+<a id=AField>AField</a> :
+	<a href="#Table">Table</a> /
+	<a href="#HBox">HBox</a> /
+	<a href="#TableRef">TableRef</a> /
+	<a href="#HWord">HWord</a> /
+	<a href="#Datum">Datum</a> /
+	<a href="#Overlay">Overlay</a> /
+	<a href="#Rule">Rule</a> .
+
+<a id=TableRef>TableRef</a> : '[' <a href="#BareWord">BareWord</a> ']' .
+
+<a id=Align>Align</a> : <a href="#LeftAlign">LeftAlign</a> <a href="#HAField">HAField</a> <a href="#RightAlign">RightAlign</a> .
+<a id=HAField>HAField</a> : <a href="#AField">AField</a> .
+<a id=LeftAlign>LeftAlign</a> : <a href="#LeftAlignChar">LeftAlignChar</a>+ .
+<a id=RightAlign>RightAlign</a> : <a href="#RightAlignChar">RightAlignChar</a>* .
+<a id=LeftAlignChar>LeftAlignChar</a> : '&gt;' .
+<a id=RightAlignChar>RightAlignChar</a> : '&lt;' .
+
+<a id=HWord>HWord</a> : <a href="#Word">Word</a> .
+<a id=Datum>Datum</a> : '(' <a href="#Word">Word</a> <a href="#DatumDimensions">DatumDimensions</a> ')' .
+<a id=DatumDimensions>DatumDimensions</a> :
+	/
+	',' <a href="#Dimension">Dimension</a> /
+	',' <a href="#Dimension">Dimension</a> ',' <a href="#Dimension">Dimension</a>  .
+<a id=Word>Word</a> :
+	<a href="#BareWord">BareWord</a> /
+	<a href="#CString">CString</a> .
+
+<a id=Glue>Glue</a> : <a href="#HGlue">HGlue</a> / <a href="#VGlue">VGlue</a> .
+<a id=HGlue>HGlue</a> : 'HGlue' <a href="#Dimension">Dimension</a> .
+<a id=VGlue>VGlue</a> : 'VGlue' <a href="#Dimension">Dimension</a> .
+<a id=Dimension>Dimension</a> : <a href="#Space">Space</a> [ <a href="#GlueSpec">GlueSpec</a> ] .
+<a id=Space>Space</a> : <a href="#Integer">Integer</a> .
+<a id=GlueSpec>GlueSpec</a> : '+' <a href="#Integer">Integer</a> .
+
+<a id=Rule>Rule</a> : <a href="#RuleString">RuleString</a> .
+</pre>
+
+<hr>
+<h3><a id="Syntax">Syntax</a></h3>
+
+The following are the low-level definitions for the syntactical
+elements of the table grammar:
+
+<DL>
+<DT><a id=BareWord>BareWord</a>
+<DD>any word matching the regular expression
+[A-Za-z_%:][A-Za-z0-9_%:]* and not matching any of the reserved
+<a href="#keywords">keywords</a>.
+<DT><a id=CString>CString</a>
+<DD>A C-style string constant using double-quotes (""). May include
+spaces.
+<DT><a id=Integer>Integer</a>
+<DD>A C-style integer, including the octal (0377) and hex (0xFF)
+prefixes.
+<DT><a id=RuleString>RuleString</a>
+<DD>String matching the regular expression \+?(([-=])|(\|\|?))\+?
+See the section on <a href="#Rules">Rules</a> for a more
+illuminating description.
+<DT><a id=Comments>Comments</a>
+<DD>May be either C-style ( /* comment */ ) or awk/sh-style
+(beginning with a '#' and continuing until the end of the current
+line ).
+</DL>
+
+<hr>
+<h3><a id="keywords">Keywords</a></h3>
+
+The following words are reserved. They must be quoted if you want
+their text to appear on your screen:<P>
+
+<ul>
+<li>Attr
+<li>HBox
+<li>HGlue
+<li>Header:
+<li>Table
+<li>Title:
+<li>VGlue
+</ul>
+
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr>
+  <td>last updated: Thu Jan 2 10:56:36 2003</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td>
+</tr>
+<tr>
+<td colspan="2" style="font-size: smaller">
+Copyright 2004 by the President and Fellows of Harvard College
+</td>
+</tr>
+</table>
+</body>
+</html>

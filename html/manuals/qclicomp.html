@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>qclicomp Manual</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="Harvard University Anderson Group Website">
+<meta name="keywords" content="ARP huarp data acquisition qnx atmosphere chemistry Anderson Harvard">
+<link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h1>qclicomp Manual</h1>
+
+<p><b>qclicomp</b> is a waveform compiler. It generates machine instructions to be downloaded to the Quantum Cascade Laser Current Driver (QCLI).</p>
+<h2>Invocation</h2>
+<pre>
+qclicomp [options] inputfile
+    --help, -h  : Print usage message
+    -o filename : Write compiled code to filename
+    -c filename : Write .cmd source to filename
+    -m filename : Write .m source to filename
+    -d filename : Write display .tmc to filename
+    -v filename : Write verbose summary to filename
+</pre>
+
+<h2>Syntax</h2>
+
+<p>The following grammar is specified in the syntax of the
+<a href="EBNF.html">Extended Backus Naur Form</a> or EBNF.
+This shows you what you can legally specify in the source file.
+Discussion of what these things actually do will follow.</p>
+
+<pre>
+<a id="SourceFile">SourceFile</a> : [ <a href="#QCLIConfig">QCLIConfig</a> ] [ <a href="#Digitizer">Digitizer</a> ] <a href="#Wave">Wave</a>+ .
+<a id="QCLIConfig">QCLIConfig</a> : QCLIConfig <a href="#QCLIConfigType">QCLIConfigType</a> ';' .
+<a id="QCLIConfigType">QCLIConfigType</a> : Standard / FastRampx10 .
+<a id="Digitizer">Digitizer</a> : Digitizer <a href="#DigitizerType">DigitizerType</a> ';' .
+<a id="DigitizerType">DigitizerType</a> : CPCI14 / CS210 .
+ 
+<a id="Wave">Wave</a> : <a href="#ICOSWave">ICOSWave</a> / <a href="#RingWave">RingWave</a> .
+<a id="ICOSWave">ICOSWave</a> : ICOS Waveform <a href="#Ident">Ident</a> '{' <a href="#ICOSCmds">ICOSCmds</a> '}' .
+<a id="ICOSCmds">ICOSCmds</a> : ( <a href="#ICOSCmd">ICOSCmd</a> ';' )+ .
+<a id="ICOSCmd">ICOSCmd</a> : <a href="#TzDef">TzDef</a> / <a href="#IzDef">IzDef</a> / <a href="#NcoaddDef">NcoaddDef</a> / <a href="#ICOSNsampleDef">ICOSNsampleDef</a> / <a href="#ICOSRateDef">ICOSRateDef</a> / <a href="#dIdt">dIdt</a> / <a href="#ICOSRamp">ICOSRamp</a> .
+<a id="TzDef">TzDef</a> : Tz '=' <a href="#TzSpec">TzSpec</a> .
+<a id="TzSpec">TzSpec</a> : <a href="#Time">Time</a> / <a href="#SampleSpec">SampleSpec</a> / <a href="#Percent">Percent</a> .
+<a id="SampleSpec">SampleSpec</a> : <a href="#Integer">Integer</a> Raw Samples / <a href="#Integer">Integer</a> Samples .
+<a id="Percent">Percent</a> : <a href="#FloatVal">FloatVal</a> '%' .
+<a id="IzDef">IzDef</a> : Iz '=' <a href="#Current">Current</a> .
+<a id="NcoaddDef">NcoaddDef</a> : Ncoadd '=' <a href="#Integer">Integer</a> .
+<a id="ICOSNsampleDef">ICOSNsampleDef</a> : <a href="#NsampleDef">NsampleDef</a> .
+<a id="ICOSRateDef">ICOSRateDef</a> : <a href="#RateDef">RateDef</a> .
+<a id="NsampleDef">NsampleDef</a> : Nsample '=' <a href="#Integer">Integer</a> .
+<a id="RateDef">RateDef</a> : SampleRate '=' <a href="#Integer">Integer</a> <a href="#RateUnit">RateUnit</a> <a href="#Naverage">Naverage</a> .
+<a id="Naverage">Naverage</a> : / '/' <a href="#Integer">Integer</a> .
+<a id="dIdt">dIdt</a> : dI '/' dt '=' <a href="#Current">Current</a> '/' <a href="#TimeUnit">TimeUnit</a> .
+ 
+<a id="ICOSRamp">ICOSRamp</a> :
+  Ramp <a href="#Istart">Istart</a> <a href="#Istop">Istop</a> <a href="#PrepTime">PrepTime</a> /
+  Ramp <a href="#Istart">Istart</a> <a href="#Istop">Istop</a> /
+  Ramp <a href="#Istart">Istart</a> <a href="#PrepTime">PrepTime</a> /
+  Ramp <a href="#Istop">Istop</a> <a href="#PrepTime">PrepTime</a> .
+ 
+<a id="Istart">Istart</a> : from <a href="#Current">Current</a> .
+<a id="Istop">Istop</a> : to <a href="#Current">Current</a> .
+<a id="PrepTime">PrepTime</a> : ( in / for ) <a href="#Time">Time</a> .
+ 
+<a id="Current">Current</a> : <a href="#FloatVal">FloatVal</a> <a href="#CurrentUnit">CurrentUnit</a> .
+<a id="Time">Time</a> : <a href="#FloatVal">FloatVal</a> <a href="#TimeUnit">TimeUnit</a> .
+ 
+<a id="FloatVal">FloatVal</a> : <a href="#Integer">Integer</a> / <a href="#Float">Float</a> .
+<a id="CurrentUnit">CurrentUnit</a> : A / mA / uA .
+<a id="TimeUnit">TimeUnit</a> : sec / msec / usec .
+<a id="RateUnit">RateUnit</a> : Hz / kHz / MHz / '/' <a href="#TimeUnit">TimeUnit</a> .
+ 
+<a id="RingWave">RingWave</a> : Ringdown Waveform <a href="#Ident">Ident</a> '{' <a href="#RingCmds">RingCmds</a> '}' .
+<a id="RingCmds">RingCmds</a> : ( <a href="#RingCmd">RingCmd</a> ';' )+ .
+<a id="RingCmd">RingCmd</a> : <a href="#TonDef">TonDef</a> / <a href="#ToffDef">ToffDef</a> / <a href="#TpreDef">TpreDef</a> / <a href="#IzDef">IzDef</a> / <a href="#RingNsampleDef">RingNsampleDef</a> / <a href="#NcoaddDef">NcoaddDef</a> /
+  <a href="#RingRateDef">RingRateDef</a> / <a href="#RingData">RingData</a> .
+<a id="RingNsampleDef">RingNsampleDef</a> : <a href="#NsampleDef">NsampleDef</a> .
+<a id="RingRateDef">RingRateDef</a> : <a href="#RateDef">RateDef</a> .
+<a id="TonDef">TonDef</a> : Ton '=' <a href="#TonVal">TonVal</a> .
+<a id="TonVal">TonVal</a> : <a href="#Time">Time</a> / <a href="#FloatVal">FloatVal</a> '%' .
+<a id="ToffDef">ToffDef</a> : Toff '=' <a href="#Time">Time</a> .
+<a id="TpreDef">TpreDef</a> : Tpre '=' <a href="#TpreVal">TpreVal</a> .
+<a id="TpreVal">TpreVal</a> : <a href="#Time">Time</a> / <a href="#Integer">Integer</a> Samples .
+<a id="RingData">RingData</a> : I '=' ( <a href="#RingCurrent">RingCurrent</a> / <a href="#CurrentSteps">CurrentSteps</a> ) .
+<a id="RingCurrent">RingCurrent</a> : <a href="#Current">Current</a> .
+<a id="CurrentSteps">CurrentSteps</a> : <a href="#Current">Current</a> to <a href="#Current">Current</a> in <a href="#RingStep">RingStep</a> Steps .
+<a id="RingStep">RingStep</a> : <a href="#RingCount">RingCount</a> / <a href="#RingStepsize">RingStepsize</a> .
+<a id="RingCount">RingCount</a> : <a href="#Integer">Integer</a> .
+<a id="RingStepsize">RingStepsize</a> : <a href="#Current">Current</a> .
+</pre>
+
+<h3>Terminals</h3>
+<pre>
+<a id="Integer">Integer</a> : <a href="#C_INTEGER">C_INTEGER</a>
+<a id="Float">Float</a> : <a href="#C_FLOAT">C_FLOAT</a>
+<a id="Ident">Ident</a> : <a href="#C_IDENTIFIER">C_IDENTIFIER</a>
+  <a href="#C_COMMENT">C_COMMENT</a>
+  <a href="#AWK_COMMENT">AWK_COMMENT</a>
+  $"//" (auxEOL)
+<a id="C_INTEGER">C_INTEGER</a> :
+<a id="C_IDENTIFIER">C_IDENTIFIER</a> :
+<a id="AWK_COMMENT">AWK_COMMENT</a> :
+<a id="C_COMMENT">C_COMMENT</a> :
+<a id="C_FLOAT">C_FLOAT</a> :
+</pre>
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Tue Feb  6 14:44:50 2007</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2007 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

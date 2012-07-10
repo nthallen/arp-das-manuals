@@ -1,0 +1,356 @@
+<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>ARP Data Acquisition Architecture Overview</TITLE>
+</HEAD>
+<BODY>
+<H1>ARP Data Acquisition Architecture Overview</H1>
+<H2>Contents</H2>
+<UL>
+<LI><A HREF="#P1.0">1.0</A>: What is QNX?
+<UL>
+<LI><A HREF="#P1.1">1.1</A>: How Do We Use QNX?
+</UL>
+<LI><A HREF="#P2.0">2.0</A>: Data
+<UL>
+<LI><A HREF="#P2.1">2.1</A>: The Telemetry Frame
+<LI><A HREF="#P2.2">2.2</A>: The Data Ring
+</UL>
+<LI><A HREF="#P3.0">3.0</A>: Control
+<UL>
+<LI><A HREF="#P3.1">3.1</A>: SCDC & DCCC
+<LI><A HREF="#P3.2">3.2</A>: Soldrv
+<LI><A HREF="#P3.3">3.3</A>: Command Client/Server
+<LI><A HREF="#P3.4">3.4</A>: Algorithms
+</UL>
+<LI><A HREF="#P4.0">4.0</A>: Development
+<LI><A HREF="#P5.0">5.0</A>: Where to Find More Documentation
+</UL>
+
+<H2><A NAME="P1.0">1.0</A>: What is QNX?</H2>
+
+<P>QNX is a multitasking, multiuser, POSIX-compliant, realtime, 
+message-passing, microkernel, networking operating system. 
+Multitasking means it can perform more than one task at the same 
+time, allowing programmers to break up complex problems into 
+separate sub-problems without having to worry too much about how 
+the separate tasks interact. Multiuser means that QNX supports 
+individual user accounts and provides protections and privileges 
+to safeguard individuals' data.<P>
+
+POSIX-compliant means QNX adheres to a developing standard for 
+operating systems interfaces which defines a basic set of 
+commands which are to be available and some of the basics of how 
+file systems work. In short, QNX looks like UNIX(tm).<P>
+
+Realtime means QNX was designed from the beginning to provide the 
+response times required for realtime applications such as data 
+acquisition or process control. Standard UNIX by design cannot
+guarantee any specific response time, be it milliseconds or 
+seconds, making it inappropriate for demanding applications. In 
+data acquisition, data collected at the wrong time is very likely 
+the wrong data. In process control, inability to respond to 
+critical stimuli in a timely manner can be disasterous. This 
+isn't to say that you can't do data acquisition with standard 
+UNIX; many people do, relying on extremely high-speed computers 
+to deliver "virtual realtime" performance. We decided to go for 
+the real thing which can provide realtime performance on machines 
+as lowly as the 80286 at 12 MHz.<P>
+
+Message-passing means that communication between processes in QNX 
+is performed by passing messages back and forth. The primitive 
+commands required to send and receive messages are extremely 
+simple, yet give tremendous power to developers for coordinating 
+all the tasks required for their applications.<P>
+
+Microkernel is an approach to operating system design whereby the 
+"kernel," or the heart of the operating system, is limited to 
+supporting only those features which are absolutely required to 
+be in the kernel. This includes process scheduling and 
+interprocess communications (IPC). All ancillary operating system 
+functions are provided as separate tasks which communicate with 
+the microkernel and each other via messages. The Filesystem,
+disk drivers included, is a separate program as are the network 
+interfaces. The advantage is that the user can tailor the 
+components of the operating system to support exactly the 
+applications s/he needs, allowing the use of less memory in 
+simple monitoring systems, but supporting large systems as 
+necessary.<P>
+
+Networking means more than the fact that you can network QNX 
+machines together. Networking is virtually transparent due to the 
+message-passing primitives. Passing a message to a process on 
+another node is essentially the same as passing a message to a 
+process on the same node. Therefore, once you have broken down 
+your problem into separate processes, the processes can often be 
+distributed to separate computers to take better advantage of 
+available resources.<P>
+
+There is also a lot more to QNX. With POSIX-compliance comes the 
+ability to port many UNIX applications. Support for TCP/IP makes 
+remote support and communications possible. And the list goes 
+on...<P>
+
+<H3><A NAME="P1.1">1.1</A>: How Do We Use QNX?</H3>
+
+In the Atmospheric Research Project, we use QNX for support of 
+our stratospheric chemistry experiments. Our applications fall 
+loosely into three categories: Data, Control and Development.
+Data includes data acquisition, display and analysis. Control 
+programs control the experiment hardware in order 
+to make a particular measurement. Development utilities include 
+compilers and other applications which help to configure an 
+experiment.
+
+<H2><A NAME="P2.0">2.0</A>: Data</H2>
+
+Data more than anything defines an experiment. No experiment is 
+complete without a record of observations. To make a measurment 
+properly requires deciding not only what data to collect, but how 
+often to collect it and how to handle it once it is collected.
+Once the data is collected, it is also important to maintain a 
+record of what data is in the archive so the data may be useful 
+for years to come. The nature of experimentation is such that 
+what needs to be measured changes from time to time, so a Data
+Acquisition System should ideally bend to changes in the data 
+definitions.<P>
+
+We have expended a tremendous amount of energy here at the ARP 
+developing an architecture for Data Acquisition and Analysis 
+which addresses these needs. Perhaps my primary goal in this 
+development (after that of making the damn measurements) has been 
+to simplify the specification of an experiment, ideally to the 
+point where it can be read and understood by a normal human or 
+even a scientist. An overview of the specifications is given in
+<A HREF="#P4.0">Development</A>
+below, but first I'll outline some of the nuts and bolts involved 
+in handling data under QNX.<P>
+
+<H3><A NAME="P2.1">2.1</A>: The Telemetry Frame</H3>
+
+ARP Data Acquisition is based on a Telemetry Frame. Telemetry 
+implies the broadcast of a data stream for remote monitoring, and 
+to be sure we sometimes do that. More often than not, however, we 
+are running an instrument in the lab, monitoring the results 
+directly, or an experiment is flying "blind" on a plane with no
+downlink. Still the basic structure of our data archive is based 
+on the Telemetry Standards handed down from Los Alamos before 
+time began, so the term "Telemetry" has become shorthand here 
+for "Data Acquisition," or at least "ARP Standard Data 
+Acquisition."<P>
+
+The Telemetry Standards specify a rectangular frame, known as the 
+"major frame," in which the rows are known as "minor frames." 
+Each minor frame in turn includes synch words and possible frame
+counter data as well as the experiment data itself. The standard 
+does not specify a word size, and some systems will break up data 
+on arbitrary bit boundaries, but we have standardized on 8-bit 
+bytes as the smallest unit of data. The data is transmitted one
+minor frame at a time at a predetermined rate.<P>
+
+Where and how often a particular datum 
+appears in the major frame determines how often the datum is 
+reported. For example, suppose a particular major frame contains 16 
+minor frames and the entire major frame is transmitted once per 
+second. If you wanted to collect a particular pressure, Amb_P, 16 
+times a second, you would have to place that datum on every minor 
+frame. If on the other hand you only wanted to collect it at 4 
+Hz, you would place it on every fourth minor frame. The data are 
+collected immediately before each minor frame is transmitted, so 
+the data which appear less often are collected less often.
+Distributing the data like this throughout the frame helps to 
+even the load for collection and transmission, although it has
+the undesirable side effect of causing low-rate channels to be 
+collected at odd times.<P>
+	
+Previous incarnations of ARP Data Acquisition actually required 
+the experimenter (or more likely the programmers) to position each 
+datum in the telemetry frame. One of the biggest achievements of 
+the current development effort has been the elimination of this 
+chore. Given definitions for the required data, an appropriate 
+frame is generated automatically. This greatly reduces the 
+work required to modify an existing experiment.<P>
+
+<H3><A NAME="P2.2">2.2</A>: The Data Ring</H3>
+
+Once a frame has been defined, it can be accessed by a number of 
+different utilites. TM applications are divided into producers of 
+data and consumers of data. The producers are called "data 
+generators" and the consumers are their clients. The actual data 
+acquisition ("collection") is of course a data generator (DG), but 
+there are also a number of utilities which read data produced 
+remotely which are also DGs. The <TT>rdr</TT>
+reads data from standard data log files. <TT>serin</TT>
+reads data coming in on a serial line, as might be used during a 
+real telemetry linkup. Another DG currently under 
+development will be able to support data received over the 
+internet.<P>
+
+The data clients locate the DG and receive their data via 
+messages. High-priority processes are arranged in a ring: the DG 
+sends data to the first client in the ring who processes the data 
+and forwards it to the next and so on. Client applications 
+may include screen-display, data logging, telemetry output, 
+data-dependent algorithms, data extraction and data buffering.<P>
+
+Some clients may require considerable CPU or other resources to 
+process the data they receive. This makes them undesirable as 
+ring members, since their heavy processing might slow down the 
+data transfer on the ring and even cause the DG to die due to 
+data backup. These clients are best run not as ring clients but 
+as buffer clients. The data buffer supports a somewhat different 
+protocol for handing out data and is much more forgiving of 
+slower processes. Most if not all clients can be run either as 
+ring clients or buffer clients.<P>
+
+<H2><A NAME="P3.0">3.0</A>: Control</H2>
+
+Most experiments require some sort of control in order to 
+facilitate the data acquisition. In the first stages of 
+laboratory work, all of the valves and detectors may be 
+manipulated by hand by the scientist. This works very well and 
+may be the best approach for simple lab-based experiments. There 
+are several reasons why computer control may be required. In the 
+obvious case of remote or autonomous operation, computer control 
+is a necessity. In the laboratory, computer control can help to
+increase productivity and accuracy.<P>
+
+<H3><A NAME="P3.1">3.1</A>: SCDC & DCCC</H3>
+
+At a hardware level, we support digital commands and 
+digital-to-analog (D/A) outputs. Digital commands are generally 
+on/off commands to various devices such as heaters, lamps and
+solenoids. Digital commands are handled by <TT>scdc</TT>
+and	<TT>dccc</TT>,
+which talk directly to the digital command hardware.<P>
+
+<H3><A NAME="P3.2">3.2</A>: Soldrv</H3>
+
+Next above these programs are the cycling programs
+<TT>soldrv</TT> and its compiler, <TT>solfmt</TT>.
+Together, these two utilities provide a language for describing
+command cycles.
+These cycles can be used to define simple foreground/background 
+alternations or expanded to include complete calibration 
+sequences. In addition to supporting on/off commands, soldrv
+can also manipulate D/A setpoints and even arbitrarily complex 
+commands handled by the command server.
+As a rule, though, soldrv
+functions at a level below the command server, so each individual 
+command in a cycle is not recorded in the log file. (Verbosity 
+levels can be adjusted as necessary, but it is generally found 
+that repetetive commands in a command log tend to obscure the 
+important commands.)<P>
+
+<H3><A NAME="P3.3">3.3</A>: Command Client/Server</H3>
+
+The command client/server pair provide a top-level view of 
+instrument control. Through the compiler,
+<TT>cmdgen</TT>,
+English sentences (or at least strings made up of English words) 
+are associated with specific low-level commands to the instrument 
+or associated software. The client provides a keyboard/screen 
+interface including live prompts and automatic command 
+completion. The server translates the English commands into the 
+appropriate instrument commands and maintains a log of all 
+commands issued.<P>
+
+The separation of this command function into client and server 
+has two benefits. First, the client program does not need to run 
+on the data acquisition computer, but can run more appropriately 
+on the data display computer (when the two are distinct, that 
+is). This makes it easier to start up and shut down a display 
+station without undue interference on the data acquisition in 
+progress. Second, more than one client can run on more than one 
+node. Since the server is just reading messages, it doesn't care 
+if the messages come from several different clients.<P>
+
+<H3><A NAME="P3.4">3.4</A>: Algorithms</H3>
+
+<P>Perhaps the pinnacle of experiment control, algorithms are a 
+special combination of command client and data client. Algorithms 
+see the data as data clients and send commands as command 
+clients. The overriding architectural guideline is:</P>
+
+<BLOCKQUOTE>
+Under autonomous operation, every command decision should be
+based exclusively on information recorded in the data stream.
+</BLOCKQUOTE>
+
+The reason for this is that it guarantees that the reasons for a 
+command decision can be determined after-the-fact by re-running 
+the algorithm with logged data. This could be critical during field 
+efforts. If an error in coding an algorithm produced an incorrect 
+command sequence, you must be able to determine the cause to 
+assure that the same error won't arise again. If a decision is 
+based on the contents of some file or a value read directly from 
+the hardware, this cannot be reproduced reliably during debug.<P>
+
+That said, algorithms provide tremendous power for automating 
+experiment control. Decisions can be based on any data reported 
+in the data stream. Watchdogs can be defined to trigger an action 
+or a message in the event that a channel or channels strays 
+outside their proscribed limits. Separate "threads" can be 
+established so watchdog functions can operate independently of 
+the main algorithm. (i.e. the watchdog may try to correct an 
+over-temperature condition without interrupting the main 
+algorithm before mandating a complete shutdown).<P>
+
+Since the algorithms are command clients, all commands issued by 
+the algorithm are logged by the command server, giving an English 
+summary of the operation of the instrument.<P>
+
+<H2><A NAME="P4.0">4.0</A>: Development</H2>
+
+Many tools have been developed to ease the specification of data 
+acquisition and control.
+<TT>tmc</TT>,
+the TM Compiler is the most significant tool. It defines a 
+data-flow language, allowing the developer to specify operations 
+on collected data without concern as to when or how often the 
+data is collected. The TM Compiler specifies the location of each 
+datum in a TM frame and determines when each datum is to be 
+collected. tmc outputs C code, so it is easy for a developer to 
+insert C code into a tmc program. Hence, a tmc program can do 
+virtually anything a C program can do.<P>
+
+<TT>cmdgen</TT>
+is the command compiler. It processes a restricted context-free 
+grammar and produces C source code for both client and server 
+applications. As with tmc, it is easy to insert C code into 
+cmdgen programs, giving developers considerable power and 
+flexibility.<P>
+
+<TT>tmcalgo</TT>
+is the compiler for algorithms. It gains its power not only from 
+C, but from both tmc and cmdgen. The instrument commands are 
+specified in English, as specified in the cmdgen program, and the 
+output is tmc code, and hence may contain not only tmc 
+constructs, but also C code. The basic model is a state machine, 
+although I have taken some liberties in defining what a state is for 
+the convenience of the users.<P>
+
+Finally,
+<TT>appgen</TT>
+is a procedure for pulling everything together. It reads a simple 
+specification file and produces a not-so-simple Makefile to 
+control the compilation of all the pieces required to run the 
+instrument.<P>
+
+<H2><A NAME="P5.0">5.0</A>: Where to Find More Documentation</H2>
+
+<p>The best source for documentation is the
+<A 	HREF="../index.html">ARP Data Acquisition Web 
+Page</A>. From there, you can access these guides as well as 
+manuals for many of the tools and release notes. As with the 
+system as a whole, documentation is a work in progress. If 
+you need to know about something and cannot locate 
+documentation, feel free to ask me; you may prod me into 
+writing the documentation or you may get a personal tutorial.
+If you don't ask, I won't know that you need help.</p>
+
+<p>Copyright &copy; 1998 by the President and Fellows of Harvard
+College<br>
+<A HREF="mailto:allen@huarp.harvard.edu">Norton T. Allen</A></p>
+</BODY>
+</HTML>
