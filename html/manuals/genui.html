@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>genui: Engineering Data Interface Generator</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+<style type="text/css">
+  dl { margin-left: 50px }
+</style>
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h1>genui: Engineering Data Interface Generator</h1>
+<h2>Contents</h2>
+<ul>
+<li><a href="#P0">Introduction</a></li>
+<li><a href="#P1">Invocation</a></li>
+<li><a href="#P2">Configuraiton File</a></li>
+<li><a href="#P3">Matlab Setup</a></li>
+<li><a href="#P4">Data Setup</a></li>
+<li><a href="#P5">Data Download</a></li>
+<li><a href="#P6">Running the GUI</a></li>
+<li><a href="#P7">Customizations</a></li>
+</ul>
+
+<h2><a id="P0">Introduction</a></h2>
+
+<p><code>genui</code> is a code generator for processing engineering data within
+the Anderson Group Data Acquisition System architecture. Based on a simple
+configuration file, <code>genui</code> generates source code for data extraction and
+a series of Matlab <code>.m</code> files for viewing the resulting data. Multiple
+data channels can be displayed on each graph, and multiple graphs can be
+stacked together in groups, making it easy to correlate events across a group
+of related channels.</p>
+
+<h2><a id="P1">Invocation</a></h2>
+<blockquote><code>genui [-d matdir] [-c] inputfile</code></blockquote>
+<dl><dt>-d matdir</dt>
+  <dd>Specify directory where .m files will be written</dd>
+  <dt>-c</dt>
+  <dd>Generate .cdf file (for .csv output) instead of .edf (for .sps)</dd>
+  <dt>inputfile</dt>
+  <dd>The name of the configuration file.</dd>
+</dl>
+
+<p>When you run genui, it will generate a .cdf or .edf file from which
+an extraction program can be compiled. The name of the output file is
+the concatenation of the MNEMONIC (specified in the configuration file),
+'eng' and the file type (.cdf or .edf).</p>
+
+<p>In order to build the extraction program, you will need to add a
+definition to the .spec file something like this:</p>
+
+<blockquote><code>
+ccengext : cceng.cdf
+</code></blockquote>
+
+<p>You may need to modify this rule to add additional files, and you will
+also have to add an explicit rule for generating cceng.cdf.</p>
+
+<h2><a id="P2">Configuration File</a></h2>
+
+<p>The configuration file, frequently called <code>genui.txt</code>, has a
+very simple format, consisting of only two line types:</p>
+<ul><li>Keyword Definitions</li>
+  <li>Data Definitions</li>
+</ul>
+
+<p>Keyword definition lines consist of a keyword followed by a space and
+the keyword value. The keywords are:</p>
+<dl><dt>HEADER</dt><dd>Value: Text to be displayed at the top of the Matlab GUI</dd>
+<dt>MNEMONIC</dt><dd>Value: A short string uniquely associated with this
+  instrument, used to create unique function and file names.</dd>
+<dt>HOMEDIR</dt><dd>Value: The name of a function that will be used to locate
+  where the data files are stored. The function itself will be generated the
+  first time the generated GUI is run, but the name must be chosen to be
+  unique to this experiment.</dd>
+<dt>ROWS</dt><dd>Value: An integer specifying how many buttons should be listed
+in each column of the GUI.</dd>
+</dl>
+
+<p>Data definition lines consist of the following elements separated by whitespace:</p>
+<dl>
+<dt>Data Rate</dt><dd>The possibly fractional rate of the datum in Hz. Must be
+  specified as an integer or a fraction.</dd>
+<dt>Data Mnemonic</dt>
+  <dd>The TM variable name. Bit-mapped digital status values can use the format
+    <code><i>mnemonic</i>:<i>datum</i>:<i>bit_number</i></code>, where
+    <i>datum</i> is the aggregate TM variable and <i>bit_number</i> is
+    an integer, with zero representing the least significant bit. Digital
+    status values cannot be combined on the same graph with analog channels,
+    although they can be combined effectively within a group.
+  </dd>
+<dt>Group</dt><dd>The name of the group of related graphs. This usually
+  will refer to a subsystem.</dd>
+<dt>Graph</dt><dd>The name of the graph. Multiple data definition lines
+  can refer to the same group and graph. Graphs in different groups
+  can have the same name.</dd>
+<dt>Format</dt><dd>Optional: a printf-style format for converting the value from
+  a double type to text. The default is the same as the screen display format,
+  but that needs to be overridden if the screen display is non-numeric.</dd>
+<dt>Function Name</dt><dd>Optional: If you want to add a fully custom graph
+  to the GUI, you can provide a string beginning with a colon (<i>e.g.</i> ':foo').
+  This is combined with the customization prefix ('cust_' followed by the MNEMONIC string)
+  to create the name of the custom function.</dd>
+<dt>Legend Position</dt>
+  <dd>An optional four-element Matlab vector [x y h v] specifying the relative position and
+      alignment of the graph's legend as specified by the nlegend() function.
+      x and y specify the reference position, where
+      [0 0] is the lower left corner and [1 1] is the upper right. h and v specify
+      the horizontal and vertical alignment, respectively, with -1 specifying
+      left or bottom alignment, 1 specifying top or right alignment and 0
+      representing center alignment. Non-integer values are also supported.</dd>
+<dt>Legend</dt><dd>Optional string to be used instead of the mnemonic in the
+  graph's legend. Useful for eliminating a common prefix from a group of channels.</dd>
+</dl>
+
+<h2><a id="P3">Matlab Setup</a></h2>
+    <p>There are three Matlab libraries you will need to install to run the
+    engineering plot gui:</p>
+
+    <ul>
+      <li>nort: A set of general utility functions</li>
+      <li>nort/ne: Functions for engineering plots</li>
+      <li>The generated experiment-specific plot files.</li>
+    </ul>
+
+    <p>Installation involves checking out the libraries from the appropriate
+      source code repository and adding them to your Matlab path. The first
+      thing you probably want to do is figure out where you want to locate
+      these libraries. You probably want to create a common base directory
+      for Matlab libraries. This could be a Matlab directory in "My Documents" or
+      C:\Matlab. All three of these libraries could then be subdirectories
+      of this root directory. On the other hand, you might have all of
+      the experiment's source code checked out somewhere, so it might make sense
+      to leave the experiment-specific engineering plot library where it is.</p>
+    
+    <p>To check out Nort's matlab libraries, bring up a shell, cd into your
+      common base directory and:</p>
+      <blockquote><code>
+      cvs -d :ext:forge.abcd.harvard.edu:/cvsroot/arp-das co -d nort Matlab/nort</code>
+      </blockquote>
+     <p>or</p>
+     <blockquote><code>
+      cvs -d :pserver:anonymous@forge.abcd.harvard.edu:/cvsroot/arp-das login<br>
+      cvs -d :pserver:anonymous@forge.abcd.harvard.edu:/cvsroot/arp-das co -d nort Matlab/nort
+      </code></blockquote>
+      
+   <p>There are several directories included in this download, but only two that
+      should be added to your Matlab path: nort and nort/ne. The others contain
+      examples of installation-specific configuration hooks to make other parts
+      of the libraries work.</p>
+    
+   <p>To download the experiment-specific engineering plots, you will need to
+      refer to the source code repository for your instrument. Look for a README
+      file in a directory named 'eng'.</p>
+      
+    <p>Add the libraries nort, nort/ne and the experiment-specific directory to your
+    Matlab path.</p>
+    
+<h2><a id="P4">Data Setup</a></h2>
+
+<p>Now you need to decide on a root directory for flight/run data.
+   This directory will contain a subdirectory for each run using the same
+   run numbering as under QNX. Each run directory will contain .mat files
+   with all the engineering data. If you append an 'F' to the name of flight
+   runs, then the plots will note that this is flight data.</p>
+
+<p>The first time your run the instrument's engineering GUI, you will
+be prompted to specify your data root directory. The directory name will
+be stored using the file name specified with the HOMEDIR keyword in the
+genui configuration file.</p>
+
+<h2><a id="P5">Data Download</a></h2>
+
+<p>Each time you make a data run, you will need to perform the following steps
+in order to view the engineering plots:</p>
+
+<ul>
+<li>Run the data extraction</li>
+<li>Transfer the data from QNX to your local machine</li>
+<li>Convert the extracted data to .mat files</li>
+<li>Run your experiment-specific GUI</li>
+</ul>
+
+<p>The exact order of these operations and the specific procedures you
+need to follow are probably experiment-specific.      
+
+<h2><a id="P6">Running the GUI</a></h2>
+<p>The name of the GUI routine is 'ui_<MNEMONIC>', where <MNEMONIC>
+is the value specified in the configuration file, <i>e.g.</i> 'ui_cc'.
+Running 'ui_cc' in Matlab will bring up a GUI interface listing
+all the graphs and groups and all of the data runs found in the
+data directory. Select the run from the list on the right. The most
+recent run is the default. Each button in the main area generates
+a graph. The larger buttons represent groups that put multiple graphs
+on one figure.</p>
+
+<p>I have added some menu items to the graph displays:</p>
+<dl><dt>Zoom:</dt>
+  <dd> Added before Matlab added their zoom buttons, but still sometimes
+    a little easier to use. Allows you to select horizontal or
+    vertical zoom in one step.</dd>
+  <dt>MatchX:</dt>
+  <dd>After zooming in on an X-axis region in one graph, MatchX will
+     zoom all the other graphs in the figure to the same X range.</dd>
+  <dt>Edit:</dt>
+  <dd>Allows you to further <a href="#PX">customize</a> the graphs.</dd>
+  <dt>Expand:</dt>
+  <dd>Allows you to open any of the graphs in a group in it's own figure.</dd>
+</dl>
+
+<h2><a id="P7">Customizations</a></h2>
+<p>You will often want to further customize individual graphs. The use of
+lines may be inappropriate on particularly noisy data, for example, or
+the default limits may reflect a transient startup condition, not the
+region of interest. You can create a customization function for any
+graph by selecting the graph in the 'Edit' menu. The customization
+function will contain a summary of the graph's definition and examples
+of how you might want to modify it. The argument to this function
+is a vector of graphic object handles.</p>
+
+<p>Such modifications can be checked back in to the instrument's source
+code repository to make them available
+to other team members. Subsequent changes to genui.txt should not
+overwrite these, although it is possible that major modifications to
+the group and plot structure might result in name changes that would
+defeat your modifications.</p>
+
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Tue Jul 17 14:15 2012 EDT</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2012 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>
