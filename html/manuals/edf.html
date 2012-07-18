@@ -1,12 +1,26 @@
-<!DOCTYPE HTML PUBLIC "-//W30//DTD W# HTML 2.0//EN">
+<!DOCTYPE html>
 <HTML>
 <HEAD>
 <TITLE>EDF Syntax</TITLE>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="Harvard University Anderson Group Website">
+<meta name="keywords" content="ARP huarp data acquisition qnx atmosphere chemistry Anderson Harvard">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
 </HEAD>
 <BODY>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
 <H1>EDF Syntax</H1>
 
-Files with a <CODE>.edf</CODE> extension are used to define 
+<p>Files with a <CODE>.edf</CODE> extension are used to define 
 the extraction of experimental data from the raw data files 
 written by the <CODE>lgr</CODE> program to SNAFU spreadsheet 
 format, which is more suitable for data analysis. The 
@@ -17,63 +31,67 @@ The SNAFU spreadsheet format is not the only possible format for
 data analysis, and creating other methods of extraction is not 
 difficult. The <CODE>.tmc</CODE> output from <CODE>edf2ext</CODE> 
 can be used as a starting point for the development of 
-alternative extractions.<P>
+alternative extractions.</P>
 
-An <CODE>.edf</CODE> file defines extraction to one or more 
+<p>An <CODE>.edf</CODE> file defines extraction to one or more 
 spreadsheets. Each spreadsheet must be identified by name and the 
 number of columns. An optional keyword, <CODE>separate</CODE> can 
-be added, which is explained later.
-<PRE>
+be added, which is explained later.</p>
+
+<blockquote><code>
         spreadsheet &lt;name&gt; &lt;n_columns&gt; [ separate ]
-</PRE>
-After the spreadsheet is identified, the columns to which data is 
-to be extracted are defined:
-<PRE>
+</code></blockquote>
+
+<p>After the spreadsheet is identified, the columns to which data is 
+to be extracted are defined:</p>
+
+<blockquote><code>
         &lt;column&gt; &lt;mnemonic&gt; &lt;format&gt; [ &lt;conversion&gt; ]
-</PRE>
-<CODE>&lt;column&gt;</CODE> is the column number, which must be 
+</code></blockquote>
+
+<p><CODE>&lt;column&gt;</CODE> is the column number, which must be 
 greater than zero and less than the number of columns in the 
-spreadsheet. Column zero is reserved for Time.<P>
+spreadsheet. Column zero is reserved for Time.</P>
 
-<CODE>&lt;mnemonic&gt;</CODE> is the datum mnemonic which must 
-correspond to a TMC definition.<P>
+<p><CODE>&lt;mnemonic&gt;</CODE> is the datum mnemonic which must 
+correspond to a TMC definition.</P>
 
-<CODE>&lt;format&gt;</CODE> is a C-style output format which 
+<p><CODE>&lt;format&gt;</CODE> is a C-style output format which 
 SNAFU can use to display the data. (SNAFU supports some extensions 
-to the C formats. Refer to the SNAFU manual for details.)<P>
+to the C formats. Refer to the SNAFU manual for details.)</P>
 
-<CODE>&lt;conversion;&gt;</CODE> is an optional parameter which 
+<p><CODE>&lt;conversion&gt;</CODE> is an optional parameter which 
 allows you to override the conversion defined for the mnemonic's 
 TMC type. This is useful, for example, if you would like to 
 extract the raw, unconverted data or use a more sophisticated 
-conversion than the one used for realtime display.<P>
+conversion than the one used for realtime display.</P>
 
-At any point in the file, the keyword <CODE>init_only</CODE> may 
+<p>At any point in the file, the keyword <CODE>init_only</CODE> may 
 be specified to suppress the generation of the code which places 
 each data point into the spreadsheet. This is useful when you 
 wish to take more direct control of how data is written to the 
 spreadsheet or when multiple numbered spreadsheets are required 
-from a single specification (e.g. one for each scan).<P>
+from a single specification (e.g. one for each scan).</P>
 
-Another method for controlling what data goes into a spreadsheet 
+<p>Another method for controlling what data goes into a spreadsheet 
 is the <CODE>condition</CODE> keyword. This may be placed on the 
 line immediately following <CODE>spreadsheet</CODE> and includes 
 a conditional statement which defines which values should be 
-included. For example:
+included. For example:</p>
 
-<PRE>
-        spreadsheet foo 5
-		condition if ( status == 7 )
-</PRE>
+<blockquote><code>
+  spreadsheet foo 5<br>
+  &nbsp;&nbsp;condition if ( status == 7 )
+</code></blockquote>
 
-or
+<p>or</p>
 
-<PRE>
-        spreadsheet foo 5
-		condition depending on ( SCANNING )
-</PRE>
+<blockquote><code>
+  spreadsheet foo 5<br>
+  &nbsp;&nbsp;condition depending on ( SCANNING )
+</code></blockquote>
 
-The optional <CODE>separate</CODE> keyword indicates that each 
+<p>The optional <CODE>separate</CODE> keyword indicates that each 
 column should be inserted when it is received independent of the 
 rates of the other data in the spreadsheet. By default, data is 
 inserted into the spreadsheet at the rate of the slowest channel 
@@ -81,11 +99,15 @@ in the spreadsheet. When <CODE>separate</CODE> is in effect,
 slower-rate channels will have blank cells when the higher-rate 
 data is inserted. This is rarely useful. More commonly, data is 
 segregated by rate and then combined as appropriate using SNAFU's 
-merge capabilities.<P>
-<PRE>
-<HR>
-Return to <A HREF="index.html">Manuals Guide</A>
-(c)1995 <A HREF="mailto:allen@huarp.harvard.edu">Norton T. Allen</A>
-</PRE>
-</BODY>
-</HTML>
+merge capabilities.</P>
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Wed Jul 18 15:10 2012</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 1995 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>

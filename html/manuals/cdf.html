@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+<TITLE>CDF Syntax</TITLE>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="Harvard University Anderson Group Website">
+<meta name="keywords" content="ARP huarp data acquisition qnx atmosphere chemistry Anderson Harvard">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</HEAD>
+<BODY>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<H1>CDF Syntax</H1>
+
+<p>Files with a <CODE>.cdf</CODE> extension are used to define 
+the extraction of experimental data from the raw data files 
+written by the <CODE>lgr</CODE> program to a comma separated
+value text file
+format, which is more suitable for data analysis. The 
+<CODE>edf2ext</CODE> compiler converts these definitions into TMC 
+code, which is in turn compiled to C++ and linked into an 
+executable which performs the actual extraction.
+</P>
+
+<p>A <CODE>.cdf</CODE> file defines extraction to one or more 
+output files. Each output file must be identified by name and the 
+number of columns. An optional keyword, <CODE>separate</CODE> can 
+be added, which is explained later.</p>
+
+<blockquote><code>
+  csv &lt;name&gt; &lt;n_columns&gt; [ separate ]
+</code></blockquote>
+
+<p>After the spreadsheet is identified, the columns to which data is 
+to be extracted are defined:</p>
+
+<blockquote><code>
+  &lt;column&gt; &lt;mnemonic&gt; [ &lt;format&gt; ] [ &lt;conversion&gt; ]
+</code></blockquote>
+
+<p><CODE>&lt;column&gt;</CODE> is the column number, which must be 
+greater than or equal to zero and less than the number of columns in the 
+spreadsheet. Column zero always refers to time, but you can use a column
+zero definition to specify a different name or output format for the
+time variable.</P>
+
+<p><CODE>&lt;mnemonic&gt;</CODE> is the datum mnemonic which must 
+correspond to a TMC definition (except in the case of column zero).</P>
+
+<p><CODE>&lt;format&gt;</CODE> is an optional C-style output format to
+determine how the data should be converted to text. If no format
+is specified, the extraction uses the same text conversion function
+used for realtime data display. When a format is specified, the
+value is first converted to a double using whatever TMC conversion
+was specified, and then the value is converted to text using printf-style
+formatting. Therefore the format must be appropriate for a variable
+of type double.</P>
+
+<p>In order to avoid generating corrupt csv files, all output text
+is passed through a syntax checker. If the text string is determined
+to be non-numeric, it is replaced with a string designated for non-numbers.
+The default non-number string is '' (empty string), which Matlab
+recognizes as a non-number on input. Other programs may look for
+a different string (<i>e.g.</i> NaN) or a specific large value
+(<i>e.g.</i> 99999). These can be specified with the nan-text
+keyword.</p>
+
+<p>Note that we often use TMC conversions that produce non-numeric
+output to enhance usability of the data displays. This is a case
+where specifying an output format is necessary, or all the values
+will be reported as non-numbers. During the extraction, a warning
+is issued the first time any column produces a non-numeric value,
+so reviewing the extract.log file is a good idea at least the first
+few times you run the extraction.</p>
+
+<p><CODE>&lt;conversion&gt;</CODE> is an optional parameter which 
+allows you to override the conversion defined for the mnemonic's 
+TMC type. This is useful, for example, if you would like to 
+extract the raw, unconverted data or use a more sophisticated 
+conversion than the one used for realtime display. The conversion
+value is treated as a function name, but the substitution is
+very crude. For example, to extract unconverted integer values,
+you could specify:</P>
+
+<blockquote><code>
+  &nbsp;&nbsp;7 Air_T %.0lf 1.0*
+</code></blockquote>
+
+<p>Here the conversion 'function' is '1.0*', which would translate
+into something like:</p>
+
+<blockquote><code>
+  printf("%.0lf", 1.0*(Air_T));
+</code></blockquote>
+
+<h2>Special Features</h2>
+
+<p><code>nan-text</code> is used to specify the string used to
+replace non-numeric text in the output file. The command is placed
+on a line by itself with the unquoted string following it. For
+example:</p>
+
+<blockquote><code>
+  nan-text NaN
+</code></blockquote>
+
+<p>At any point in the file, the keyword <CODE>init_only</CODE> may 
+be specified to suppress the generation of the code which places 
+each data point into the output file. This is useful when you 
+wish to take more direct control of how data is written to the 
+file or when multiple numbered files are required 
+from a single specification (e.g. one for each scan).</P>
+
+<p>Another method for controlling what data goes into a file
+is the <CODE>condition</CODE> keyword. This may be placed on the 
+line immediately following the <CODE>csv</CODE> line and includes 
+a conditional statement which defines which values should be 
+included. For example:</p>
+
+<blockquote><code>
+  csv foo 5<br>
+  &nbsp;&nbsp;condition if ( status == 7 )
+</code></blockquote>
+
+<p>or</p>
+
+<blockquote><code>
+  csv foo 5<br>
+  &nbsp;&nbsp;condition depending on ( SCANNING )
+</code></blockquote>
+
+<p>The optional <CODE>separate</CODE> keyword indicates that each 
+column should be inserted when it is received independent of the 
+rates of the other data in the file. By default, data is 
+inserted into the file at the rate of the slowest channel.
+When <CODE>separate</CODE> is in effect, 
+slower-rate channels will have blank cells when the higher-rate 
+data is inserted. This is rarely useful. More commonly, data is 
+segregated by rate and then combined as appropriate during
+subsequent analysis.</P>
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Wed Jul 18 15:10 2012</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 1995 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>
