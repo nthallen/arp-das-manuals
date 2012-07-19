@@ -1,40 +1,75 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<title>Graphics Test</title>
- <script src="raphael.js"></script>
- <script src="jquery-1.7.1.min.js"></script>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+ <title>Data Acquisition Architecture</title>
+ <script src="../raphael.js"></script>
+ <script src="../jquery-1.7.1.min.js"></script>
+ <link rel=stylesheet type="text/css" href="../das.css" title="das">
  <style type="text/css">
-    body { background-color: #CCCCCC; }
+    body { background-color: #FFFFFF; }
     .MB, .MC, .MD, .ME { display: none }
-    p { width: 480px }
+    #Arch {
+      margin: 5px 15px 15px 0px;
+      float: left;
+      background-color: #CCCCCC;
+      padding: 0px 15px 0px 15px;
+      border-radius: 10px;
+    }
+    #Arch h1 { margin: 2px 0px 2px 0px; }
+    #MainText {
+      float: left;
+      max-width: 400px;
+    }
     #canvas {
       float: left;
       margin-right: 15px;
+      margin-bottom: 15px;
     }
     .Note p { width: 250px }
-    .Note { float: left; display: none }
+    .Note { display: none }
     #Buttons {
-      clear: left;
-      width: 480px;
+      float: left;
+      width: 280px;
       text-align: center;
+      padding: 5px;
+      margin-bottom: 5px;
+      background-color: #EEEEEE;
+      border-radius: 10px;
     }
     #Buttons .ModeBtn {
       background-color: white;
+      margin: 5px;
     }
     #Buttons .selected {
-      background-color: #EEEEEE;
+      background-color: #CCCCCC;
       border: grey inset;
+    }
+    #Modes, #Notes {
+      background-color: #EEEEEE;
+      border-radius: 10px;
+    }
+    #Modes {
+      clear: left;
+      float: left;
+      width: 480px;
+      margin: 0px 15px 15px 0px;
+      padding: 2px;
+    }
+    #Notes {
+      width: 280px;
+      height: 410px;
+      float: left;
+      padding: 5px;
     }
     .red { color: red }
     .blue { color: blue }
   </style>
   <script>
       $(document).ready(function(){
-        var paper = Raphael("canvas", 480, 380);
+        var paper = Raphael("canvas", 480, 420);
         paper.clear();
-        paper.rect(0, 0, 480, 380, 10).attr({fill: "#fff", stroke: "none"});
+        paper.rect(0, 0, 480, 420, 10).attr({fill: "#eee", stroke: "none"});
         var StA = paper.set();
         var Sta = paper.set();
         var StB = paper.set();
@@ -45,6 +80,8 @@
         var Std = paper.set();
         var StE = paper.set();
         var Ste = paper.set();
+        var stock = "#6666FF";
+        var custom = "#8FED9E";
         
         function rollover(label) {
           // alert("rollover " + label);
@@ -58,8 +95,9 @@
           (isd?StD:Std).push(obj);
           (ise?StE:Ste).push(obj);
         }
-        function newrect( x, y, dx, dy, name, isa, isb, isc, isd, ise ) {
-          var r = paper.rect( x, y, dx, dy, 2).attr({opacity: 0, fill: "#6666FF", stroke : "#000"});
+        function newrect( x, y, dx, dy, name, clr, isa, isb, isc, isd, ise ) {
+          // old default color: "#6666FF"
+          var r = paper.rect( x, y, dx, dy, 2).attr({opacity: 0, fill: clr, stroke : "#000"});
           var l = paper.text( x+dx/2, y+dy/2, name ).attr( { "font-weight": "bold", "font-size": 12, opacity: 0 } );
           classify( r, isa, isb, isc, isd, ise );
           classify( l, isa, isb, isc, isd, ise );
@@ -79,24 +117,24 @@
           $(".Note").hide();
           switch(ismode) {
             case 'A':
-              Sta.animate({ opacity: 0 }, delay, "linear");
-              StA.animate({ opacity: 1 }, delay, "linear");
+              Sta.animate({ opacity: 0 }, delay, "linear", function(){ this.hide(); });
+              StA.show().animate({ opacity: 1 }, delay, "linear");;
               break;
             case 'B':
-              Stb.animate({ opacity: 0 }, delay, "linear");
-              StB.animate({ opacity: 1 }, delay, "linear");
+              Stb.animate({ opacity: 0 }, delay, "linear", function(){ this.hide(); });
+              StB.show().animate({ opacity: 1 }, delay, "linear");;
               break;
             case 'C':
-              Stc.animate({ opacity: 0 }, delay, "linear");
-              StC.animate({ opacity: 1 }, delay, "linear");
+              Stc.animate({ opacity: 0 }, delay, "linear", function(){ this.hide(); });
+              StC.show().animate({ opacity: 1 }, delay, "linear");
               break;
             case 'D':
-              Std.animate({ opacity: 0 }, delay, "linear");
-              StD.animate({ opacity: 1 }, delay, "linear");
+              Std.animate({ opacity: 0 }, delay, "linear", function(){ this.hide(); });
+              StD.show().animate({ opacity: 1 }, delay, "linear");
               break;
             case 'E':
-              Ste.animate({ opacity: 0 }, delay, "linear");
-              StE.animate({ opacity: 1 }, delay, "linear");
+              Ste.animate({ opacity: 0 }, delay, "linear", function(){ this.hide(); });
+              StE.show().animate({ opacity: 1 }, delay, "linear");
               break;
             default:
               break;
@@ -107,54 +145,59 @@
         var ky = 75, kdx = 70;
         var blk_dy = 30;
         var cmdy = ky+2*blk_dy + 20, cmd_dx = 50;
-        newrect( kx, ky, kdx, blk_dy, "Keyboard", 1, 0, 1, 0, 1);
+        newrect( kx, ky, kdx, blk_dy, "Keyboard", custom,1, 0, 0, 0, 1);
+        newrect( kx, ky, kdx, blk_dy, "Keyboard", stock,0, 0, 1, 0, 0);
         newarrow( kx+kdx/2, ky+blk_dy, kx+kdx/2, cmdy, "red", 1, 0, 1, 0, 1 );
 
         var cmdx = kx+(kdx-cmd_dx)/2;
-        newrect( cmdx, cmdy, cmd_dx, blk_dy, "Cmd", 1, 1, 1, 0, 1);
+        newrect( cmdx, cmdy, cmd_dx, blk_dy, "Cmd", custom, 1, 1, 0, 0, 1);
+        newrect( cmdx, cmdy, cmd_dx, blk_dy, "Cmd", stock, 0, 0, 1, 0, 0);
         newarrow( cmdx+cmd_dx, cmdy+blk_dy/2, cx+10, cmdy+blk_dy/2, "red", 1,1,1,0,1);
 
         var coldx = 50;
-        newrect( cx+10, cmdy, coldx, blk_dy, "Col", 1, 1, 0, 0, 0);
-        newrect( cx+10, cmdy, coldx, blk_dy, "Rdr", 0, 0, 1, 1, 0);
-        newrect( cx+10, cmdy, coldx, blk_dy, "Inetin", 0, 0, 0, 0, 1);
+        newrect( cx+10, cmdy, coldx, blk_dy, "Col", custom, 1, 1, 0, 0, 0);
+        newrect( cx+10, cmdy, coldx, blk_dy, "rdr", stock, 0, 0, 1, 1, 0);
+        newrect( cx+10, cmdy, coldx, blk_dy, "Inetin", stock, 0, 0, 0, 0, 1);
 
         var algow = 50, algox = (dx+cx-algow)/2;
-        newrect( algox, cmdy-1.5*blk_dy, algow, blk_dy, "algo", 1,1,1,0,1);
+        newrect( algox, cmdy-1.5*blk_dy, algow, blk_dy, "algo", custom, 1,1,1,0,1);
         newarrow( algox, cmdy-blk_dy, kx+(kdx+cmd_dx)/2, cmdy, "red", 1,1,0,0,0);
         
         var tmx = cx + 10 + coldx + 20+20;
-        newrect( tmx, cmdy, coldx, blk_dy, "TMbfr", 1, 1, 1, 1, 1);
+        newrect( tmx, cmdy, coldx, blk_dy, "TMbfr", stock, 1, 1, 1, 1, 1);
         newarrow( cx+10+coldx, cmdy+blk_dy/2, tmx, cmdy+blk_dy/2, "blue", 1,1,1,1,1);
         newarrow( tmx, cmdy, algox+algow, cmdy-blk_dy, "blue", 1,1,1,0,1);
         
         var extw = 40, extov = 10;
-        newrect( tmx+coldx/2-1.5*extw+extov, ky, extw, blk_dy, "ext", 1,0,1,1,1);
-        newarrow( tmx+(coldx-extw)/4+extov/2, cmdy, tmx+(coldx-extw)/4+extov/2, ky+blk_dy, "blue", 1,0,1,1,1);
-        newrect( tmx+coldx/2+extw/2-extov, ky, extw, blk_dy, "disp", 1,0,1,0,1);
-        newarrow( tmx+(3*coldx+extw)/4-extov/2, cmdy, tmx+(3*coldx+extw)/4-extov/2, ky+blk_dy, "blue", 1,0,1,0,1);
-        newrect( tmx+coldx/2-extw/2, ky-blk_dy-10, extw, blk_dy, "rtg", 1,0,1,0,1);
+        newrect( tmx+coldx/2-1.5*extw+extov, ky, extw, blk_dy, "ext", custom, 1,0,1,1,1);
+        newarrow( tmx+(coldx-extw)/4+extov, cmdy, tmx+(coldx-extw)/4+extov/2, ky+blk_dy, "blue", 1,0,1,1,1);
+        newrect( tmx+coldx/2+extw/2-extov, ky, extw, blk_dy, "disp", custom, 1,0,1,0,1);
+        newarrow( tmx+(3*coldx+extw)/4-extov, cmdy, tmx+(3*coldx+extw)/4-extov/2, ky+blk_dy, "blue", 1,0,1,0,1);
+        newrect( tmx+coldx/2-extw/2, ky-blk_dy-10, extw, blk_dy, "rtg", stock, 1,0,1,0,1);
         newarrow( tmx+coldx/2, cmdy, tmx+coldx/2, ky-10, "blue", 1,0,1,0,1);
         
         var drvy = cmdy+blk_dy+40;
-        newrect( dx-20, drvy, cx-dx+40, blk_dy, "driver", 1,1,0,0,0);
+        newrect( dx-20, drvy, cx-dx+40, blk_dy, "driver", stock, 1,1,0,0,0);
         newarrow( cmdx+cmd_dx, cmdy+blk_dy, dx-10, drvy, "red", 1,1,0,0,1);
         newarrow( cx+10, drvy, cx+20, cmdy+blk_dy, "blue", 1,1,0,0,1);
         var hwy = drvy + blk_dy+40;
-        newrect( cmdx, hwy, cx+50-cmdx, blk_dy, "hardware", 1,1,0,0,0);
+        newrect( cmdx, hwy, cx+50-cmdx, blk_dy, "hardware", stock, 1,1,0,0,0);
         newarrow( cmdx+cmd_dx/2, cmdy+blk_dy, cmdx+cmd_dx/2, hwy, "red", 1,1,0,0,0);
         newarrow( dx-10, drvy+blk_dy, dx-10, hwy, "red", 1,1,0,0,0);
         newarrow( cx+10, hwy, cx+10, drvy+blk_dy, "blue", 1,1,0,0,0);
         newarrow( cx+35, hwy, cx+35, cmdy+blk_dy, "blue", 1,1,0,0,0);
         
-        newrect( tmx+coldx/2, drvy, extw, blk_dy, "lgr", 1,1,0,0,0);
+        newrect( tmx+coldx/2, drvy, extw, blk_dy, "lgr", stock, 1,1,0,0,0);
         newarrow( tmx+coldx/2, cmdy+blk_dy, tmx+(coldx+extw)/2, drvy, "blue", 1,1,0,0,0);
         
-        newrect( tmx-extw/2, hwy, extw, blk_dy, "disk", 1,1,1,1,0);
+        newrect( tmx-extw/2, hwy, extw, blk_dy, "disk", stock, 1,1,1,1,0);
         newarrow( tmx+(coldx+extw)/2, drvy+blk_dy, tmx, hwy, "blue", 1,1,0,0,0);
         newarrow( tmx, hwy, cx+10+coldx/2, cmdy+blk_dy, "blue", 0,0,1,1,0);
         
-        newrect( dx-20, drvy, cx-dx+40, blk_dy, "network", 0,0,0,0,1);
+        newrect( dx-20, drvy, cx-dx+40, blk_dy, "network", stock, 0,0,0,0,1);
+        
+        newrect( dx-20, hwy+blk_dy+40, 80, 20, "Custom", custom, 1,1,1,1,1);
+        newrect( dx+100, hwy+blk_dy+40, 80, 20, "Stock", stock, 1,1,1,1,1);
         
         $(".ModeBtn").click(function(event){
           var ismode = event.target.id[0];
@@ -169,14 +212,25 @@
   </script>
 </head>
 <body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+
+<div id="Arch">
 <h1 class="MA mb mc md me">Full Configuration</h1>
 <h1 class="ma MB mc md me">Flight Configuration</h1>
 <h1 class="ma mb MC md me">Playback Configuration</h1>
 <h1 class="ma mb mc MD me">Data Extraction</h1>
 <h1 class="ma mb mc md ME">Remote Operation</h1>
-<div id="Cvn">
+
 <div id="canvas"></div>
 
+<div id="Notes">
 <div class="Note" id="Keyboard">
 <h2>Keyboard</h2>
 <p>The Keyboard program provides an interactive
@@ -229,9 +283,10 @@ fast realtime response (for data display) or maximum throughput
 <p>Extraction programs operate on the data stream to produce
 output compatible with other programs. Conversion to
 standard units and various types of averaging are possible.
-Extractions are generally code using
+Extractions are generally written using
 <a href="http://www.arp.harvard.edu/eng/das/manuals/tmc.html">TMC</a>, but may also
-use <a href="http://www.arp.harvard.edu/eng/das/manuals/edf.html">EDF</a>
+use <a href="http://www.arp.harvard.edu/eng/das/manuals/cdf.html">CDF</a>,
+ <a href="http://www.arp.harvard.edu/eng/das/manuals/edf.html">EDF</a>
 or <a href="http://www.arp.harvard.edu/eng/das/manuals/cycle2.html">Cycle</a>
 definitions, which generate TMC code.</p>
 </div>
@@ -268,7 +323,7 @@ to the data acquisition system.</p>
 
 <div class="Note" id="lgr">
 <h2>Data Logger</h2>
-<p>Lgr is a data client program which formats the write the telemetry data
+<p>lgr is a data client program which formats the write the telemetry data
 to disk in a robust format suitable for archiving. The data stream is broken
 up into many small files in order to guarantee that if any file is lost or
 corrupted, the data loss should be limited to a small time span.</p>
@@ -286,9 +341,9 @@ from which it is later retrieved.</p>
 received from anywhere on the internet.</p>
 </div>
 
-<div class="Note" id="Rdr">
+<div class="Note" id="rdr">
 <h2>Disk Reader</h2>
-<p>Rdr is the program that reads telemetry data from previously
+<p>rdr is the program that reads telemetry data from previously
 logged disk files. Like collection and inetin, rdr is a &ldquo;data
 generator,&rdquo; which is to say that it assembles a telemetry
 stream which it writes to TMbfr for processing by any of the data
@@ -303,14 +358,21 @@ telemetry data from the disk, Inetin reads it over TCP/IP, allowing
 realtime monitoring of remote systems.</p>
 </div>
 
+<div class="Note" id="Stock">
+<h2>Stock Items</h2>
+<p>Blocks with the &ldquo;Stock&rdquo; color represent programs
+or hardware that are common to multiple instruments.</p>
 </div>
-<div id="Buttons"><button id="Aa" type="button" class="ModeBtn selected">Full</button>
-  <button id="Bb" type="button" class="ModeBtn">Flight</button>
-  <button id="Cc" type="button" class="ModeBtn">Playback</button>
-  <button id="Dd" type="button" class="ModeBtn">Data</button>
-  <button id="Ee" type="button" class="ModeBtn">Remote</button>
+
+<div class="Note" id="Custom">
+<h2>Custom Items</h2>
+<p>Blocks with the &ldquo;Custom&rdquo; color represent programs
+that are instrument-specific, compiled using the tools
+described <a href="http://www.arp.harvard.edu/eng/das/manuals/index.html">here</a>.</p>
 </div>
-  
+</div> <!-- end of Notes -->
+
+<div id="Modes">  
 <p class="MA mb mc md me">The Full Configuration includes the control and acquisition programs running on
   the flight computer as well as the display and interactive command capabilities running on the
   ground support computer (GSE).
@@ -335,6 +397,39 @@ utility, but since this operation is not interactive, no command interface is re
 on a system remote from the actual instrument. The command and data streams are
 routed across the network, encapsulated in TCP/IP.
 </p>
+</div>
+
+<div id="Buttons">
+  <button id="Aa" type="button" class="ModeBtn selected">Full</button>
+  <button id="Bb" type="button" class="ModeBtn">Flight</button>
+  <button id="Cc" type="button" class="ModeBtn">Playback</button><br>
+  <button id="Dd" type="button" class="ModeBtn">Data</button>
+  <button id="Ee" type="button" class="ModeBtn">Remote</button>
+</div>
+</div> <!-- end of #Arch div -->
+
+<div id="MainText">
+<h1>Data Acquisition Runtime Architecture</h1>
+<p>The Anderson Group Data Acquisition Runtime Architecture consists
+of a broad suite of programs operating together to provide data
+acquisition, interactive keyboard command capability, realtime data
+display and user-programmable algorithmic control. These programs
+are combined in different ways for different purposes.</p>
+
+<p>Select from the operating configuration options in the lower
+right, then hover the mouse over the colored boxes in the main
+diagram to display information about each function.</p>
+</div>
+
+<hr style="clear: left">
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Thu Jul 18 15:45 2012</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2012 by the President and Fellows of Harvard College
+</td></tr></table>
 
 </body>
 </html>
