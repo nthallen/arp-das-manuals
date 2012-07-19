@@ -20,11 +20,25 @@
 </div>
 <br>
 <h1>APPGEN Manual</h1>
+
 <h2>Contents</h2>
 <ul>
-<li><a href="#P0.0">0.0</a>: Invocation
+<li><a href="#P0.0">0.0</a>: Introduction</li>
+<li><a href="#P0.0">0.1</a>: Invocation</li>
 </ul>
-<h2><a id="P0.0">0.0</A>: Invocation</h2>
+<h2><a id="P0.0">0.0</A>: Introduction</h2>
+<p>Appgen is a Makefile generator for use with the Anderson Group
+Data Acquisition System. It reads in a specification file and
+produces a Makefile with standard targets appropriate to the
+architecture.</p>
+
+<p>Appgen was first developed for QNX4 in June of 1993. The version
+described in this document is for use with the QNX6 version of the
+data acquisition architecture. The appgen program itself is written
+in Korn Shell script, so it is easily portable to other operating
+systems.</p>
+
+<h2><a id="P0.1">0.1</A>: Invocation</h2>
 <pre>    appgen [-s] [spec file]
            -s Do not include subbus support be default
     
