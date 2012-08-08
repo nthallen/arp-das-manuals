@@ -1,0 +1,224 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>swscomp: Software Status Compiler</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="Harvard University Anderson Group Website">
+<meta name="keywords" content="ARP huarp data acquisition qnx atmosphere chemistry Anderson Harvard">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+
+<div id="banner">
+<img id="daqlogo" src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h1>swscomp: Software Status Compiler</h1>
+<h2>Contents</h2>
+<ul>
+<li><a href="#P0.0">0.0</a>: Invocation</li>
+<li><a href="#P1.0">1.0</a>: Motivation</li>
+<li><a href="#P2.0">2.0</a>: SWS Syntax</li>
+<li><a href="#P3.0">3.0</a>: Build Rules</li>
+<li><a href="#PA.0">A.0</a>: Example</li>
+<li><a href="#PB.0">B.0</a>: History</li>
+</ul>
+
+<h2><a id="P0.0">0.0</a>: Invocation</h2>
+
+<p><code>swscomp</code> [options] files</p>
+<ul>
+<li><b>-o &lt;prefix&gt;</b>: Specify file prefix for output files</li>
+<li><b>-p &lt;prefix&gt;</b>: Specify prefix for include files</li>
+<li><b>-A</b>: Generate .tma file</li>
+</ul>
+
+<p>The default &lt;prefix&gt; is 'SWData'.</p>
+
+<p>Without <code>-A</code>, four files are generated:</p>
+<ul>
+<li>&lt;prefix&gt;<code>.h</code></li>
+<li>&lt;prefix&gt;<code>.tmc</code></li>
+<li>&lt;prefix&gt;<code>_col.tmc</code></li>
+<li>&lt;prefix&gt;<code>.cmd</code></li>
+</ul>
+
+<p>With <code>-A</code>, either &lt;prefix&gt; or &lt;prefix&gt;<code>.tma</code> is generated.</p>
+
+<h2><a id="P1.0">1.0</a>: Motivation</h2>
+
+<p>There is a well-established convention in tmcalgo programs of
+<a href="tma_4.html#P4.3">using software status telemetry variables to
+control instrument operations</a>.
+Unlike most telemetry variables, software status variables do not report
+the state of physical sensors. Instead, they are set under program
+or interactive control. Using this approach, it is possible to provide
+operators with very high-level control.
+</p>
+
+<p>Setting up an instrument for this type of configuration involves:</p>
+<ol>
+  <li>creating the tmcalgo code to implement the high-level functions (<code>.tma</code>)</li>
+  <li>defining a telemetry variable to communicate the desired functionality (<code>.tmc</code>)</li>
+  <li>setting up the necessary mechanisms for setting the variable (<code>.tmc</code>, <code>.cmd</code>)</li>
+  <li>defining the encoding for this variable (<code>.h</code>)</li>
+  <li>defining textual commands and mapping them to the variable's encoding (<code>.cmd</code>)</li>
+  <li>creating a tmcalgo software status control partition to trigger the
+      desired functions when the specified encoding is observed (<code>.tma</code>)</li>
+</ol>
+
+<p>As you can see, many different input files are involved, but only the first item listed here involves truly original coding. Setting up and modifying all the other files has been a tedious process of duplicating the established convention. This is what motivated the effort to create a compiler to offload the busy work and
+centralize the necessary definitions. With <code>swscomp</code> the steps required now include:</p>
+
+<ol>
+  <li>creating the tmcalgo code to implement the high-level functions (<code>.tma</code>)</li>
+  <li>define mapping of command text to variable encoding and algorithm action. (<code>.sws</code>)</li>
+</ol>
+
+<h2><a id="P2.0">2.0</a>: SWS Syntax</h2>
+
+<p>As you can see, the aim of the <code>.sws</code> file is to succinctly encapsulate
+selected syntaxes from several different languages into one file. There are three
+basic types of input lines:</p>
+<ul><li><a href="#P2.1">2.1: Variable Definitions</a></li>
+  <li><a href="#P2.2">2.2: Value/Action Mappings</a></li>
+  <li><a href="#P2.3">2.3: <code>cmdgen</code> definitions</a></li>
+</ul>
+
+<h3><a id="P2.1">2.1</a>: Variable Definitions</h3>
+
+<blockquote><code>SW_Variable:</code> [ &lt; <i>ctype</i>,<i>tmtype</i> &gt; ] <i>name</i> [<i>cmd_prefix</i>]
+</blockquote>
+<p>This defines a variable with the specified <i>name</i> that can be set using the specified <i>cmd_prefix</i>. If the <i>cmd_prefix</i> is omitted, the variable's <i>name</i> is used instead. If the type specifications are omitted, the default is <code>&lt;unsigned char,UCHAR&gt;</code>. Both C and TMC type definitions are required
+because the variable will be used in both C and TMC contexts.</p>
+<p>If no <code>SW_Variable</code> statement is found, the following default is used:</p>
+<blockquote><code>SW_Variable: &lt;unisgned char,UCHAR&gt; SWStat SW Status</code></blockquote>
+
+<p>It remains the responsibility of the programmer to ensure that appropriate type definitions are
+in place for the <i>ctype</i> and <i>tmtype</i>.</p>
+
+<h3><a id="P2.2">2.2</a>: Value/Action Mappings</h3>
+
+<blockquote><code>SWS_</code><i>mnemonic</i> <i>value</i> <i>cmd_text</i> <code>:</code> <i>action</i>
+</blockquote>
+
+<p>Value/Action Mappings cram a lot of details onto a single line (although the action portion can
+extend onto subsequent lines as well.) The easiest way to think of these lines is as a C case statement
+within the tmcalgo program. Everything before the colon is replaced with <code>case SWS_</code><i>mnemonic</i>:, and everything after the colon gets copied directly. Subsequent lines that are not identified as one of
+the recognized sws syntax elements are also copied as part of this case statement body.</p>
+
+<p>In addition to tmcalgo commands, this line includes information that goes into a header file
+(<code>#define SWS_</code><i>mnemonic</i> <i>value</i>) and into a <code>.cmd</code> file ( 
+<code>: </code><i>cmd_prefix cmd_text</i> <code>{ $0 = </code><i>value</i><code>; }</code> )</p>
+
+<p>The following restrictions apply:</p>
+<ul><li>Unless you are trying to do something fancy, every action should end
+      with a <code>break;</code> statement.</li>
+<li><i>value</i>s must be non-zero integers. The zero value is reserved to represent no action.</li>
+</ul>
+
+<h3><a id="P2.3">2.3</a>: <code>cmdgen</code> definitions</h3>
+
+<p>Sometimes we need software status variables that serve a different purpose within the algorithm
+or need to communicate data that is not easily reduced to a fixed number of integer values.
+Since <code>swscomp</code> has already set up the interprocess communication required, it is
+handy to allow these other variable types to be supported, even though they don't have exactly
+the same implementation on the algorithm side.</p>
+
+<p>Any line where the first non-space character is a colon is interpreted as a line from a <code>cmdgen</code>
+specification for the right hand side expansion for the value of the current <code>SW_Variable</code>.
+The basic structure is:</p>
+
+<blockquote><code>: </code><i>cmd_text</i> <code>{ $0 =</code> <i>value</i><code>; }</code></blockquote>
+
+<p>but more complex <code>cmdgen</code> syntax is also possible. To specify a <code>float</code> value, for example:</p>
+
+<blockquote><code>: Set Point %f { $0 = $3; }</code></blockquote>
+
+<p>Note that the full command syntax will include the <code>SW_Variable</code>'s <i>cmd_prefix</i>.</p>
+
+<h2><a id="P3.0">3.0</a>: Build Rules</h2>
+
+<p><code>.sws</code> files should be listed in the <code>.spec</code> file using the
+ <code>swsbase</code> syntax:</p>
+
+<blockquote><code>swsbase = ToF.sws</code></blockquote>
+
+<p>In addition, <code>.sws</code> files also need to be listed explicitly as inputs
+ to any algorithms that they reference.</p>
+
+<p>Both specifications are required because although the command syntax definitions
+and the variable name and types definitions are global, it is entirely
+possible for an instrument to have more than one algorithm with independent functionality.
+This might be true for example when more than one physical instrument is controlled by
+a single processor.</p>
+
+<h2><a id="PA.0">A.0</a>: Example</h2>
+
+<p>The following example is taken verbatim from the Wennberg Group's Time of Flight instrument:</p>
+<pre style="margin-left: 50px">
+SW_Variable: SWStat SW Status
+  SWS_FLOWSTATE_OFF    1 Flow State Off: Validate Flows_OFF; break;
+  SWS_TURBOS_ON       90 Turbo Pumps On:
+    Validate TPA_On;
+    Validate TPB_On;
+    break;
+  SWS_TURBOS_OFF      91 Turbo Pumps Off:
+    Validate TPA_Off;
+    Validate TPB_Off;
+    break;
+  SWS_PUMPS_ON        96 Pumps On: Validate pumps_on; break;
+  SWS_PUMPS_OFF       97 Pumps Off: Validate pumps_off; break;
+  SWS_INLET_PCTRL    100 Inlet Pressure Control: Validate Inlet_PControl; break;
+  SWS_INLET_IDLE     101 Inlet Close: Validate Inlet_Close; break;
+  SWS_INLET_LAB      102 Inlet Lab: Validate Inlet_Lab;  break;
+  SWS_TOF_START      110 ToF Start: Validate ToF_start; break;
+  SWS_TOF_STOP       111 ToF Stop: Validate ToF_stop; break;
+  SWS_DATA_LOOP      115 Data loop start: Validate data_loop; break;
+  SWS_DATA_STOP      116 Data loop stop: Validate data_idle; break;
+  SWS_QUICK_SHUTDOWN 254 Shutdown Quick: Validate Quick_Shutdown; break;
+  SWS_SHUTDOWN       255 Shutdown Full: Validate Shutdown; break;
+
+SW_Variable: SWFlow SW Flow State
+  : Transitioning { $0 = 0; }
+  : Off { $0 = SWS_FLOWSTATE_OFF; }
+
+SW_Variable: &lt;float,SWStatf&gt; InP_Pgain Inlet Pgain
+  : %f (Enter Proportional Gain) { $0 = $1; }
+
+SW_Variable: &lt;float,SWStatf&gt; InP_igain Inlet Igain
+  : %f (Enter Integral Gain) { $0 = $1; }
+
+SW_Variable: &lt;signed short,V100torr_t&gt; InPset Inlet Pressure Setpoint
+  : %f (Enter Inlet Pressure Setpoint in mbar) { $0 = $1*32768/133.33; }
+</pre>
+
+<h2><a id="PB.0">B.0</a>: History</h2>
+
+<ul>
+  <li>2012-08-08: Documentation Published</li>
+  <li>2012-04-16: Development Begun</li>
+</ul>
+
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a>.
+Written by <a href="mailto:allen@huarp.harvard.edu">Norton T. Allen</a>
+</p>
+<hr>
+<table style="border: none; width: 100%">
+<tr>
+  <td>last updated: Wed Aug 8 11:15 EDT 2012</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td>
+</tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2012 by the President and Fellows of Harvard College</td></tr>
+</table>
+</body>
+</html>
