@@ -10,6 +10,7 @@
 <link rel=stylesheet type="text/css" href="../das.css" title="das">
 <style type="text/css">
   table.contents td { vertical-align: top }
+  body { max-width: 800px }
 </style>
 </head>
 <body>
@@ -30,8 +31,10 @@
 <ul class="tight">
 <li><a href="#Synopsis">Synopsis</a></li>
 <li><a href="#Introduction">Introduction</a></li>
-<li><a href="#Options">Options</a></li>
+<li><a href="#Availability">Availability</a></li>
+<li><a href="#Invocation">Invocation</a></li>
 </ul></td><td style="vertical-align: top"><ul class="tight">
+<li><a href="#Options">Options</a></li>
 <li><a href="#Syntax">Syntax</a></li>
 <li><a href="#FileFormats">File Formats</a></li>
 </ul></td></tr></table>
@@ -43,10 +46,23 @@
 
 <h3><a id="Introduction">Introduction</a></h3>
 
-<p>ICOSfit is a non-linear least-squares fit algorithm for
-processing ICOS data from the Anderson Group's <a href="../../../atmobs/sciobj/instrument/cr.html">ICOS
-instrument</a>. It is invoked with the name of a configuration file,
-and all options are specified within that configuration file.</p>
+<p>ICOSfit is a non-linear least-squares fit algorithm originally developed for 
+processing ICOS data from the Anderson Group's ICOS
+instrument.
+
+<h3><a id="Availability">Availability</a></h3>
+
+<p>The icosfit source code is maintained in a subversion repository on
+Harvard's ABCD Forge server. A
+<a href="https://forge.abcd.harvard.edu/gf/project/arp-icosfit/frs/?action=FrsReleaseBrowse&frs_package_id=162">binary
+distribution</a> is available for use under <a href="http://cygwin.com">Cygwin</a>, and a
+<a href="https://forge.abcd.harvard.edu/gf/project/arp-icosfit/frs/?action=FrsReleaseBrowse&frs_package_id=151">source tarball</a>
+is available for other platforms.
+</p>
+
+<h3><a id="Invocation">Invocation</a></h3>
+<p><code>icosfit</code> is invoked from the command line with the name of a configuration file.
+All options are specified within that configuration file.</p>
 
 <h3><a id="Options">Options</a></h3>
 
@@ -78,12 +94,13 @@ and where the output files should be placed.</p>
   <a href="#PandTFormat">PandT format</a> and is included for backwards
   compatability. 'PTEFile' refers to a file that includes
   <a href="#PTEFileFormat">etalon fit data.</a>
-    The default is: PandTFile = INPUTFILE.txt;</dd>
+    The default is: PandTFile = INPUTFILE.txt;, but you will almost
+    always want to use a PTEFile.</dd>
   
   <dt><code>ICOSdir = <a href="#Path">Path</a>;</code></dt>
-  <dd>Specifies the base directory under which the ICOS directory structure is 
-    stored. The default is 'CPCI14', but when the data is stored on a CD, you 
-    will probably need to specify a complete path.</dd>
+  <dd>Specifies the base directory under which the scan directory structure is 
+    stored. The default is 'Scans', but you will usually need to specify this
+    explicitly.</dd>
   
   <dt><code>Binary;</code></dt>
   <dt><code>ASCII;</code></dt>
@@ -212,9 +229,10 @@ averaged to determine the zero offset. Defaults to <code>[10,200]</code>.</dd>
 <dd>Specifies the limits of the sample range over which the fit will be
 performed. Defaults to <code>[350,1750]</code>.</dd>
 
-<dt><code>CPCI14Range = <a href="#IntegerPair">IntegerPair</a>;</code></dt>
+<dt><code>ScanNumRange = <a href="#IntegerPair">IntegerPair</a>;</code></dt>
 <dd>Specifies the range of scans to be fit. Defaults to all scans, but you
-will almost always need to specify a smaller range.</dd>
+will frequently need to specify a smaller range. The backwards compatible
+keyword 'CPCI14Range' can also be used.</dd>
 
 <dt><code>QCLI_Wave = <a href="#Integer">Integer</a>;</code></dt>
 <dd>Specifies the waveform number (defined implicitly in the qclicomp
@@ -315,7 +333,7 @@ file. Discussion of what these things actually do will follow.</p>
   <a href="#Linedef">Linedef</a> /
   BackgroundRegion = <a href="#IntegerPair">IntegerPair</a> /
   SignalRegion '=' <a href="#IntegerPair">IntegerPair</a> /
-  CPCI14Range '=' <a href="#IntegerPair">IntegerPair</a> /
+  ScanNumRange '=' <a href="#IntegerPair">IntegerPair</a> /
   Restart at <a href="#Integer">Integer</a> <a href="#opt_preserve">opt_preserve</a> /
   FitFunction '=' <a href="#Ident">Ident</a> /
   MirrorLoss '=' <a href="#FloatVal">FloatVal</a> <a href="#opt_ppm">opt_ppm</a> /
@@ -436,7 +454,7 @@ contents are:</p>
 <tr><td>0</td><td>Time</td><td>Seconds since 00:00:00 1/1/70 UTC</td><td>sec</td></tr>
 <tr><td>1</td><td>CellP</td><td>Cell Pressure</td><td>Torr</td></tr>
 <tr><td>2</td><td>Tavg</td><td>Cell Temperature</td><td>K</td></tr>
-<tr><td>3</td><td>CPCI14</td><td colspan="2">Scan Number</td></tr>
+<tr><td>3</td><td>ScanNum</td><td colspan="2">Scan Number</td></tr>
 <tr><td>4</td><td>Cal_F</td><td>Calibration Flow</td><td>SCCM</td></tr>
 <tr><td>5</td><td>InltF</td><td>Inlet Flow</td><td>SCCM</td></tr>
 <tr><td>6</td><td>RORIS</td><td colspan="2">1=>Ringdown, 0=>ICOS</td></tr>
@@ -480,7 +498,7 @@ more minimal set of input data along with etalon fit parameters.</p>
 
 <table class="padded">
 <tr><th>Column</th><th>Name</th><th>Description</th><th>Units</th></tr>
-<tr><td>0</td><td>CPCI14</td><td>File Index</td><td></td></tr>
+<tr><td>0</td><td>ScanNum</td><td>Scan File Index</td><td></td></tr>
 <tr><td>1</td><td>CellP</td><td>Cell Pressure</td><td>Torr</td></tr>
 <tr><td>2</td><td>Tavg</td><td>Cell Temperature</td><td>K</td></tr>
 <tr><td>3</td><td>Etln[0]</td><td>Sample Number Offset</td><td>Samples</td></tr>
@@ -535,10 +553,10 @@ between the two functions is determined by the format of the specified
 <p>Return to <a href="index.html">Manuals Guide</a></p>
 <hr>
 <table style="border: none; width: 100%">
-<tr><td>last updated: Mon Sep 29 12:00:33 2008</td>
+<tr><td>last updated: Fri Nov 9 2012 15:40 EST</td>
   <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
 <tr><td colspan="2" style="font-size: smaller">
-Copyright 2008 by the President and Fellows of Harvard College
+Copyright 2012 by the President and Fellows of Harvard College
 </td></tr></table>
 </body>
 </html>
