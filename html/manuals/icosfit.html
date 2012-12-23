@@ -11,6 +11,9 @@
 <style type="text/css">
   table.contents td { vertical-align: top }
   body { max-width: 800px }
+  table.padded { margin-left: 30px; }
+  table.padded th { background-color: #9999FF; padding: 3px; }
+  table.padded td { background-color: #CCCCFF; padding: 3px; }
 </style>
 </head>
 <body>
@@ -107,7 +110,7 @@ and where the output files should be placed.</p>
   <dd>These define whether the ICOS input files were written in binary or ASCII 
     format. The default is binary.</dd>
   
-  <dt><code>BaselineFile = <a href="#Path">Path</a>;</code></dt>
+  <dt><code>BaselineFile = <a href="#Path">Path</a> [ + Input ];</code></dt>
   <dd>File containing the baseline basis vectors. The format is
       defined by the <code>writeskewbase</code> matlab routine.</dd>
   
@@ -362,6 +365,11 @@ file. Discussion of what these things actually do will follow.</p>
   DSFRLimits '=' '[' <a href="#FloatVal">FloatVal</a> ',' <a href="#FloatVal">FloatVal</a> ']' /
   TolerableDrift '=' <a href="#FloatVal">FloatVal</a> <a href="#opt_cm">opt_cm</a> /
   LineMargin '=' <a href="#FloatVal">FloatVal</a> <a href="#opt_cm">opt_cm</a> /
+  LeftLineMargin '=' <a href="#FloatVal">FloatVal</a> <a href="#opt_cm">opt_cm</a> /
+  RightLineMargin '=' <a href="#FloatVal">FloatVal</a> <a href="#opt_cm">opt_cm</a> /
+  LineMarginMultiplier '=' <a href="#FloatVal">FloatVal</a> /
+  LeftLineMarginMultiplier '=' <a href="#FloatVal">FloatVal</a> /
+  RightLineMarginMultiplier '=' <a href="#FloatVal">FloatVal</a> /
   CavityLength '=' <a href="#FloatVal">FloatVal</a> /
   Sigma '=' <a href="#FloatVal">FloatVal</a> /
   TuningRate '=' <a href="#FloatVal">FloatVal</a> <a href="#opt_tunerate">opt_tunerate</a> /
@@ -374,7 +382,7 @@ file. Discussion of what these things actually do will follow.</p>
   ICOSdir '=' <a href="#Path">Path</a> /
   PandTFile '=' <a href="#Path">Path</a> /
   PTFile '=' <a href="#Path">Path</a> /
-  BaselineFile '=' <a href="#Path">Path</a> /
+  BaselineFile '=' <a href="#Path">Path</a> [ + Input ] /
   OutputDir '=' <a href="#Path">Path</a> /
   OutputFile '=' <a href="#Path">Path</a> /
   LogFile '=' <a href="#Path">Path</a> /
@@ -459,6 +467,31 @@ sample number is implicit, starting with 1. <code>uint32</code> is an unsigned 3
 integer in little-endian format. <code>float32</code> is a 32-bit floating point value
 in little-endian IEEE format.</p>
 
+<h4><a id="SSPFileFormat">SSP File Format</a></h4>
+<p>Newer versions of the SSP driver include the full SSP scan header in each file.
+This format can be automatically distinguished from the ICOS File Format, so no
+distinction is required in the configuration files.</p>
+
+<table class="padded">
+<tr><th>Format</th><th>values</th><th>Name</th><th>Description</th></tr>
+<tr><td>uint32</td><td>0x00010006</td><td>Format</td><td>Identifies this format</td></tr>
+<tr><td>uint8</td><td>1</td><td>NChannels</td><td>The number of columns in the file.</td></tr>
+<tr><td>uint8</td><td>1</td><td>NF</td><td>Sample Clock Divider</td></tr>
+<tr><td>uint16</td><td>1</td><td>NSamples</td><td>The number of columns in the file.</td></tr>
+<tr><td>uint16</td><td>1</td><td>NCoadd</td><td>The number of scan averaged.</td></tr>
+<tr><td>uint16</td><td>1</td><td>NAvg</td><td>The number of samples averaged.</td></tr>
+<tr><td>uint16</td><td>1</td><td>NSkL</td><td>The number scans dropped before final coadd</td></tr>
+<tr><td>uint16</td><td>1</td><td>NSkP</td><td>The number scans dropped before initial coadd</td></tr>
+<tr><td>uint32</td><td>1</td><td>SerialNum</td><td>The serial number of the final scan in coadd</td></tr>
+<tr><td>uint16</td><td>1</td><td>T_HtSink</td><td>Heat Sink Temperature</td></tr>
+<tr><td>uint16</td><td>1</td><td>T_FPGA</td><td>FPGA Temperature</td></tr>
+<tr><td>uint32</td><td>1</td><td>SSPStatus</td><td>SSP Status Flags</td></tr>
+<tr><td>float32</td><td>nsamples</td><td>Col1</td><td>The data for column 1</td></tr>
+<tr><td>float32</td><td>nsamples</td><td>Col2</td><td>The data for column 2</td></tr>
+<tr><td colspan="4">...</td></tr>
+<tr><td>float32</td><td>nsamples</td><td>Coln</td><td>The data for column ncolumns</td></tr>
+</table>
+
 <h4><a id="PTFileFormat">PT File Format</a></h4>
 
 <p><code>PTFile = <a href="#Path">Path</a>;</code></p>
@@ -533,12 +566,14 @@ more minimal set of input data along with etalon fit parameters.</p>
 
 <h4><a id="BaselineFileFormat">Baseline File Formats</a></h4>
 
-<p><code>BaselineFile = <a href="#Path">Path</a>;</code></p>
+<p><code>BaselineFile = <a href="#Path">Path</a> [ + Input ];</code></p>
 
 <p>There are currently two baseline fitting functions, each providing
 considerable flexibility in how the baseline is approximated. Selection
 between the two functions is determined by the format of the specified
-<code>BaselineFile</code>.</p>
+<code>BaselineFile</code>. If the optional '+ Input' is included,
+the third channel in each input file is treated as a baseline input
+vector with a free scaling parameter.</p>
 
 <dl>
   <dt><code>func_base_svdx</code></dt>
@@ -573,7 +608,7 @@ between the two functions is determined by the format of the specified
 <p>Return to <a href="index.html">Manuals Guide</a></p>
 <hr>
 <table style="border: none; width: 100%">
-<tr><td>last updated: Sun Dec 23 2012 13:16 EST</td>
+<tr><td>last updated: Sun Dec 23 2012 14:00 EST</td>
   <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
 <tr><td colspan="2" style="font-size: smaller">
 Copyright 2012 by the President and Fellows of Harvard College
