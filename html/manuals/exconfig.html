@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-   "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
 <head>
 <title>Experiment.config Reference Manual</title>
@@ -9,6 +8,9 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 <link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
 <link rel=stylesheet type="text/css" href="../das.css" title="das">
+<style type="text/css">
+  dl { width: 600px }
+</style>
 </head>
 
 <body>
@@ -73,6 +75,7 @@
 <td valign="top"><ul><li><b>QNX6 flight.sh variables:</b>
 <ul>
   <li><a href="#SCRIPT_OVERRIDE">SCRIPT_OVERRIDE</a>=/net/$FlightNode$HomeDir/script</li>
+  <li><a href="#SCRIPT_OVERRIDE">EXP_NODES</a>=&ldquo;hci hcigse&rdquo;</li>
   <li><a href="#PICKFILE">PICKFILE</a>='eval echo runfile.`sbswitch`'</li>
   <li><a href="#RUNFILE">RUNFILE</a>=interact</li>
   <li><a href="#SUBBUSD">SUBBUSD</a>=serusb</li>
@@ -218,12 +221,26 @@ by the <code>flight.sh</code> script.</p>
 
 <dl>
 <dt><a name="SCRIPT_OVERRIDE"><b>SCRIPT_OVERRIDE</b></a>=<code>/net/$FlightNode$HomeDir/script</code></dt>
-<dd>This variable allows a "doit" script to specify the script to run
-or to prevent any script from running. As such, it is probably required
+<dt><a name="EXP_NODES"><b>EXP_NODES</b></a>=<code>"hci hcigse"</code></dt>
+<dd>SCRIPT_OVERRIDE allows a &ldquo;doit&rdquo; script to specify which
+startup script to run on the flight computer
+or to prevent any script from running. As such, it is strongly recommended
 for any instrument, and the value specified here is a useful default.
 The value of this variable is the name of a file that may contain
 the name of a script. If the file exists, the name of the script is
-read from the file, and the file is deleted.</dd>
+read from the file, and the file is deleted.<br><br>
+As of flight-2.5.36, SCRIPT_OVERRIDE works in conjunction with the <b>EXP_NODES</b>
+variable to specify a script file location on any one of multiple nodes.
+If SCRIPT_OVERRIDE is not an absolute path (does not start with a slash), it
+is assumed to be a file name relative to the $HomeDir directory on any one
+of the nodes specified in the EXP_NODES variable. When using EXP_NODES, it is
+reasonable to set <code>SCRIPT_OVERRIDE=script</code> with no additional path information
+required.<br>
+<br>
+EXP_NODES is also used by the <b>distribute</b> convenience command. When given
+no arguments, distribute runs <code>make distribution</code> with <code>TGTNODE</code>
+specified correctly for each node in $EXP_NODES.
+</dd>
 
 <dt><a name="PICKFILE"><b>PICKFILE</b></a>=<code>'eval echo runfile.`sbswitch`'</code></dt>
 <dd>If SCRIPT_OVERRIDE is not defined or the file it specifies does
@@ -255,10 +272,10 @@ approach.</p>
 <p>Return to <a href="index.html">Manuals Guide</a></p>
 <hr>
 <table style="border: none; width: 100%">
-<tr><td>last updated: Mon Feb 14 12:52:32 2011</td>
+<tr><td>last updated: Wed Jan 30 17:00:00 2013</td>
   <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
 <tr><td colspan="2" style="font-size: smaller">
-Copyright 2011 by the President and Fellows of Harvard College
+Copyright 2013 by the President and Fellows of Harvard College
 </td></tr></table>
 </body>
 </html>
