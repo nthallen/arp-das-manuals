@@ -25,12 +25,17 @@
 <ul>
 <li><a href="#P0.0">0.0</a>: Introduction</li>
 <li><a href="#P0.0">0.1</a>: Invocation</li>
+<li><a href="#P1.0">1.0</a>: Overview</li>
+<li><a href="#PA">Appendix A</a>: .spec File Syntax</li>
 </ul>
 <h2><a id="P0.0">0.0</A>: Introduction</h2>
 <p>Appgen is a Makefile generator for use with the Anderson Group
 Data Acquisition System. It reads in a specification file and
 produces a Makefile with standard targets appropriate to the
-architecture.</p>
+architecture. For an overview of the programs that are required
+to support an instrument, please review the
+<a href="../guides/das_arch.html">Data Acquisition
+Architecture Overview.</a></p>
 
 <p>Appgen was first developed for QNX4 in June of 1993. The version
 described in this document is for use with the QNX6 version of the
@@ -39,24 +44,43 @@ in Korn Shell script, so it is easily portable to other operating
 systems.</p>
 
 <h2><a id="P0.1">0.1</A>: Invocation</h2>
-<pre>    appgen [-s] [spec file]
-           -s Do not include subbus support be default
-    
-           Generates an application based on the spec_file input
-           If spec file isn't specified, appgen will look for a
-           file of the form *.spec. If there is a unique one, it
-           will be used.
-           appgen automatically overwrites the Makefile, so care
-           should be taken that it is not invoked where it is not
-           used.
-    
-     Spec_file format:
+<blockquote><code>appgen [spec file]</code></blockquote>
+
+<h2><a id="P1.0">1.0</a>: Overview</h2>
+
+<p><code>appgen</code> generates a makefile based on the
+<code>spec_file</code> input. If <code>spec file</code>
+is not specified, appgen will look for a file of the form
+*.spec in the current directory. If there is a unique one, it
+will be used. <code>appgen</code> automatically overwrites
+the Makefile, so care should be taken that it is not invoked
+in the wrong directory.</p>
+
+<p>The <code>spec_file</code> has two main sections. The first
+section is where the core components of the data acquisition
+system are specified. The second (optional) section, delineated
+by a line containing the string '%%', consists of additional
+text to be appended to the end of the generated Makefile. This
+makes it possible to extend the capabilities of <code>appgen</code>.</p>
+
+<p>The main section of the <code>spec_file</code> has a syntax
+similar to that of a Makefile. Input can include comments,
+variable definitions and dependency definitions. Unlike in a
+Makefile, you do not define build commands, since defining
+those is <code>appgen</code>'s job.</p>
+
+<h2><a id="PA">Appendix A</a>: .spec File Syntax</h2>
+
+<p><code></code></p>
+
+<pre>    
      # comment line
      prefix = &lt;prefix&gt;  (optional: derived from spec file name)
      tmcbase = &lt;files&gt;
      cmdbase = &lt;files&gt;
-     NOSUBBUS  (equivalent to the -s option)
-     CLEANDIST (distributes into the bin/$VERSION hierarchy)
+     colbase = &lt;files&gt;
+     swsbase = &lt;files&gt;
+     qclibase = &lt;files&gt;
      var = substitution (supported vars are SRC TOOL OBJ
                          TGT (targets to build. copied to $TGTDIR/bin/$VERSION)
                          SCRIPT (source to be copied to $TGTDIR/bin/$VERSION)
@@ -64,12 +88,11 @@ systems.</p>
                          SRCDIST (source to be copied to $TGTDIR/bin/$VERSION/Base)
                          IDISTRIB (to be copied to $TGTDIR)
                          MNC (defaults to prefix)
-                         HOMEDIR (defaults to cwd, less node)
                          TGTNODE TGTDIR
                          SERVER (defaults if server is generated)
                          SUBDIRS (passed on to Makefile)
                          SUBDIRS4 (passed on to Makefile)
-                         NONRCS (backed up as SOURCE, but not RCSed)
+                         NONRCS (QNX4: backed up as SOURCE, but not RCSed)
      target : &lt;files&gt;
      ...
      %%
