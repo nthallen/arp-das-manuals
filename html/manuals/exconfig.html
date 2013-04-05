@@ -79,6 +79,9 @@
   <li><a href="#PICKFILE">PICKFILE</a>='eval echo runfile.`sbswitch`'</li>
   <li><a href="#RUNFILE">RUNFILE</a>=interact</li>
   <li><a href="#SUBBUSD">SUBBUSD</a>=serusb</li>
+  <li><a href="#SUBBUSD_DELAY">SUBBUSD_DELAY</a>=3</li>
+  <li><a href="#NETWORK_DELAY">NETWORK_DEALY</a>=0</li>
+  <li><a href="#OSUPDATEREQ">OSUPDATEREQ</a></li>
 </ul></li></ul></td>
 </tr></table>
 
@@ -261,6 +264,28 @@ will launch subbusd_$SUBBUSD before deciding what script to run.
 The currently available options are <code>serusb</code> and
 <code>sc104</code>.
 </dd>
+
+<dt><a name="SUBBUSD_DELAY"><b>SUBBUSD_DELAY</b></a>=<code>3</code></dt>
+<dd>If <code>SUBBUSD</code> and <code>SUBBUSD_DELAY</code> are both
+defined, <code>SUBBUSD_DELAY</code> specifies the number of seconds
+to <code>sleep</code> before launching the specified subbusd driver.
+This may be necessary if the flight computer boot up time is shorter
+than the subbus device initialization.</dd>
+
+<dt><a name="NETWORK_DELAY"><b>NETWORK_DELAY</b></a>=<code>0</code></dt>
+<dd>Specifies the number of seconds to <code>sleep</code> during
+instrument startup before
+checking for script files on the network. The default is 3 seconds. If
+set to 0, no delay will occur. It may make sense to defeat or reduce
+this delay if <code>SUBBUSD_DELAY</code> is defined.</dd>
+
+<dt><a name="#OSUPDATEREQ"><b>OSUPDATEREQ</b></a></dt>
+<dd>This is not a variable defined in Experiment.config at all.
+If flight.sh discovers a file named OSUPDATEREQ in the current
+directory during instrument startup, it will sleep until the file
+is deleted. This can make it easier to interrupt normal processing
+to update operating system or instrument files.</dd>
+
 </dl>
 
 <p>Additional definitions may be added over time and should be
@@ -272,7 +297,7 @@ approach.</p>
 <p>Return to <a href="index.html">Manuals Guide</a></p>
 <hr>
 <table style="border: none; width: 100%">
-<tr><td>last updated: Wed Jan 30 17:00:00 2013</td>
+<tr><td>last updated: Fri Apr 5 16:30 2013</td>
   <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
 <tr><td colspan="2" style="font-size: smaller">
 Copyright 2013 by the President and Fellows of Harvard College
