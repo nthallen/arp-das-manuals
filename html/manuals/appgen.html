@@ -8,6 +8,11 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 <link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
 <link rel=stylesheet type="text/css" href="../das.css" title="das">
+<style type="text/css">
+  dl { margin-left: 3em; }
+  dl dt { color: #0220B0; }
+  dl dt code { color: black; }
+</style>
 </head>
 <body>
 <div id="banner">
@@ -26,6 +31,8 @@
 <li><a href="#P0.0">0.0</a>: Introduction</li>
 <li><a href="#P0.0">0.1</a>: Invocation</li>
 <li><a href="#P1.0">1.0</a>: Overview</li>
+<li><a href="#P2.0">2.0</a>: Variables</li>
+<li><a href="#P3.0">3.0</a>: Dependencies</li>
 <li><a href="#PA">Appendix A</a>: .spec File Syntax</li>
 </ul>
 <h2><a id="P0.0">0.0</A>: Introduction</h2>
@@ -69,6 +76,111 @@ variable definitions and dependency definitions. Unlike in a
 Makefile, you do not define build commands, since defining
 those is <code>appgen</code>'s job.</p>
 
+<h2><a id="P2.0">2.0</a>: Variables</h2>
+
+<p>A variable definition consists of:</p>
+<blockquote><code>&lt;name&gt; = &lt;value&gt;</code></blockquote>
+<p>Spaces around the '=' are required. The same variable can be
+defined multiple times with each new definition simply appending to
+the current value.</p>
+
+<p>Important variables include:</p>
+
+<dl>
+  <dt>prefix</dt>
+    <dd>A short string used as a prefix for many of the output files. This is usually
+      the experiment mnemonic in some form. If not defined, basename of the input
+      file is used without the '.spec' extension.</dd>
+  <dt>TGTDIR</dt>
+    <dd>The base directory for the experiment's operations. This is usually
+      defined with the prefix <code>$(TGTNODE)</code> to allow interactive
+      addressing of multiple nodes. For example:<br>
+      <code>TGTDIR = $(TGTNODE)/home/Exp</code></dd>
+  <dt>TGTNODE</dt>
+    <dd>Usual <em>not</em> defined. Used in conjunction with <code>TGTDIR</code>
+      to target a destination on a specific node. For example:<br>
+      <code>make distribution TGTNODE=/net/Exp</code></dd>
+  <dt>tmcbase</dt>
+    <dd>The list of all <code>.tmc</code> source files that define telemetry
+      frame variables. That includes any <code>.tmc</code> file containing
+      a variable definition with an explicit rate definition. Since multiple
+      programs access the telemetry frame, it is important that they are all
+      using the same definition.</dd>
+  <dt>cmdbase</dt>
+    <dd><a href="cmdgen.html">cmdgen</a> source files.</dd>
+  <dt>colbase</dt>
+    <dd><code>.tmc</code> or other source files required by the data collection
+      process. These usually involve code to initialize interfaces that receive
+      data from device drivers.</dd>
+  <dt>swsbase</dt>
+    <dd><a href="swscomp.html">.sws</a> files defining the software status
+      commands and data definitions.</dd>
+  <dt>qclibase</dt>
+    <dd><a href="qclicomp.html">.qcli</a> source files.</dd>
+  <dt>SCRIPT</dt>
+    <dd>List of source files that should be copied to <code>$(TGTDIR)/bin/$(VERSION)</code>.
+    </dd>
+  <dt>DISTRIB</dt>
+    <dd>List of generated files that should be copied to <code>$(TGTDIR)/bin/$(VERSION)</code>.
+      All recognized targets get added to <code>DISTRIB</code> automatically, but
+      additional targets can be added as well. For example, device drivers built in
+      another directory are often referenced in this way.</dd>
+  <dt>SRCDIST</dt>
+    <dd>Key source files that should be archived with each data set.
+      The files in <code>tmcbase</code> and <code>qclibase</code> as well as source
+      files of type <code><a href="tmcalgo.html">.tma</a></code>,
+      <code><a href="tmcalgo.html">.tbl</a></code> and
+      <code><a href="solfmt.html">.sol</a></code>
+      are included by default. Also, the <code>.m</code> files generated from
+      <code>qclibase</code>.</dd>
+  <dt>IDISTRIB</dt>
+    <dd>Files that should be installed directly into <code>$(TGTDIR)</code>. This
+      includes any scripts which users are expected to execute interactively.
+      This slways includes <code>VERSION</code>, <code>Experiment.config</code>
+      and any generated <code><a href="mkdoit2.html">doit</a></code> scripts.</dd>
+</dl>
+
+<h2><a id="P3.0">3.0</a>: Dependencies</h2>
+
+<p>Dependencies take the form:</p>
+
+<blockquote><code>&lt;target&gt; : &lt;sources&gt;</code></blockquote>
+
+<p>&lt;target&gt; is the name of the output file and must have one of
+the suffixes listed below.</p>
+
+<p>Sources listed in one of the <code>base</code>
+variables do not need to be listed explicitly in a dependency line.</p>
+
+<p>Sources may also include library dependencies, <i>e.g.</i> <code>-lsubbus</code>.</p>
+
+<p>Collection (<code>$(prefix)col</code>), command server (<code>$(prefix)srvr</code>)
+and keyboard client (<code>$(prefix)clt</code>) programs may not require an
+explicit dependency line in simple cases. These programs may be fully specified by
+the <code>base</code> variables.</p>
+
+<h3>Target Types</h3>
+<dl>
+  <dt>Collection: <code>$(prefix)col</code></dt>
+    <dd>Generates the telemetry frame.</dd>
+  <dt>Command Server: <code>$(prefix)srvr</code></dt>
+    <dd>Coordinates standard command channels.</dd>
+  <dt>Keyboard Client: <code>$(prefix)clt</code></dt>
+    <dd>Provides interactive keyboard command capability</dd>
+  <dt>Data Display: <code>*disp</code></dt>
+    <dd>Realtime display of data as text.</dd>
+  <dt>Algorithms: <code>*algo</code></dt>
+    <dd>Algorithmic experiment control based on telemetry data.</dd>
+  <dt>GSE Startup Scripts: <code>*doit</code></dt>
+    <dd>Code to setup data displays and other log screens for
+      interactive monitoring.</dd>
+  <dt>Solfmt code: <code>*sft</code></dt>
+    <dd>Low-level command cycles with no feedback.</dd>
+  <dt>Data extraction: <code>*ext</code></dt>
+    <dd>Any other program that reads the telemetry frame for
+      some purpose.</dd>
+</dl>
+
 <h2><a id="PA">Appendix A</a>: .spec File Syntax</h2>
 
 <p><code></code></p>
@@ -87,12 +199,7 @@ those is <code>appgen</code>'s job.</p>
                          DISTRIB (other files to be copied to $TGTDIR/bin/$VERSION)
                          SRCDIST (source to be copied to $TGTDIR/bin/$VERSION/Base)
                          IDISTRIB (to be copied to $TGTDIR)
-                         MNC (defaults to prefix)
                          TGTNODE TGTDIR
-                         SERVER (defaults if server is generated)
-                         SUBDIRS (passed on to Makefile)
-                         SUBDIRS4 (passed on to Makefile)
-                         NONRCS (QNX4: backed up as SOURCE, but not RCSed)
      target : &lt;files&gt;
      ...
      %%
@@ -105,21 +212,16 @@ those is <code>appgen</code>'s job.</p>
        *disp   TMCBASE  dc usage
        *clt    CMDBASE  nl_cons, client usage
        *srvr   CMDBASE  T1
-       *.dccc
        *.sft
        *doit
      The following source types are supported:
-       *tmc.prt
-       *ext.prt
+       *.cdf
        *.edf
-       *.cfg
        *.tbl
-       *.fld
        *.tma
        *.cyc
        *.tmc
        *.tmg
-       *cmd.prt
        *.cmd
        *.c
        *.slp (soldrv proxy) ==&gt; .sol and something else
@@ -131,10 +233,10 @@ those is <code>appgen</code>'s job.</p>
 <p>Return to <a href="index.html">Manuals Guide</a></p>
 <hr>
 <table style="border: none; width: 100%">
-<tr><td>last updated: Wed Jun  7 10:34:42 2006</td>
+<tr><td>last updated: Mon Apr 8 15:00 2013 EDT</td>
   <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
 <tr><td colspan="2" style="font-size: smaller">
-Copyright 2006 by the President and Fellows of Harvard College
+Copyright 2013 by the President and Fellows of Harvard College
 </td></tr></table>
 </body>
 </html>
