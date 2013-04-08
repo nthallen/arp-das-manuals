@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>mkdoit3 Manual</title>
+<meta name="author" content="webmaster@huarp.harvard.edu">
+<meta name="description" content="-">
+<meta name="keywords" content="huarp Ozone atmosphere chemistry data acquisition">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel=stylesheet type="text/css" href="../das.css" title="das">
+</head>
+<body>
+<div id="banner">
+<img src="../daq_logo.jpg" width="600" height="100" alt="Anderson Group Data Acquisition Logo" usemap="#daq_map">
+<map name="daq_map" id="daq_map">
+<area href="http://www.harvard.edu/" shape="rect" coords="10,11,91,35" alt="Harvard Home Page" >
+<area href="http://www.arp.harvard.edu/" shape="rect" coords="91,6,246,43" alt="Anderson Group Home Page" >
+<area href="http://www.arp.harvard.edu/eng/das/" shape="rect" coords="30,47,273,79" alt="Anderson Group Data Acquisition Home Page" >
+</map>
+</div>
+<br>
+<h1>MkDoit3 Manual</h1>
+<h2>Contents</h2>
+<ul>
+<li><a href="#P1.0">1.0</a>: Compiler Invocation</li>
+<li><a href="#P2.0">2.0</a>: Introduction
+<ul>
+<li><a href="#P2.1">2.1</a>: doit scripts</li>
+<li><a href="#P2.2">2.2</a>: .doit files
+  <ul>
+  <li><a href="#P2.2.1">2.2.1</a>: Playback</li>
+  <li><a href="#P2.2.2">2.2.2</a>: Inetin</li>
+  <li><a href="#P2.2.3">2.2.3</a>: Serin</li>
+  </ul></li>
+</ul></li>
+<li><a href="#P3.0">3.0</a>: Input Syntax</li>
+<li><a href="#PA.0">A.0</a>: Invoking Scripts under QNX Windows</li>
+</ul>
+
+<h2><a id="P1.0">1.0</a>: Compiler Invocation</h2>
+
+Mkdoit3 is invoked with the following command format:<P>
+
+<pre>
+      mkdoit3 [ -o &lt;outputfile&gt; ] [ &lt;inputfile&gt; ... ]
+</pre>
+
+Users of the ARP Data Acquisition System will almost never need
+to invoke the compiler directly; the invocation is handled by
+<a href="appgen.html">appgen</a> and make.
+
+<h2><a id="P2.0">2.0</a>: Introduction</h2>
+<h3><a id="P2.1">2.1</a>: doit scripts</h3>
+
+<p>MkDoit3 is a language to generate &ldquo;doit&rdquo; scripts for use with ARP
+Data Acquisition. It supports options for many features which
+are handy to have in a doit script.</p>
+
+<p>For compatibility with <a href="appgen.html">APPGEN</a>, the
+input filename should end in &ldquo;.doit&rdquo;. The doit script can be generated
+as part of the general make process by adding a line to the .spec
+file such as:</p>
+
+<blockquote><code>abcdoit : abc.doit</code></blockquote>
+
+<p>The resulting script is designed to work with most if not all
+standard experimental configurations as specified in the
+<a href="exconfig.html">Experiment.config</a> file. Invoking
+the script should start up the instrument or immediately
+attach to the instrument if it is already running. Multiple
+simultaneous invocations are safely arbitrated to avoid conflicts
+and deadlocks.</p>
+
+<p>In addition, the script can take one of two optional arguments,
+&ldquo;not&rdquo; and &ldquo;stop&rdquo;.
+&ldquo;doit not&rdquo; is used to prevent an instrument from starting up if
+it would do so automatically, such as in a flight configuration.
+</p>
+
+<p>&ldquo;doit not&rdquo; can also be used to &ldquo;clean up&rdquo; in the event that a
+disorderly shutdown has left some processes still running.</p>
+
+<p>&ldquo;doit stop&rdquo; will shut down an instrument that is already running
+without requiring the full GSE program to be run. This is
+accomplished by running the command &ldquo;startdbr quit&rdquo; on the flight
+node with the appropriate Experiment definition from the
+configuration file.</p>
+
+<h3><a id="P2.2">2.2</a>: .doit files</h3>
+
+<p>A basic .doit input specification will define a display program and
+a keyboard client program. For example:</p>
+<blockquote><code>
+        display abcdisp<br>
+        client abcclt
+</code></blockquote>
+
+<p>specifies that the display program &ldquo;abcdisp&rdquo; should be run.
+The script will also invoke the keyboard
+client program &ldquo;abcclt&rdquo;.</p>
+
+<p>At present, there is no provision or benefit to adding algorithms
+to a .doit file under QNX6. This is a feature we hope to implement
+soon.</p>
+
+<p>Telemetry applications are classified into one or more of the
+categories display, extraction, or algorithm. For the purposes of
+mkdoit3, a display program is any TM client generated from a .tbl
+file. An algorithm is any TM client which accesses
+the command server using the &ldquo;cic&rdquo; functions, specifically
+cic_options() as referenced from
+/usr/local/include/oui/client.oui, which is true of any program
+generated from .tma source files. Extraction is used for any TM
+client that is not a display or algorithm.
+</p>
+
+<p>If it is necessary to list an application more than once, the
+&ldquo;display&rdquo; entry must come first. For example, a display program
+which also sends commands to the command server is actually both
+a display and an algorithm. In this case, it should be listed
+first as a display and next as an algorithm. It will appear in
+the output file with the display programs, but it will have been
+endowed with the command-line options required by command
+clients.</p>
+
+<p>In any case, the listing for &ldquo;display&rdquo; must come first.</p>
+
+<p>There are numerous other options available listed in the
+<a href="#P3.0">Input Syntax</a> below, and more will
+inevitably be added as time goes by, so stay tuned!</p>
+
+<h3><a id="P2.2.1">2.2.1</a>: Playback</h3>
+
+<p>In mkdoit2, a separate doit script was required for playback,
+and hence a separate .doit file was also required. With mkdoit3,
+the playback option is built into every doit script, so no
+explicit playback specification is required.</p>
+
+<h3><a id="P2.2.2">2.2.2</a>: Inetin</h3>
+
+<p>Inetin has not been implemented in mkdoit3. If and when it is,
+it will probably be an option to the doit script, like playback.
+</p>
+
+<h3><a id="P2.2.3">2.2.3</a>: Serin [options] &lt;device&gt;</h3>
+
+<p>Serin has not been implemented in mkdoit3. If and when it is,
+it will probably be an option to the doit script, like playback.
+</p>
+
+<h2><a id="P3.0">3.0</a>: Input Syntax</h2>
+<dl>
+<dt>display &lt;program&gt; [ &lt;options&gt; ... ]</dt>
+<dd>Specifies a display program to run and any options required</dd>
+
+<dt>client &lt;program&gt;</dt>
+<dd>Specifies a keyboard client to run</dd>
+
+<dt>memo [ &lt;log file name&gt; ]</dt>
+<dd>Specifies that &ldquo;less +F &lt;log file&gt;&rdquo; should run on a spare console
+to provide a scrolling status window.</dd>
+
+<dt>extraction &lt;program&gt; [ options ]</dt>
+<dd>Specifies an extraction to run in realtime, for example an 
+rtg extraction. Algorithms are different from Extractions in
+that they send commands to the command server.</dd>
+
+<dd>If either an algorithm or an extraction has a <b>-v</b>
+option specified, the standard msg option ( -c$FlightNode )
+is suppressed. This prevents status messages from being
+sent to memo. Status messages to memo are also suppressed
+for algorithms in playback mode (<b>-p</b>) accessing a
+local instrument to prevent duplicate messages in the log.</dd>
+
+<dt>batchfile &lt;batch file name&gt;</dt>
+<dd>Specifies which script should be run on the flight node. The default
+is &ldquo;interact", but this option could be used to specify that the
+flight &ldquo;runfile.dflt&rdquo; be used instead.</dd>
+
+<dt>phrtg &lt;options&gt;</dt>
+<dd>Requests that phrtg be started if it isn't already running, and
+defines any options required.</dd>
+
+</dl>
+
+<h2><a id="PA.0">A.0</a>: Invoking Scripts under Photon</h2>
+
+<p>The doit scripts generated by mkdoit3 have been carefully
+designed to operate properly either on a standard terminal or
+as native QNX Photon applications. To invoke the terminal
+version, use the doit '-s' option. Invocations of phrtg will
+be suppressed when running the terminal version, and the 'nc'
+versions of the display programs will be run instead of the
+Photon versions.
+</p>
+<hr>
+<p>Return to <a href="index.html">Manuals Guide</a></p>
+<hr>
+<table style="border: none; width: 100%">
+<tr><td>last updated: Mon Apr 8 17:10 2013</td>
+  <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
+<tr><td colspan="2" style="font-size: smaller">
+Copyright 2013 by the President and Fellows of Harvard College
+</td></tr></table>
+</body>
+</html>
