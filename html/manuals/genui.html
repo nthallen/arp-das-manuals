@@ -91,6 +91,11 @@ in each column of the GUI.</dd>
 </dl>
 
 <p>Data definition lines consist of the following elements separated by whitespace:</p>
+
+<blockquote>&lt;Rate&gt; &lt;Mnc&gt;[:&lt;Var&gt;:&lt;bit&gt;]
+  &lt;Group&gt; &lt;Graph&gt; [&lt;format&gt;] [:&lt;function&gt;]
+  [&lt;legend_pos&gt;] [&lt;legend&gt;]</blockquote>
+
 <dl>
 <dt>Data Rate</dt><dd>The possibly fractional rate of the datum in Hz. Must be
   specified as an integer or a fraction.</dd>
@@ -109,7 +114,9 @@ in each column of the GUI.</dd>
   can have the same name.</dd>
 <dt>Format</dt><dd>Optional: a printf-style format for converting the value from
   a double type to text. The default is the same as the screen display format,
-  but that needs to be overridden if the screen display is non-numeric.</dd>
+  but that needs to be overridden if the screen display is non-numeric.
+  A format of '%-' disables extraction of the specified variable. This
+  is to support backwards compatibility when TM variables are eliminated.</dd>
 <dt>Function Name</dt><dd>Optional: If you want to add a fully custom graph
   to the GUI, you can provide a string beginning with a colon (<i>e.g.</i> ':foo').
   This is combined with the customization prefix ('cust_' followed by the MNEMONIC string)
@@ -242,10 +249,10 @@ defeat your modifications.</p>
 <p>Return to <a href="index.html">Manuals Guide</a></p>
 <hr>
 <table style="border: none; width: 100%">
-<tr><td>last updated: Tue Jul 17 14:15 2012 EDT</td>
+<tr><td>last updated: Wed Apr 17 13:00 2013 EDT</td>
   <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
 <tr><td colspan="2" style="font-size: smaller">
-Copyright 2012 by the President and Fellows of Harvard College
+Copyright 2013 by the President and Fellows of Harvard College
 </td></tr></table>
 </body>
 </html>
