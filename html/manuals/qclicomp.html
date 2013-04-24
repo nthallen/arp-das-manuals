@@ -71,9 +71,10 @@ Discussion of what these things actually do will follow.</p>
 <pre>
 <a id="SourceFile">SourceFile</a> : [ <a href="#QCLIConfig">QCLIConfig</a> ] [ <a href="#Digitizer">Digitizer</a> ] <a href="#Wave">Wave</a>+ .
 <a id="QCLIConfig">QCLIConfig</a> : QCLIConfig <a href="#QCLIConfigType">QCLIConfigType</a> ';' .
-<a id="QCLIConfigType">QCLIConfigType</a> : Standard / FastRampx10 .
+<a id="QCLIConfigType">QCLIConfigType</a> :
+  Standard / StandardxP33 / FastRamp / FastRampx10 / FastRampx25 .
 <a id="Digitizer">Digitizer</a> : Digitizer <a href="#DigitizerType">DigitizerType</a> ';' .
-<a id="DigitizerType">DigitizerType</a> : CPCI14 / CS210 .
+<a id="DigitizerType">DigitizerType</a> : CPCI14 / CS210 / SSP .
  
 <a id="Wave">Wave</a> : <a href="#ICOSWave">ICOSWave</a> / <a href="#RingWave">RingWave</a> .
 <a id="ICOSWave">ICOSWave</a> : ICOS Waveform <a href="#Ident">Ident</a> '{' <a href="#ICOSCmds">ICOSCmds</a> '}' .
