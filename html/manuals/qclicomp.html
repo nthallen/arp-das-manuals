@@ -8,6 +8,11 @@
 <link rel="shortcut icon" href="http://www.arp.harvard.edu/favicon.ico">
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 <link rel=stylesheet type="text/css" href="../das.css" title="das">
+<style type="text/css">
+  dl { margin-left: 4em;
+       max-width: 600px;
+     }
+</style>
 </head>
 <body>
 <div id="banner">
@@ -32,6 +37,29 @@ qclicomp [options] inputfile
     -d filename : Write display .tmc to filename
     -v filename : Write verbose summary to filename
 </pre>
+
+<h2>Notes</h2>
+
+<p>The following are clarifications about the meanings of various definitions in the syntax that follows:</p>
+<dl>
+<dt>Nsample</dt>
+  <dd>Whenever Nsample is defined explicitly, it refers to the
+  net number of samples reported per scan after applying Naverage.
+  The number of raw samples per scan is always equal to Nsample *
+  Naverage.</dd>
+<dt>Matlab NetSamples</dt>
+  <dd>In the Matlab output from qclicomp, RawSamples always refers
+  to the number of raw samples per single scan, before Naverage.
+  For ICOS waveforms, NetSamples is then RawSamples/NAverage.
+  For Ringdown waveforms, NetSamples is the number of steps in
+  the overall ringdown sequence. The total number of raw scans
+  in the overall sequence will be NetSamples * NCoadd. Note that
+  for Ringdown, we need to use the 32-bit scan SerialNumber from
+  the scan header to keep careful track of where we are in the
+  sequence. If we successfully receive each transmission, the
+  SerialNumber of each successive report should advance by NCoadd.
+  </dd>
+</dl>
 
 <h2>Syntax</h2>
 
@@ -119,10 +147,10 @@ Discussion of what these things actually do will follow.</p>
 <p>Return to <a href="index.html">Manuals Guide</a></p>
 <hr>
 <table style="border: none; width: 100%">
-<tr><td>last updated: Tue Feb  6 14:44:50 2007</td>
+<tr><td>last updated: Wed Apr 24 15:36 2013</td>
   <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
 <tr><td colspan="2" style="font-size: smaller">
-Copyright 2007 by the President and Fellows of Harvard College
+&copy; 2013 by the President and Fellows of Harvard College
 </td></tr></table>
 </body>
 </html>
