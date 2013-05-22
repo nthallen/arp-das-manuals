@@ -429,8 +429,8 @@ file. Discussion of what these things actually do will follow.</p>
 </ul></td>
 <td><ul class="tight">
 <li>Output Files
- <ul class="tight"><li>ICOSconfig.m</li>
-     <li>ICOSsum.dat</li>
+ <ul class="tight"><li><a href="#ICOSconfig.m">ICOSconfig.m</a></li>
+     <li><a href="#ICOSsum.dat">ICOSsum.dat</a></li>
      <li>Verbose Output Files</li></ul>
 </ul>
 </td></tr></table>
@@ -602,16 +602,40 @@ vector with a free scaling parameter.</p>
 
 <h4>Output Files</h4>
 
+<p>ICOSfit produces several output files:</p>
+<ul>
+  <li>ICOSconfig.m: Defines the output format and some configuration parameters.</li>
+  <li>ICOSsum.dat: The fit results along with relevant input parameters.</li>
+  <li>Verbose outputs: For rapid visualization of fits</li>
+</ul>
+
+<h4><a name="ICOSconfig.m">ICOSconfig.m</a></h4>
+
+<p>ICOSconfig.m is a human-readable Matlab script that defines a number of variables
+relevant to the fit. If any format change is made to ICOSsum.dat, a corresponding
+change should be made to ICOSconfig.m to guarantee that the support utilities will
+be able to correctly interpret data both before and after the change.</p>
+
+<p>ICOSconfig.m is generated in the source file ICOSmain.c and it is processed by
+ICOSsetup.m and ICOS_setup.m.</p>
+
+<h4><a name="ICOSsum.dat">ICOSsum.dat</a></h4>
+
+<p>ICOSsum.dat contains the results of the fit, with one line per scan. It is
+generated in the function fitdata::lwrite() in the source file fitfunc.c and it
+is processed by ICOSsetup.m and/or ICOS_setup.m. In the absence of more documentation,
+refer to those sources to see how the file is produced and processed.</p>
+
 <h3>Author</h3>
 <p><a href="mailto:allen@huarp.harvard.edu">Norton Allen</a></p>
 <hr>
 <p>Return to <a href="index.html">Manuals Guide</a></p>
 <hr>
 <table style="border: none; width: 100%">
-<tr><td>last updated: Sun Dec 23 2012 14:00 EST</td>
+<tr><td>last updated: Wed May 22 2013 12:00 EDT</td>
   <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
 <tr><td colspan="2" style="font-size: smaller">
-Copyright 2012 by the President and Fellows of Harvard College
+&copy; 2013 by the President and Fellows of Harvard College
 </td></tr></table>
 </body>
 </html>
