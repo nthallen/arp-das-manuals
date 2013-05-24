@@ -81,6 +81,7 @@
   <li><a href="#SUBBUSD">SUBBUSD</a>=serusb</li>
   <li><a href="#SUBBUSD_DELAY">SUBBUSD_DELAY</a>=3</li>
   <li><a href="#NETWORK_DELAY">NETWORK_DELAY</a>=0</li>
+  <li><a href="#LOOP_ON_FILE">LOOP_ON_FILE</a>=saverun.log</li>
   <li><a href="#OSUPDATEREQ">OSUPDATEREQ</a></li>
 </ul></li></ul></td>
 </tr></table>
@@ -279,6 +280,14 @@ checking for script files on the network. The default is 3 seconds. If
 set to 0, no delay will occur. It may make sense to defeat or reduce
 this delay if <code>SUBBUSD_DELAY</code> is defined.</dd>
 
+<dt><a name="LOOP_ON_FILE"><b>LOOP_ON_FILE</b></a>=<code>saverun.log</code></dt>
+<dd>If the named file exists after the instrument shuts down, flight.sh
+will automatically run <code>reduce</code> and then restart the instrument.
+The <code>LOOP_ON_FILE</code> should probably be the same file as that
+defined by <code>RunLog</code>. Also make sure that <code>RunType</code>
+is defined so saverun will not hang waiting for interaction.
+</dd>
+
 <dt><a name="OSUPDATEREQ"><b>OSUPDATEREQ</b></a></dt>
 <dd>This is not a variable defined in Experiment.config at all.
 If flight.sh discovers a file named OSUPDATEREQ in the current
@@ -297,7 +306,7 @@ approach.</p>
 <p>Return to <a href="index.html">Manuals Guide</a></p>
 <hr>
 <table style="border: none; width: 100%">
-<tr><td>last updated: Mon Apr 8 16:10 2013</td>
+<tr><td>last updated: Fri May 24 10:00 EDT 2013</td>
   <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
 <tr><td colspan="2" style="font-size: smaller">
 Copyright 2013 by the President and Fellows of Harvard College
