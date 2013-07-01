@@ -324,14 +324,25 @@ to fix its position. Defaults to <code>.01 cm-1</code>.</dd>
 <dt><code>LeftLineMargin = <a href="#FloatVal">FloatVal</a> cm-1;</code> (v 2.12)</dt>
 <dt><code>RightLineMargin = <a href="#FloatVal">FloatVal</a> cm-1;</code> (v 2.12)</dt>
 <dd>The amount of sample beyond <code>LineMarginMultiplier</code> half-widths
-that must be present in the SignalRegion in order for a line to be included
-in the fit. Defaults to <code>.05 cm-1</code>.</dd>
+that should be include or excluded from the fit.
+Defaults to <code>.05 cm-1</code>.</dd>
 
 <dt><code>LineMarginMultiplier = <a href="#FloatVal">FloatVal</a>;</code></dt>
 <dt><code>LeftLineMarginMultiplier = <a href="#FloatVal">FloatVal</a>;</code> (v 2.12)</dt>
 <dt><code>RightLineMarginMultiplier = <a href="#FloatVal">FloatVal</a>;</code> (v 2.12)</dt>
 <dd>(Added in V2.9) Specifies the value by which the line width is multiplied
-to determine the variable portion of the line margin. Defaults to 8.</dd>
+to determine whether or not to include the line in the fit. If the scaled width is
+entirely within the signal region, then all the line parameters can float. If
+the the scaled width is only partially within the signal region, the width and
+fine position parameters are fixed, but number density is still allowed to float.
+If the scaled width is entirely outside the signal region, the line is turned off
+completely and excluded from the fit.<br>
+If a line is included in the fit, then we try to extend the sample region to include
+the scaled width plus the LineMargin. If a line is excluded from the fit, then we
+try to reduce the sample region as necessary to exclude the scaled width plus the
+LineMargin. Since we cannot always do both, when there is a conflict, the mandate
+to include signal region takes priority.<br>
+LineMarginMultiplier defaults to 8.</dd>
 
 <dt><code>Sigma = <a href="#FloatVal">FloatVal</a>;</code></dt>
 <dd>The uncertainty of the raw measurement. This is used in the calculation
@@ -657,7 +668,7 @@ refer to those sources to see how the file is produced and processed.</p>
 <p>Return to <a href="index.html">Manuals Guide</a></p>
 <hr>
 <table style="border: none; width: 100%">
-<tr><td>last updated: Wed Jun 5 2013 13:40 EDT</td>
+<tr><td>last updated: Mon Jul 1 2013 14:40 EDT</td>
   <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
 <tr><td colspan="2" style="font-size: smaller">
 &copy; 2013 by the President and Fellows of Harvard College
