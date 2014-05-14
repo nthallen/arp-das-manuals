@@ -14,6 +14,14 @@
   table.padded { margin-left: 30px; }
   table.padded th { background-color: #9999FF; padding: 3px; }
   table.padded td { background-color: #CCCCFF; padding: 3px; }
+  .deprecated {
+    background-color: yellow;
+    padding: 0px 4px;
+  }
+  p.deprecated {
+    border: solid 1px black;
+    padding: 4px;
+  }
 </style>
 </head>
 <body>
@@ -87,18 +95,16 @@ All options are specified within that configuration file.</p>
 <p>The input/output options define where the input files are to be found
 and where the output files should be placed.</p>
 <dl>
-  <dt><code>PTFile = <a href="#Path">Path</a>;</code></dt>
-  <dt><code>PTEFile = <a href="#Path">Path</a>;</code></dt>
-  <dt><code>PandTFile = <a href="#Path">Path</a>;</code></dt>
+  <dt><code><a href="#PTEFileFormat">PTEFile</a> = <a href="#Path">Path</a>;</code></dt>
+  <dt><code><a href="#PTFileFormat">PTFile</a> = <a href="#Path">Path</a>;</code> <span class=deprecated><a href="#PTFileFormat">Deprecated</a></span></dt>
+  <dt><code><a href="#PandTFileFormat">PandTFile</a> = <a href="#Path">Path</a>;</code> <span class=deprecated><a href="#PandTFileFormat">Deprecated</a></span></dt>
   <dd>These three options are different ways of specifying where the
-  pressure and temperature data should be found. 'PTFile' indicates
-  a file in the current <a href="#PTFormat">PT format</a>.
-  'PandTFile' refers to a file in the original
-  <a href="#PandTFormat">PandT format</a> and is included for backwards
-  compatability. 'PTEFile' refers to a file that includes
+  pressure and temperature data should be found. '<a href="#PTFileFormat">PTFile</a>'
+  and '<a href="#PandTFileFormat">PandTFile</a>' refer to deprecated
+  input formats. 'PTEFile' refers to a file that includes
   <a href="#PTEFileFormat">etalon fit data.</a>
-    The default is: PandTFile = INPUTFILE.txt;, but you will almost
-    always want to use a PTEFile.</dd>
+    The default is: PTEFile = PTE.txt;, but you will almost
+    always want to specify this parameter explicitly.</dd>
   
   <dt><code>ICOSdir = <a href="#Path">Path</a>;</code></dt>
   <dd>Specifies the base directory under which the scan directory structure is 
@@ -416,8 +422,9 @@ file. Discussion of what these things actually do will follow.</p>
   <a href="#FixLineParam">FixLineParam</a> /
   Binary / ASCII /
   ICOSdir '=' <a href="#Path">Path</a> /
-  PandTFile '=' <a href="#Path">Path</a> /
-  PTFile '=' <a href="#Path">Path</a> /
+  PTEFile '=' <a href="#Path">Path</a> [ '+' 'nu_F0' ] [ '+' 'PowerParams' ] [ '+' 'MirrorLoss' ] /
+  PandTFile '=' <a href="#Path">Path</a> / <span class=deprecated><a href="#PandTFileFormat">Deprecated</a></span>
+  PTFile '=' <a href="#Path">Path</a> / <span class=deprecated><a href="#PTFileFormat">Deprecated</a></span>
   BaselineFile '=' <a href="#Path">Path</a> [ + Input ] /
   OutputDir '=' <a href="#Path">Path</a> /
   OutputFile '=' <a href="#Path">Path</a> /
@@ -458,9 +465,9 @@ file. Discussion of what these things actually do will follow.</p>
 <ul class="tight">
 <li>Input Files
   <ul class="tight"><li><a href="#ICOSFileFormats">ICOS Files</a></li>
-      <li><a href="#PTFileFormat">PTFile</a></li>
-      <li><a href="#PandTFileFormat">PandTFile</a></li>
       <li><a href="#PTEFileFormat">PTEFile</a></li>
+      <li><a href="#PTFileFormat">PTFile</a> <span class=deprecated><a href="#PTFileFormat">Deprecated</a></span></li>
+      <li><a href="#PandTFileFormat">PandTFile</a> <span class=deprecated><a href="#PandTFileFormat">Deprecated</a></span></li>
       <li><a href="#BaselineFileFormat">BaselineFile</a></li></ul>
 </ul></td>
 <td><ul class="tight">
@@ -528,9 +535,77 @@ distinction is required in the configuration files.</p>
 <tr><td>float32</td><td>nsamples</td><td>Coln</td><td>The data for column ncolumns</td></tr>
 </table>
 
+<h4><a id="PTEFileFormat">PTE File Format</a></h4>
+
+<p><code>PTEFile = <a href="#Path">Path</a> [ '+' 'nu_F0' ] [ '+' 'PowerParams' ] [ '+' 'MirrorLoss' ] ;</code></p>
+
+<p>The <code>PTEFile</code> statement specifies the file containing
+per-scan input parameters. The primary data is stored in the first 11
+columns:</p>
+
+<table class="padded">
+<tr><th>Column</th><th>Name</th><th>Description</th><th>Units</th></tr>
+<tr><td>0</td><td>ScanNum</td><td>Scan File Index</td><td></td></tr>
+<tr><td>1</td><td>CellP</td><td>Cell Pressure</td><td>Torr</td></tr>
+<tr><td>2</td><td>Tavg</td><td>Cell Temperature</td><td>K</td></tr>
+<tr><td>3</td><td>Etln[0]</td><td>Sample Number Offset</td><td>Samples</td></tr>
+<tr><td>4</td><td>Etln[1]</td><td>Constant Coef.</td><td>fringes</td></tr>
+<tr><td>5</td><td>Etln[2]</td><td>Linear Coef.</td><td>fringes/Ksamples</td></tr>
+<tr><td>6</td><td>Etln[3]</td><td>Quadratic Coef.</td><td>fringes/Ksamples^2</td></tr>
+<tr><td>7</td><td>Etln[4]</td><td>1st exp amp.</td><td>fringes</td></tr>
+<tr><td>8</td><td>Etln[5]</td><td>1st exp tau</td><td>Ksamples</td></tr>
+<tr><td>9</td><td>Etln[6]</td><td>2nd exp amp.</td><td>fringes</td></tr>
+<tr><td>10</td><td>Etln[7]</td><td>2nd exp tau</td><td>Ksamples</td></tr>
+</table>
+
+<p>[Introduced in V2.20]: The PTEFile may also contain additional parameters in additional columns.
+Three documented parameters are currently supported: <code>nu_F0, PowerParams</code>
+and <code>MirrorLoss</code>. These parameters must be specified in same order
+as they appear in the file, although the any ordering is supported. Additional
+columns will be ignored.</p>
+
+<p>[Introduced in V2.20]: '<code>+ nu_F0</code>' specifies one additional column which will contain
+a fixed value for the <code>nu_F0</code> parameter. This is useful when fitting
+weak lines through periods of very low concentration where the line positions are
+changing gradually. At low concentrations, the <code>nu_F0</code> parameter is
+usually fixed, which can allow the line position to drift away. After fitting,
+possibly in separate regions, it is possible to interpolate reasonable values
+for <code>nu_F0</code>, write them into the PTEFile, add the <code>+ nu_F0</code>
+option, and icosfit will use the specified values for <code>nu_F0</code> without
+floating the parameter.</p>
+
+<p>[Introduced in V2.20]: '<code>+ PowerParams</code>' specifies seven additional columns which will contain
+additional parameters from the etalon fit. These values are not used by icosfit, but
+it is convenient to have <code>etln_fit</code> write them into the PTEFile for other
+related analyses. Specifying <code>etln_fit( ..., 'SAVEALL', 1)</code> produces these
+additional columns. It also includes a column of zeros as a placeholder for
+ <code>+ nu_F0</code>, so <code>+ PowerParams</code> should always be preceeded by
+ <ocde>+ nu_F0</code>.</p>
+ 
+ <p>The columns introduced by <code>+ PowerParams</code> are:</p>
+<table class="padded">
+<tr><th>Column</th><th>Name</th><th>Description</th><th>Units</th></tr>
+<tr><td>0</td><td>Etln[8]</td><td>Etalon Power Cubic Coef.</td><td>Power Ksamples<sup>-3</sup></td></tr>
+<tr><td>1</td><td>Etln[9]</td><td>Etalon Power Quadratic Coef.</td><td>Power Ksamples<sup>-2</sup></td></tr>
+<tr><td>2</td><td>Etln[10]</td><td>Etalon Power Linear Coef.</td><td>Power Ksamples<sup>-1</sup></td></tr>
+<tr><td>3</td><td>Etln[11]</td><td>Etalon Power Constant Coef.</td><td>Power</td></tr>
+<tr><td>4</td><td>Etln[12]</td><td>Etalon Finesse</td><td></td></tr>
+<tr><td>5</td><td>N_Passes</td><td>Number of passes required by fit</td><td></td></tr>
+<tr><td>6</td><td>Quality</td><td>std(residual)/(max(etln)-min(etln))</td><td></td></tr>
+</table>
+
+<p>[Introduced in V2.20]: '<code>+ MirrorLoss</code>' specifies one additional column containing the
+MirrorLoss value for each scan. This overrides the <code>MirrorLoss</code> parameter
+in the configuration file and can be used when the mirror loss can be derived
+from the end of each ICOS scan. The MirrorLoss column is unitless, so it should
+include the relevant scaling factor (e.g. ppm).</p>
+
 <h4><a id="PTFileFormat">PT File Format</a></h4>
 
 <p><code>PTFile = <a href="#Path">Path</a>;</code></p>
+
+<p class=deprecated>The <code>PTFile</code> keyword and file format are deprecated, and
+support will be removed in a future version.</p>
 
 <p>The <code>PTFile</code> statement identifies the file which
 contains the pressure and temperature data for the scans. This
@@ -559,6 +634,9 @@ is consistent with the acceptable value for RORIS.</p>
 
 <p><code>PandTFile = <a href="#Path">Path</a>;</code></p>
 
+<p class=deprecated>The <code>PandTFile</code> keyword and file format are deprecated, and
+support will be removed in a future version.</p>
+
 <p>The <code>PandTFile</code> statement specifies the use of an earlier
 file format for pressure and temperature. The PT format is preferred.</p>
 
@@ -576,28 +654,6 @@ file format for pressure and temperature. The PT format is preferred.</p>
 <tr><td>9</td><td>InltF</td><td>Inlet Flow</td><td>SCCM</td></tr>
 <tr><td>10</td><td>RORIS</td><td colspan="2">1=>Ringdown, 0=>ICOS</td></tr>
 <tr><td>11</td><td>RateS</td><td colspan="2">1=>50 Hz, 0=>10Hz</td></tr>
-</table>
-
-<h4><a id="PTEFileFormat">PTE File Format</a></h4>
-
-<p><code>PTEFile = <a href="#Path">Path</a>;</code></p>
-
-<p>The <code>PTEFile</code> statement specifies the use of a
-more minimal set of input data along with etalon fit parameters.</p>
-
-<table class="padded">
-<tr><th>Column</th><th>Name</th><th>Description</th><th>Units</th></tr>
-<tr><td>0</td><td>ScanNum</td><td>Scan File Index</td><td></td></tr>
-<tr><td>1</td><td>CellP</td><td>Cell Pressure</td><td>Torr</td></tr>
-<tr><td>2</td><td>Tavg</td><td>Cell Temperature</td><td>K</td></tr>
-<tr><td>3</td><td>Etln[0]</td><td>Sample Number Offset</td><td>Samples</td></tr>
-<tr><td>4</td><td>Etln[1]</td><td>Constant Coef.</td><td>fringes</td></tr>
-<tr><td>5</td><td>Etln[2]</td><td>Linear Coef.</td><td>fringes/Ksamples</td></tr>
-<tr><td>6</td><td>Etln[3]</td><td>Quadratic Coef.</td><td>fringes/Ksamples^2</td></tr>
-<tr><td>7</td><td>Etln[4]</td><td>1st exp amp.</td><td>fringes</td></tr>
-<tr><td>8</td><td>Etln[5]</td><td>1st exp tau</td><td>Ksamples</td></tr>
-<tr><td>9</td><td>Etln[6]</td><td>2nd exp amp.</td><td>fringes</td></tr>
-<tr><td>10</td><td>Etln[7]</td><td>2nd exp tau</td><td>Ksamples</td></tr>
 </table>
 
 <h4><a id="BaselineFileFormat">Baseline File Formats</a></h4>
@@ -668,10 +724,10 @@ refer to those sources to see how the file is produced and processed.</p>
 <p>Return to <a href="index.html">Manuals Guide</a></p>
 <hr>
 <table style="border: none; width: 100%">
-<tr><td>last updated: Mon Jul 1 2013 14:40 EDT</td>
+<tr><td>last updated: Wed May 14 2013 15:10 EDT</td>
   <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
 <tr><td colspan="2" style="font-size: smaller">
-&copy; 2013 by the President and Fellows of Harvard College
+&copy; 2014 by the President and Fellows of Harvard College
 </td></tr></table>
 </body>
 </html>
