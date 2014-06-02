@@ -561,7 +561,7 @@ columns:</p>
 <p>[Introduced in V2.20]: The PTEFile may also contain additional parameters in additional columns.
 Three documented parameters are currently supported: <code>nu_F0, PowerParams</code>
 and <code>MirrorLoss</code>. These parameters must be specified in same order
-as they appear in the file, although the any ordering is supported. Additional
+as they appear in the file, although any ordering is supported. Additional
 columns will be ignored.</p>
 
 <p>[Introduced in V2.20]: '<code>+ nu_F0</code>' specifies one additional column which will contain
@@ -574,6 +574,11 @@ for <code>nu_F0</code>, write them into the PTEFile, add the <code>+ nu_F0</code
 option, and icosfit will use the specified values for <code>nu_F0</code> without
 floating the parameter.</p>
 
+<table class="padded">
+<tr><th>Column</th><th>Name</th><th>Description</th><th>Units</th></tr>
+<tr><td>N+1</td><td>&nu;<sub>F0</sub></td><td>Wavenumber of fringe zero</td><td>cm<sup>-1</sup></td></tr>
+</table>
+
 <p>[Introduced in V2.20]: '<code>+ PowerParams</code>' specifies seven additional columns which will contain
 additional parameters from the etalon fit. These values are not used by icosfit, but
 it is convenient to have <code>etln_fit</code> write them into the PTEFile for other
@@ -585,13 +590,13 @@ additional columns. It also includes a column of zeros as a placeholder for
  <p>The columns introduced by <code>+ PowerParams</code> are:</p>
 <table class="padded">
 <tr><th>Column</th><th>Name</th><th>Description</th><th>Units</th></tr>
-<tr><td>0</td><td>Etln[8]</td><td>Etalon Power Cubic Coef.</td><td>Power Ksamples<sup>-3</sup></td></tr>
-<tr><td>1</td><td>Etln[9]</td><td>Etalon Power Quadratic Coef.</td><td>Power Ksamples<sup>-2</sup></td></tr>
-<tr><td>2</td><td>Etln[10]</td><td>Etalon Power Linear Coef.</td><td>Power Ksamples<sup>-1</sup></td></tr>
-<tr><td>3</td><td>Etln[11]</td><td>Etalon Power Constant Coef.</td><td>Power</td></tr>
-<tr><td>4</td><td>Etln[12]</td><td>Etalon Finesse</td><td></td></tr>
-<tr><td>5</td><td>N_Passes</td><td>Number of passes required by fit</td><td></td></tr>
-<tr><td>6</td><td>Quality</td><td>std(residual)/(max(etln)-min(etln))</td><td></td></tr>
+<tr><td>N+1</td><td>Etln[8]</td><td>Etalon Power Cubic Coef.</td><td>Power Ksamples<sup>-3</sup></td></tr>
+<tr><td>N+2</td><td>Etln[9]</td><td>Etalon Power Quadratic Coef.</td><td>Power Ksamples<sup>-2</sup></td></tr>
+<tr><td>N+3</td><td>Etln[10]</td><td>Etalon Power Linear Coef.</td><td>Power Ksamples<sup>-1</sup></td></tr>
+<tr><td>N+4</td><td>Etln[11]</td><td>Etalon Power Constant Coef.</td><td>Power</td></tr>
+<tr><td>N+5</td><td>Etln[12]</td><td>Etalon Finesse</td><td></td></tr>
+<tr><td>N+6</td><td>N_Passes</td><td>Number of passes required by fit</td><td></td></tr>
+<tr><td>N+7</td><td>Quality</td><td>std(residual)/(max(etln)-min(etln))</td><td></td></tr>
 </table>
 
 <p>[Introduced in V2.20]: '<code>+ MirrorLoss</code>' specifies one additional column containing the
@@ -599,6 +604,11 @@ MirrorLoss value for each scan. This overrides the <code>MirrorLoss</code> param
 in the configuration file and can be used when the mirror loss can be derived
 from the end of each ICOS scan. The MirrorLoss column is unitless, so it should
 include the relevant scaling factor (e.g. ppm).</p>
+
+<table class="padded">
+<tr><th>Column</th><th>Name</th><th>Description</th><th>Units</th></tr>
+<tr><td>N+1</td><td>L</td><td>Mirror Loss</td><td>unitless</td></tr>
+</table>
 
 <h4><a id="PTFileFormat">PT File Format</a></h4>
 
@@ -724,7 +734,7 @@ refer to those sources to see how the file is produced and processed.</p>
 <p>Return to <a href="index.html">Manuals Guide</a></p>
 <hr>
 <table style="border: none; width: 100%">
-<tr><td>last updated: Wed May 14 2013 15:10 EDT</td>
+<tr><td>last updated: Mon Jun 2 2014 11:00 EDT</td>
   <td style="text-align: right"><a href="mailto:webmaster@huarp.harvard.edu">webmaster@huarp.harvard.edu</a></td></tr>
 <tr><td colspan="2" style="font-size: smaller">
 &copy; 2014 by the President and Fellows of Harvard College
